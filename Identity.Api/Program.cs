@@ -44,7 +44,9 @@ builder.Services.AddCors(options =>
                                     "https://localhost:7171",      // Puerto alternativo HTTPS
                                     "http://localhost:5047",       // Blazor Server
                                     "http://localhost:5000",       // Puerto alternativo
-                                    "http://localhost:3000"        // Otro puerto común
+                                    "http://localhost:3000" ,      // Otro puerto común
+                                    "http://localhost:5213",        // Otro puerto común
+                                     "https://localhost:44377"        // Otro puerto común
                                   )
                                   .AllowAnyHeader()
                                   .WithExposedHeaders("totalAmountPages")
@@ -58,7 +60,15 @@ builder.Services.AddCors(options =>
                                     "https://lconcordia.compugtech.com",    // Tu dominio principal
                                     "http://lconcordia.compugtech.com",     // HTTP fallback
                                     "https://www.lconcordia.compugtech.com", // Con www
-                                    "http://www.lconcordia.compugtech.com"   // Con www HTTP
+                                    "http://www.lconcordia.compugtech.com" ,  // Con www HTTP
+                                    "https://localhost:7180",      // Tu Blazor HTTPS
+                                    "http://localhost:7180",       // Tu Blazor HTTP
+                                    "https://localhost:7171",      // Puerto alternativo HTTPS
+                                    "http://localhost:5047",       // Blazor Server
+                                    "http://localhost:5000",       // Puerto alternativo
+                                    "http://localhost:3000",      // Otro puerto común
+                                    "http://localhost:5213"       // Otro puerto común
+                                    
                                   )
                                   .AllowAnyHeader()
                                   .WithExposedHeaders("totalAmountPages")
@@ -97,6 +107,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 
 builder.Services.AddScoped<IMenuInfo, MenuInfoServices>();
+builder.Services.AddScoped<IMenuInfo, MenuInfoServices>();
+builder.Services.AddScoped<INavigation, NavigationServices>();
 builder.Services.AddScoped<ICargo, CargoServices>();
 builder.Services.AddScoped<IUnidad, UnidadServices>();
 

@@ -20,6 +20,7 @@ namespace Identity.Api.Controllers
         //private readonly SignInManager<IdentityUser> _signInManager;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
+        private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IConfiguration _configuration;
 
         public AccountsController(
@@ -27,10 +28,12 @@ namespace Identity.Api.Controllers
             //SignInManager<IdentityUser> signInManager,
             UserManager<ApplicationUser> userManager,
             SignInManager<ApplicationUser> signInManager,
+            RoleManager<IdentityRole> roleManager,
             IConfiguration configuration)
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _roleManager = roleManager;
             _configuration = configuration;
         }
 
@@ -90,6 +93,34 @@ namespace Identity.Api.Controllers
             return await BuildToken(userInfo);
         }
 
+        // Método para asignar rol Admin a un usuario
+        [HttpPost("AssignAdminRole")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        public async Task<ActionResult> AssignAdminRole([FromBody] string email)
+        {
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user == null)
+            {
+                return BadRequest("User not found");
+            }
+
+            // Verificar si el rol Admin existe, si no, crearlo
+            if (!await _roleManager.RoleExistsAsync("Admin"))
+            {
+                await _roleManager.CreateAsync(new IdentityRole("Admin"));
+            }
+
+            var result = await _userManager.AddToRoleAsync(user, "Admin");
+            if (result.Succeeded)
+            {
+                return Ok("Admin role assigned successfully");
+            }
+            else
+            {
+                return BadRequest("Failed to assign Admin role");
+            }
+        }
+
         private async Task<UserToken> BuildToken(UserInfo userinfo)
         {
             var claims = new List<Claim>()
@@ -103,6 +134,14 @@ namespace Identity.Api.Controllers
             var claimsDB = await _userManager.GetClaimsAsync(identityUser);
 
             claims.AddRange(claimsDB);
+
+            // IMPORTANTE: Agregar los roles del usuario como claims
+            var roles = await _userManager.GetRolesAsync(identityUser);
+            foreach (var role in roles)
+            {
+                claims.Add(new Claim(ClaimTypes.Role, role));
+            }
+
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["jwt:key"]));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);

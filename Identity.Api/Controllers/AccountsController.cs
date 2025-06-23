@@ -16,19 +16,15 @@ namespace Identity.Api.Controllers
     [Route("api/[controller]")]
     public class AccountsController : Controller
     {
-        //  private readonly UserManager<IdentityUser> _userManager;
-        //private readonly SignInManager<IdentityUser> _signInManager;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
-        private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly RoleManager<ApplicationRole> _roleManager;
         private readonly IConfiguration _configuration;
 
         public AccountsController(
-            //UserManager<IdentityUser> userManager,
-            //SignInManager<IdentityUser> signInManager,
             UserManager<ApplicationUser> userManager,
             SignInManager<ApplicationUser> signInManager,
-            RoleManager<IdentityRole> roleManager,
+            RoleManager<ApplicationRole> roleManager,
             IConfiguration configuration)
         {
             _userManager = userManager;
@@ -107,7 +103,7 @@ namespace Identity.Api.Controllers
             // Verificar si el rol Admin existe, si no, crearlo
             if (!await _roleManager.RoleExistsAsync("Admin"))
             {
-                await _roleManager.CreateAsync(new IdentityRole("Admin"));
+                await _roleManager.CreateAsync(new ApplicationRole { Name = "Admin" });
             }
 
             var result = await _userManager.AddToRoleAsync(user, "Admin");
@@ -158,7 +154,8 @@ namespace Identity.Api.Controllers
             return new UserToken()
             {
                 Token = new JwtSecurityTokenHandler().WriteToken(token),
-                Expiration = expiration
+                Expiration = expiration,
+                Rol= roles.FirstOrDefault() ?? "User" // Asignar el primer rol o "User" si no hay roles
             };
         }
     }

@@ -111,6 +111,9 @@ builder.Services.AddScoped<IMenuInfo, MenuInfoServices>();
 builder.Services.AddScoped<INavigation, NavigationServices>();
 builder.Services.AddScoped<ICargo, CargoServices>();
 builder.Services.AddScoped<IUnidad, UnidadServices>();
+// Registrar servicios de permisos
+builder.Services.AddScoped<IPermissionService, PermissionService>();
+builder.Services.AddScoped<IAdvancedPermissionService, AdvancedPermissionService>();
 
 builder.Services.AddControllers();
 

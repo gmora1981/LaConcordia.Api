@@ -1,5 +1,6 @@
 ﻿using Identity.Api.Interfaces;
 using Identity.Api.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Modelo.laconcordia.Modelo.Database;
@@ -16,7 +17,7 @@ namespace Identity.Api.Controllers
         {
             _navigation = inavigation;
         }
-
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<NavigationItem>>> GetAll()
         {
@@ -30,7 +31,7 @@ namespace Identity.Api.Controllers
                 return StatusCode(500, new { error = ex.Message });
             }
         }
-
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpGet("tree")]
         public async Task<ActionResult<IEnumerable<NavigationItem>>> GetTree()
         {
@@ -44,6 +45,7 @@ namespace Identity.Api.Controllers
                 return StatusCode(500, new { error = ex.Message });
             }
         }
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
 
         [HttpGet("{id}")]
         public async Task<ActionResult<NavigationItem>> GetById(int id)
@@ -62,7 +64,7 @@ namespace Identity.Api.Controllers
                 return StatusCode(500, new { error = ex.Message });
             }
         }
-
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpGet("role/{role}")]
         public async Task<ActionResult<IEnumerable<NavigationItem>>> GetByRole(string role)
         {
@@ -76,7 +78,7 @@ namespace Identity.Api.Controllers
                 return StatusCode(500, new { error = ex.Message });
             }
         }
-
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpPost]
         [Authorize(Roles = "Admin")]
         public async Task<ActionResult<NavigationItem>> Create([FromBody] NavigationItem dto)
@@ -96,7 +98,7 @@ namespace Identity.Api.Controllers
                 return StatusCode(500, new { error = ex.Message });
             }
         }
-
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpPut("{id}")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Update(int id, [FromBody] NavigationItem dto)
@@ -125,7 +127,7 @@ namespace Identity.Api.Controllers
                 return StatusCode(500, new { error = ex.Message });
             }
         }
-
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpDelete("{id}")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int id)
@@ -140,7 +142,7 @@ namespace Identity.Api.Controllers
                 return StatusCode(500, new { error = ex.Message });
             }
         }
-
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpPost("{id}/move/{direction}")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> MoveItem(int id, string direction)
@@ -160,7 +162,7 @@ namespace Identity.Api.Controllers
                 return StatusCode(500, new { error = ex.Message });
             }
         }
-
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpPost("reorder/{parentId?}")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> ReorderItems(int? parentId = null)
@@ -175,7 +177,7 @@ namespace Identity.Api.Controllers
                 return StatusCode(500, new { error = ex.Message });
             }
         }
-
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpGet("next-order/{parentId?}")]
         public async Task<ActionResult<int>> GetNextOrder(int? parentId = null)
         {

@@ -8,6 +8,6 @@ namespace Identity.Api.Model
         public virtual ApplicationUser User { get; set; } = null!;
 
         // Add the Discriminator property to resolve the error
-        public string Discriminator { get; set; } = null!;
+        //public string Discriminator { get; set; } = null!;
     }
 }

@@ -212,42 +212,50 @@ namespace Identity.Api.Controllers
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<ActionResult> AssignRole([FromBody] EditRoleDTO editRoleDTO)
         {
-            if (editRoleDTO == null)
+            try
             {
-                return BadRequest("EditRoleDTO no puede ser nulo");
-            }
+                if (editRoleDTO == null)
+                {
+                    return BadRequest(new { success = false, message = "EditRoleDTO no puede ser nulo" });
+                }
 
-            var user = await userManager.FindByIdAsync(editRoleDTO.UserId);
-            if (user == null)
+                var user = await userManager.FindByIdAsync(editRoleDTO.UserId);
+                if (user == null)
+                {
+                    return NotFound(new { success = false, message = $"Usuario con ID {editRoleDTO.UserId} no encontrado" });
+                }
+
+                // Verificar si el rol existe
+                var roleExists = await roleManager.RoleExistsAsync(editRoleDTO.RoleName);
+                if (!roleExists)
+                {
+                    return BadRequest(new { success = false, message = $"El rol {editRoleDTO.RoleName} no existe" });
+                }
+
+                // Verificar si el usuario ya tiene el rol
+                var hasRole = await userManager.IsInRoleAsync(user, editRoleDTO.RoleName);
+                if (hasRole)
+                {
+                    return BadRequest(new { success = false, message = $"El usuario ya tiene el rol {editRoleDTO.RoleName}" });
+                }
+
+                var result = await userManager.AddToRoleAsync(user, editRoleDTO.RoleName);
+                if (!result.Succeeded)
+                {
+                    var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                    return StatusCode(500, new { success = false, message = $"Error al asignar el rol: {errors}" });
+                }
+
+                logger.LogInformation($"Rol {editRoleDTO.RoleName} asignado a usuario {editRoleDTO.UserId} por {User.Identity?.Name}");
+
+                return Ok(new { success = true, message = "Rol asignado correctamente" });
+            }
+            catch (Exception ex)
             {
-                return NotFound($"Usuario con ID {editRoleDTO.UserId} no encontrado");
+                logger.LogError(ex, "Error al asignar rol");
+                return StatusCode(500, new { success = false, message = "Error interno del servidor" });
             }
-
-            // Verificar si el rol existe
-            var roleExists = await roleManager.RoleExistsAsync(editRoleDTO.RoleName);
-            if (!roleExists)
-            {
-                return BadRequest($"El rol {editRoleDTO.RoleName} no existe");
-            }
-
-            // Verificar si el usuario ya tiene el rol
-            var hasRole = await userManager.IsInRoleAsync(user, editRoleDTO.RoleName);
-            if (hasRole)
-            {
-                return BadRequest($"El usuario ya tiene el rol {editRoleDTO.RoleName}");
-            }
-
-            var result = await userManager.AddToRoleAsync(user, editRoleDTO.RoleName);
-            if (!result.Succeeded)
-            {
-                return StatusCode(500, "Error al asignar el rol");
-            }
-
-            logger.LogInformation($"Rol {editRoleDTO.RoleName} asignado a usuario {editRoleDTO.UserId} por {User.Identity?.Name}");
-            return NoContent();
         }
-
-
 
         // POST: api/users/removeRole
         [HttpPost("removeRole")]
@@ -255,46 +263,55 @@ namespace Identity.Api.Controllers
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<ActionResult> RemoveRole([FromBody] EditRoleDTO editRoleDTO)
         {
-            if (editRoleDTO == null)
+            try
             {
-                return BadRequest("EditRoleDTO no puede ser nulo");
-            }
-
-            var user = await userManager.FindByIdAsync(editRoleDTO.UserId);
-            if (user == null)
-            {
-                return NotFound($"Usuario con ID {editRoleDTO.UserId} no encontrado");
-            }
-
-            // Verificar si el usuario tiene el rol
-            var hasRole = await userManager.IsInRoleAsync(user, editRoleDTO.RoleName);
-            if (!hasRole)
-            {
-                return BadRequest($"El usuario no tiene el rol {editRoleDTO.RoleName}");
-            }
-
-            // Evitar quitar el último admin
-            if (editRoleDTO.RoleName == "Admin")
-            {
-                var admins = await userManager.GetUsersInRoleAsync("Admin");
-                if (admins.Count <= 1)
+                if (editRoleDTO == null)
                 {
-                    return BadRequest("No se puede quitar el último administrador del sistema");
+                    return BadRequest(new { success = false, message = "EditRoleDTO no puede ser nulo" });
                 }
-            }
 
-            var result = await userManager.RemoveFromRoleAsync(user, editRoleDTO.RoleName);
-            if (!result.Succeeded)
+                var user = await userManager.FindByIdAsync(editRoleDTO.UserId);
+                if (user == null)
+                {
+                    return NotFound(new { success = false, message = $"Usuario con ID {editRoleDTO.UserId} no encontrado" });
+                }
+
+                // Verificar si el usuario tiene el rol
+                var hasRole = await userManager.IsInRoleAsync(user, editRoleDTO.RoleName);
+                if (!hasRole)
+                {
+                    return BadRequest(new { success = false, message = $"El usuario no tiene el rol {editRoleDTO.RoleName}" });
+                }
+
+                // Evitar quitar el último admin
+                if (editRoleDTO.RoleName == "Admin")
+                {
+                    var admins = await userManager.GetUsersInRoleAsync("Admin");
+                    if (admins.Count <= 1)
+                    {
+                        return BadRequest(new { success = false, message = "No se puede quitar el último administrador del sistema" });
+                    }
+                }
+
+                var result = await userManager.RemoveFromRoleAsync(user, editRoleDTO.RoleName);
+                if (!result.Succeeded)
+                {
+                    var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                    return StatusCode(500, new { success = false, message = $"Error al remover el rol: {errors}" });
+                }
+
+                logger.LogInformation($"Rol {editRoleDTO.RoleName} removido de usuario {editRoleDTO.UserId} por {User.Identity?.Name}");
+
+                return Ok(new { success = true, message = "Rol removido correctamente" });
+            }
+            catch (Exception ex)
             {
-                return StatusCode(500, "Error al remover el rol");
+                logger.LogError(ex, "Error al remover rol");
+                return StatusCode(500, new { success = false, message = "Error interno del servidor" });
             }
-
-            logger.LogInformation($"Rol {editRoleDTO.RoleName} removido de usuario {editRoleDTO.UserId} por {User.Identity?.Name}");
-            return NoContent();
         }
-
-        // POST: api/users/{id}/change-password
-        [HttpPost("{id}/change-password")]
+            // POST: api/users/{id}/change-password
+            [HttpPost("{id}/change-password")]
         [Authorize]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<ActionResult> ChangePassword(string id, [FromBody] ChangePasswordDTO changePasswordDTO)

@@ -15,7 +15,7 @@ namespace Identity.Api.Persistence.DataBase.configuration
                 {
                     RoleId = "ee0e3def-49f9-4dbf-8889-2c844e66f74a",
                     UserId = "8e445865-a24d-4543-a6c6-9443d048cdb9",
-                    Discriminator = "ApplicationUserRole"
+                    //Discriminator = "ApplicationUserRole"
                 }
             );
         }

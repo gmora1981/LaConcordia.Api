@@ -37,6 +37,7 @@ namespace Identity.Api.Controllers
         // GET: api/users
         [HttpGet]
         [Authorize(Roles = "Admin")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<ActionResult<List<UserDTO>>> Get([FromQuery] PaginationDTO paginationDTO)
         {
             var queryable = context.Users.AsQueryable();
@@ -59,6 +60,7 @@ namespace Identity.Api.Controllers
         // GET: api/users/{id}
         [HttpGet("{id}")]
         [Authorize(Roles = "Admin")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<ActionResult<UserDTO>> GetById(string id)
         {
             var user = await userManager.FindByIdAsync(id);
@@ -79,6 +81,7 @@ namespace Identity.Api.Controllers
         // GET: api/users/search?term=xxx
         [HttpGet("search")]
         [Authorize(Roles = "Admin")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<ActionResult<List<UserDTO>>> Search(string term)
         {
             if (string.IsNullOrWhiteSpace(term))
@@ -116,6 +119,7 @@ namespace Identity.Api.Controllers
         // GET: api/users/roles
         [HttpGet("roles")]
         [Authorize(Roles = "Admin")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<ActionResult<List<RoleDTO>>> GetRoles()
         {
             var roles = await roleManager.Roles
@@ -128,6 +132,7 @@ namespace Identity.Api.Controllers
         // GET: api/users/{id}/roles
         [HttpGet("{id}/roles")]
         [Authorize(Roles = "Admin")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<ActionResult<List<string>>> GetUserRoles(string id)
         {
             var user = await userManager.FindByIdAsync(id);
@@ -143,6 +148,7 @@ namespace Identity.Api.Controllers
         // PUT: api/users/{id}
         [HttpPut("{id}")]
         [Authorize(Roles = "Admin")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<ActionResult> UpdateUser(string id, [FromBody] UserEditDTO userEditDTO)
         {
             if (id != userEditDTO.UserId)
@@ -174,6 +180,7 @@ namespace Identity.Api.Controllers
         // DELETE: api/users/{id}
         [HttpDelete("{id}")]
         [Authorize(Roles = "Admin")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<ActionResult> DeleteUser(string id)
         {
             var user = await userManager.FindByIdAsync(id);
@@ -202,6 +209,7 @@ namespace Identity.Api.Controllers
         // POST: api/users/assignRole
         [HttpPost("assignRole")]
         [Authorize(Roles = "Admin")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<ActionResult> AssignRole([FromBody] EditRoleDTO editRoleDTO)
         {
             if (editRoleDTO == null)
@@ -244,6 +252,7 @@ namespace Identity.Api.Controllers
         // POST: api/users/removeRole
         [HttpPost("removeRole")]
         [Authorize(Roles = "Admin")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<ActionResult> RemoveRole([FromBody] EditRoleDTO editRoleDTO)
         {
             if (editRoleDTO == null)
@@ -287,6 +296,7 @@ namespace Identity.Api.Controllers
         // POST: api/users/{id}/change-password
         [HttpPost("{id}/change-password")]
         [Authorize]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<ActionResult> ChangePassword(string id, [FromBody] ChangePasswordDTO changePasswordDTO)
         {
             // Los usuarios solo pueden cambiar su propia contraseña a menos que sean admin
@@ -339,6 +349,7 @@ namespace Identity.Api.Controllers
         // GET: api/users/usuarios (mantener por compatibilidad)
         [HttpGet("usuarios")]
         [Authorize(Roles = "Admin")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<ActionResult<List<UserEditDTO>>> GetUsuarios()
         {
             var users = await context.Users

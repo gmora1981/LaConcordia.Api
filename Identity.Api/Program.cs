@@ -9,6 +9,7 @@ using Identity.Api.Persistence.DataBase;
 using Identity.Api.Services;
 using Identity.Api.Interfaces;
 using Microsoft.Extensions.Options;
+using Modelo.laconcordia.Modelo.Database;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -114,6 +115,11 @@ builder.Services.AddScoped<IUnidad, UnidadServices>();
 // Registrar servicios de permisos
 builder.Services.AddScoped<IPermissionService, PermissionService>();
 builder.Services.AddScoped<IAdvancedPermissionService, AdvancedPermissionService>();
+builder.Services.AddScoped<IParentesco, ParentescoServices>();
+builder.Services.AddScoped<IEstadoCivil, EstadoCivilServices>();
+
+
+
 
 builder.Services.AddControllers();
 

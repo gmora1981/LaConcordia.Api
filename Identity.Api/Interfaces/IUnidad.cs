@@ -4,8 +4,11 @@ namespace Identity.Api.Interfaces
 {
     public interface IUnidad
     {
-        IEnumerable<Unidad> UnidadInfoAll { get; }
-        IEnumerable<Unidad> UnidadXUnidad(string Item);
-        void InsertUnidad(Unidad New);
+        IEnumerable<Unidad> GetUnidadInfoAll();
+        Unidad? GetUnidadById(string idUnidad);
+        void InsertUnidad(Unidad nueva);
+        void UpdateUnidad(Unidad actualizada);
+        void DeleteUnidadById(string idUnidad);
+
     }
 }

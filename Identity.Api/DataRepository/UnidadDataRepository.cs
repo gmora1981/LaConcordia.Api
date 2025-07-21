@@ -1,31 +1,48 @@
-﻿using Identity.Api.Model.DTO;
+﻿using Identity.Api.DTO;
+using Identity.Api.Interfaces;
 using Modelo.laconcordia.Modelo.Database;
 
 namespace Identity.Api.DataRepository
 {
     public class UnidadDataRepository
     {
-        public List<Unidad> UnidadAll()
+
+        private readonly DbAa5796GmoraContext _context;
+
+        public UnidadDataRepository()
         {
-            using (var context = new DbAa5796GmoraContext())
-            {
-                return context.Unidads.ToList();
-            }
+            _context = new DbAa5796GmoraContext();
         }
 
-        public List<Unidad> UnidadXUnidad(String Item)
+        public IEnumerable<Unidad> UnidadAll()
         {
-            using (var context = new DbAa5796GmoraContext())
-            {
-                return context.Unidads.Where(a => a.Unidad1 == Item).ToList();
-            }
+            return _context.Unidads.Where(x => x.Estado == "a").ToList();
         }
-        public void InsertUnidad(Unidad NewItem)
+
+        public IEnumerable<Unidad> UnidadXUnidad(string idUnidad)
         {
-            using (var context = new DbAa5796GmoraContext())
+            return _context.Unidads.Where(x => x.Unidad1 == idUnidad && x.Estado == "a").ToList();
+        }
+
+        public void InsertUnidad(Unidad nueva)
+        {
+            _context.Unidads.Add(nueva);
+            _context.SaveChanges();
+        }
+
+        public void UpdateUnidad(Unidad actualizada)
+        {
+            _context.Unidads.Update(actualizada);
+            _context.SaveChanges();
+        }
+
+        public void DeleteUnidadById(string idUnidad)
+        {
+            var item = _context.Unidads.FirstOrDefault(x => x.Unidad1 == idUnidad);
+            if (item != null)
             {
-                context.Unidads.Add(NewItem);
-                context.SaveChanges();
+                _context.Unidads.Remove(item);
+                _context.SaveChanges();
             }
         }
     }

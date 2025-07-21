@@ -1,4 +1,5 @@
-﻿using Modelo.laconcordia.Modelo.Database;
+﻿using Identity.Api.DTO;
+using Modelo.laconcordia.Modelo.Database;
 
 namespace Identity.Api.DataRepository
 {
@@ -18,6 +19,23 @@ namespace Identity.Api.DataRepository
             {
                 context.Cargos.Add(NewItem);
                 context.SaveChanges();
+            }
+        }
+
+        public CargoDTO GetCargoById(int idCargo)
+        {
+            using (var context = new DbAa5796GmoraContext())
+            {
+                var cargo = context.Cargos
+                    .Where(c => c.Idcargo == idCargo)
+                    .Select(c => new CargoDTO
+                    {
+                        Idcargo = c.Idcargo,
+                        Cargo1 = c.Cargo1,
+                        Estado = c.Estado
+                    })
+                    .FirstOrDefault();
+                return cargo;
             }
         }
 

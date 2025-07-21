@@ -6,7 +6,7 @@ using Modelo.laconcordia.Modelo.Database;
 
 namespace Identity.Api.Controllers
 {
-    [Authorize]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [Route("api/[controller]")]
     [ApiController]
     public class CargoController : Controller
@@ -18,13 +18,22 @@ namespace Identity.Api.Controllers
             _Cargo = iCargo;
         }
 
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpGet("CargoInfoAll")]
         public IActionResult Get1()
         {
             return Ok(_Cargo.CargoInfoAll);
         }
-      
+
+        
+        [HttpGet("BuscarCargo/{id}")]
+        public IActionResult GetById(int id)
+        {
+            var item = _Cargo.GetCargoById(id);
+            if (item == null)
+                return NotFound("Cargo no encontrado.");
+            return Ok(item);
+        }
+
         [HttpPost("InsertCargo")]
         public IActionResult Create([FromBody] Cargo NewItem)
         {

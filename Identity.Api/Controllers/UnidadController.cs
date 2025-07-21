@@ -8,52 +8,75 @@ using Modelo.laconcordia.Modelo.Database;
 
 namespace Identity.Api.Controllers
 {
-    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class UnidadController : Controller
     {
-        private readonly IUnidad _Unidad;
-        public UnidadController(IUnidad iunidad)
+
+        private readonly IUnidad _unidadRepository;
+
+        public UnidadController(IUnidad unidadRepository)
         {
-            _Unidad = iunidad;
+            _unidadRepository = unidadRepository;
         }
 
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-
-        [HttpGet("UnidadInfoAll")]
-        public IActionResult Get1()
+        [HttpGet("GetUnidadInfoAll")]
+        public IActionResult GetAll()
         {
-            return Ok(_Unidad.UnidadInfoAll);
+            var lista = _unidadRepository.GetUnidadInfoAll();
+            return Ok(lista);
         }
 
-
-        [HttpGet("UnidadxUnidad")]
-        public IActionResult GetUnidad(string unidad)
+        [HttpGet("BuscarUnidad/{idUnidad}")]
+        public IActionResult GetById(string idUnidad)
         {
-            return Ok(_Unidad.UnidadXUnidad(unidad));
+            var item = _unidadRepository.GetUnidadById(idUnidad);
+            if (item == null)
+                return NotFound("Unidad no encontrada.");
+            return Ok(item);
         }
 
         [HttpPost("InsertUnidad")]
-        public IActionResult Create([FromBody] Unidad NewItem)
+        public IActionResult Create([FromBody] Unidad nueva)
         {
             try
             {
-                if (NewItem == null || !ModelState.IsValid)
-                {
-                    return BadRequest("Error: Envio de datos");
-                }
-
-                //continuo con el ingreso de datos
-                _Unidad.InsertUnidad(NewItem);
-
+                _unidadRepository.InsertUnidad(nueva);
+                return Ok("Unidad creada correctamente.");
             }
             catch (Exception ex)
             {
-                return BadRequest("Error:" + ex.Message);
+                return BadRequest("Error al crear: " + ex.Message);
             }
+        }
 
-            return Ok(NewItem);
+        [HttpPut("UpdateUnidad")]
+        public IActionResult Update([FromBody] Unidad actualizada)
+        {
+            try
+            {
+                _unidadRepository.UpdateUnidad(actualizada);
+                return Ok("Unidad actualizada correctamente.");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("Error al actualizar: " + ex.Message);
+            }
+        }
+
+        [HttpDelete("DeleteUnidad/{idUnidad}")]
+        public IActionResult DeleteById(string idUnidad)
+        {
+            try
+            {
+                _unidadRepository.DeleteUnidadById(idUnidad);
+                return Ok("Parentesco eliminado por ID correctamente.");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("Error al eliminar por ID: " + ex.Message);
+            }
         }
 
     }

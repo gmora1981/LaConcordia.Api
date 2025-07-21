@@ -38,6 +38,7 @@ namespace Identity.Api.Controllers
         /// <returns>Permisos del usuario con estructura de árbol</returns>
         [HttpGet("user/{userId}")]
         [Authorize(Roles = "Admin")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<ActionResult<UserPermissionsDto>> GetUserPermissions(string userId)
         {
             try
@@ -62,6 +63,7 @@ namespace Identity.Api.Controllers
         /// </summary>
         /// <returns>Permisos del usuario autenticado</returns>
         [HttpGet("my-permissions")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<ActionResult<UserPermissionsDto>> GetMyPermissions()
         {
             try
@@ -87,6 +89,7 @@ namespace Identity.Api.Controllers
         /// </summary>
         /// <returns>Estructura de menú filtrada por permisos</returns>
         [HttpGet("my-navigation-menu")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<ActionResult<NavigationMenuDto>> GetMyNavigationMenu()
         {
             try
@@ -112,6 +115,7 @@ namespace Identity.Api.Controllers
         /// </summary>
         [HttpGet("user/{userId}/item/{navigationItemId}")]
         [Authorize(Roles = "Admin")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<ActionResult<NavigationPermissionDto>> GetUserPermissionForItem(string userId, int navigationItemId)
         {
             try
@@ -135,6 +139,7 @@ namespace Identity.Api.Controllers
         /// </summary>
         [HttpPost("user/update")]
         [Authorize(Roles = "Admin")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<IActionResult> UpdateUserPermission([FromBody] UpdateUserPermissionDto dto)
         {
             if (!ModelState.IsValid)
@@ -168,6 +173,7 @@ namespace Identity.Api.Controllers
         /// </summary>
         [HttpDelete("user/{userId}/item/{navigationItemId}")]
         [Authorize(Roles = "Admin")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<IActionResult> RemoveUserPermission(string userId, int navigationItemId)
         {
             try
@@ -195,6 +201,7 @@ namespace Identity.Api.Controllers
         /// </summary>
         [HttpPost("user/{userId}/bulk-assign")]
         [Authorize(Roles = "Admin")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<IActionResult> AssignBulkUserPermissions(string userId, [FromBody] BulkPermissionAssignmentDto dto)
         {
             if (!ModelState.IsValid)
@@ -233,6 +240,7 @@ namespace Identity.Api.Controllers
         /// </summary>
         [HttpGet("role/{roleId}")]
         [Authorize(Roles = "Admin")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<ActionResult<RolePermissionsDto>> GetRolePermissions(string roleId)
         {
             try
@@ -256,6 +264,7 @@ namespace Identity.Api.Controllers
         /// </summary>
         [HttpGet("role/{roleId}/item/{navigationItemId}")]
         [Authorize(Roles = "Admin")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<ActionResult<NavigationPermissionDto>> GetRolePermissionForItem(string roleId, int navigationItemId)
         {
             try
@@ -279,6 +288,7 @@ namespace Identity.Api.Controllers
         /// </summary>
         [HttpPost("role/update")]
         [Authorize(Roles = "Admin")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<IActionResult> UpdateRolePermission([FromBody] UpdateRolePermissionDto dto)
         {
             if (!ModelState.IsValid)
@@ -289,6 +299,21 @@ namespace Identity.Api.Controllers
             try
             {
                 var grantedBy = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "System";
+
+                // AGREGADO: Validar que el rol existe
+                var role = await _permissionService.GetRoleByIdAsync(dto.RoleId);
+                if (role == null)
+                {
+                    return BadRequest(new { error = $"El rol con ID {dto.RoleId} no existe" });
+                }
+
+                // AGREGADO: Validar que el item de navegación existe
+                var navItem = await _permissionService.GetNavigationItemByIdAsync(dto.NavigationItemId);
+                if (navItem == null)
+                {
+                    return BadRequest(new { error = $"El item de navegación con ID {dto.NavigationItemId} no existe" });
+                }
+
                 await _permissionService.UpdateRolePermissionAsync(dto, grantedBy);
 
                 _logger.LogInformation("Permisos actualizados para rol {RoleId} en item {ItemId} por {GrantedBy}",
@@ -303,15 +328,21 @@ namespace Identity.Api.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al actualizar permisos del rol");
-                return StatusCode(500, new { error = "Error al actualizar permisos" });
+                return StatusCode(500, new
+                {
+                    error = "Error al actualizar permisos",
+                    details = ex.Message
+                });
             }
         }
+
 
         /// <summary>
         /// Elimina los permisos de un rol para un item específico
         /// </summary>
         [HttpDelete("role/{roleId}/item/{navigationItemId}")]
         [Authorize(Roles = "Admin")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<IActionResult> RemoveRolePermission(string roleId, int navigationItemId)
         {
             try
@@ -339,6 +370,7 @@ namespace Identity.Api.Controllers
         /// </summary>
         [HttpPost("role/{roleId}/bulk-assign")]
         [Authorize(Roles = "Admin")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<IActionResult> AssignBulkRolePermissions(string roleId, [FromBody] BulkPermissionAssignmentDto dto)
         {
             if (!ModelState.IsValid)
@@ -376,6 +408,7 @@ namespace Identity.Api.Controllers
         /// Verifica si un usuario tiene un permiso específico
         /// </summary>
         [HttpPost("check")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<ActionResult<bool>> CheckPermission([FromBody] CheckPermissionDto dto)
         {
             try
@@ -408,6 +441,7 @@ namespace Identity.Api.Controllers
         /// </summary>
         [HttpGet("user/{userId}/effective")]
         [Authorize(Roles = "Admin")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<ActionResult<List<NavigationPermissionDto>>> GetEffectivePermissions(string userId)
         {
             try
@@ -431,6 +465,7 @@ namespace Identity.Api.Controllers
         /// </summary>
         [HttpGet("roles")]
         [Authorize(Roles = "Admin")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<ActionResult<List<RoleDTO>>> GetAllRoles()
         {
             try
@@ -450,6 +485,7 @@ namespace Identity.Api.Controllers
         /// </summary>
         [HttpGet("role/{roleId}/users")]
         [Authorize(Roles = "Admin")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<ActionResult<List<UserDTO>>> GetUsersInRole(string roleId)
         {
             try
@@ -478,6 +514,7 @@ namespace Identity.Api.Controllers
         /// </summary>
         [HttpGet("report/navigation-items")]
         [Authorize(Roles = "Admin")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<ActionResult<List<NavigationPermissionDto>>> GetNavigationItemsReport()
         {
             try
@@ -502,6 +539,7 @@ namespace Identity.Api.Controllers
         /// </summary>
         [HttpGet("report/users-permissions")]
         [Authorize(Roles = "Admin")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<ActionResult<List<UserPermissionsDto>>> GetUsersPermissionsReport()
         {
             try
@@ -530,6 +568,7 @@ namespace Identity.Api.Controllers
         /// </summary>
         [HttpPost("copy/user")]
         [Authorize(Roles = "Admin")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<IActionResult> CopyUserPermissions([FromBody] CopyPermissionsDto dto)
         {
             if (!ModelState.IsValid || dto.EntityType != "User")
@@ -569,6 +608,7 @@ namespace Identity.Api.Controllers
         /// </summary>
         [HttpPost("copy/role")]
         [Authorize(Roles = "Admin")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<IActionResult> CopyRolePermissions([FromBody] CopyPermissionsDto dto)
         {
             if (!ModelState.IsValid || dto.EntityType != "Role")
@@ -608,6 +648,7 @@ namespace Identity.Api.Controllers
         /// </summary>
         [HttpDelete("reset/user/{userId}")]
         [Authorize(Roles = "Admin")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<IActionResult> ResetUserPermissions(string userId)
         {
             try
@@ -639,6 +680,7 @@ namespace Identity.Api.Controllers
         /// </summary>
         [HttpDelete("reset/role/{roleId}")]
         [Authorize(Roles = "Admin")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<IActionResult> ResetRolePermissions(string roleId)
         {
             try
@@ -670,6 +712,7 @@ namespace Identity.Api.Controllers
         /// </summary>
         [HttpGet("matrix")]
         [Authorize(Roles = "Admin")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<ActionResult<PermissionMatrixDto>> GetPermissionMatrix()
         {
             try
@@ -689,6 +732,7 @@ namespace Identity.Api.Controllers
         /// </summary>
         [HttpGet("audit")]
         [Authorize(Roles = "Admin")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<ActionResult<PermissionAuditDto>> GetPermissionAudit(
             [FromQuery] DateTime? startDate,
             [FromQuery] DateTime? endDate)
@@ -722,6 +766,7 @@ namespace Identity.Api.Controllers
         /// </summary>
         [HttpGet("health")]
         [AllowAnonymous]
+       
         public ActionResult GetHealth()
         {
             return Ok(new

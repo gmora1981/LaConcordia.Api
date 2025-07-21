@@ -1,5 +1,6 @@
 ﻿using Identity.Api.Model.DTO;
 using Identity.Api.Model.DTO.PermissionDTOs;
+using Modelo.laconcordia.Modelo.Database;
 
 
 namespace Identity.Api.Interfaces
@@ -14,6 +15,9 @@ namespace Identity.Api.Interfaces
         Task AssignBulkUserPermissionsAsync(string userId, BulkPermissionAssignmentDto dto, string grantedBy);
 
         // Permisos de Rol
+        Task<AspNetRole?> GetRoleByIdAsync(string roleId);
+        Task<NavigationItem?> GetNavigationItemByIdAsync(int navigationItemId);
+
         Task<RolePermissionsDto> GetRolePermissionsAsync(string roleId);
         Task<NavigationPermissionDto> GetRolePermissionForItemAsync(string roleId, int navigationItemId);
         Task UpdateRolePermissionAsync(UpdateRolePermissionDto dto, string grantedBy);

@@ -283,7 +283,21 @@ namespace Identity.Api.Services
         public async Task<List<RoleDTO>> GetAllRolesAsync()
         {
             var roles = await _dataRepository.GetAllRolesAsync();
-            return roles.Select(r => new RoleDTO { RoleName = r.Name ?? "" }).ToList();
+            return roles.Select(r => new RoleDTO
+            {
+                RoleId = r.Id,           // Agregar esta línea
+                RoleName = r.Name ?? ""
+            }).ToList();
+        }
+
+        public async Task<AspNetRole?> GetRoleByIdAsync(string roleId)
+        {
+            return await _dataRepository.GetRoleByIdAsync(roleId);
+        }
+
+        public async Task<NavigationItem?> GetNavigationItemByIdAsync(int navigationItemId)
+        {
+            return await _dataRepository.GetNavigationItemByIdAsync(navigationItemId);
         }
 
         public async Task<List<UserDTO>> GetUsersInRoleAsync(string roleId)

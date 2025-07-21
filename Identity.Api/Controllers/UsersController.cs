@@ -123,11 +123,45 @@ namespace Identity.Api.Controllers
         public async Task<ActionResult<List<RoleDTO>>> GetRoles()
         {
             var roles = await roleManager.Roles
-                .Select(x => new RoleDTO { RoleName = x.Name ?? "Unknown" })
+                .Select(x => new RoleDTO
+                {
+                    RoleId = x.Id,        // Agregar esta línea
+                    RoleName = x.Name ?? "Unknown"
+                })
                 .ToListAsync();
 
             return Ok(roles);
         }
+
+
+        //  método para información detallada de roles
+        //=====================================
+        [HttpGet("roles-info")]
+        [Authorize(Roles = "Admin")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        public async Task<ActionResult<List<RoleInfoDTO>>> GetRolesInfo()
+        {
+            var roles = await roleManager.Roles.ToListAsync();
+            var roleInfoList = new List<RoleInfoDTO>();
+
+            foreach (var role in roles)
+            {
+                var userCount = await userManager.GetUsersInRoleAsync(role.Name ?? "");
+
+                roleInfoList.Add(new RoleInfoDTO
+                {
+                    RoleId = role.Id,
+                    RoleName = role.Name ?? "Unknown",
+                    Description = role.Name == "Admin" ? "Administrador del sistema" : "Usuario estándar",
+                    UserCount = userCount.Count,
+                    CreatedDate = DateTime.UtcNow // Puedes agregar esta propiedad a ApplicationRole si necesitas la fecha real
+                });
+            }
+
+            return Ok(roleInfoList);
+        }
+
+
 
         // GET: api/users/{id}/roles
         [HttpGet("{id}/roles")]

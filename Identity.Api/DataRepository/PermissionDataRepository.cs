@@ -44,24 +44,35 @@ namespace Identity.Api.DataRepository
         {
             using (var context = new DbAa5796GmoraContext())
             {
-                var existing = await context.UserNavigationPermissions
-                    .FirstOrDefaultAsync(p => p.UserId == permission.UserId &&
-                                            p.NavigationItemId == permission.NavigationItemId);
-
-                if (existing != null)
+                try
                 {
-                    existing.CanView = permission.CanView;
-                    existing.CanCreate = permission.CanCreate;
-                    existing.CanEdit = permission.CanEdit;
-                    existing.CanDelete = permission.CanDelete;
-                    existing.GrantedAt = DateTime.Now;
-                    existing.GrantedBy = permission.GrantedBy;
+                    // SOLUCIÓN RÁPIDA: Eliminar y recrear el registro
+                    var existing = await context.UserNavigationPermissions
+                        .FirstOrDefaultAsync(p => p.UserId == permission.UserId &&
+                                                p.NavigationItemId == permission.NavigationItemId);
 
+                    if (existing != null)
+                    {
+                        // Eliminar el registro existente
+                        context.UserNavigationPermissions.Remove(existing);
+                        await context.SaveChangesAsync(); // Guardar la eliminación
+                    }
+
+                    // Crear nuevo registro con la fecha actual
+                    permission.GrantedAt = DateTime.Now;
+                    context.UserNavigationPermissions.Add(permission);
+
+                    // Guardar el nuevo registro
                     await context.SaveChangesAsync();
+                }
+                catch (Exception ex)
+                {
+                    // Log del error para debugging
+                    Console.WriteLine($"Error en UpdateUserPermissionAsync: {ex.Message}");
+                    throw new ApplicationException($"Error al actualizar permisos de usuario: {ex.Message}", ex);
                 }
             }
         }
-
         public async Task DeleteUserPermissionAsync(string userId, int navigationItemId)
         {
             using (var context = new DbAa5796GmoraContext())
@@ -128,20 +139,32 @@ namespace Identity.Api.DataRepository
         {
             using (var context = new DbAa5796GmoraContext())
             {
-                var existing = await context.RoleNavigationPermissions
-                    .FirstOrDefaultAsync(p => p.RoleId == permission.RoleId &&
-                                            p.NavigationItemId == permission.NavigationItemId);
-
-                if (existing != null)
+                try
                 {
-                    existing.CanView = permission.CanView;
-                    existing.CanCreate = permission.CanCreate;
-                    existing.CanEdit = permission.CanEdit;
-                    existing.CanDelete = permission.CanDelete;
-                    existing.GrantedAt = DateTime.Now;
-                    existing.GrantedBy = permission.GrantedBy;
+                    // SOLUCIÓN RÁPIDA: Eliminar y recrear el registro
+                    var existing = await context.RoleNavigationPermissions
+                        .FirstOrDefaultAsync(p => p.RoleId == permission.RoleId &&
+                                                p.NavigationItemId == permission.NavigationItemId);
 
+                    if (existing != null)
+                    {
+                        // Eliminar el registro existente
+                        context.RoleNavigationPermissions.Remove(existing);
+                        await context.SaveChangesAsync(); // Guardar la eliminación
+                    }
+
+                    // Crear nuevo registro con la fecha actual
+                    permission.GrantedAt = DateTime.Now;
+                    context.RoleNavigationPermissions.Add(permission);
+
+                    // Guardar el nuevo registro
                     await context.SaveChangesAsync();
+                }
+                catch (Exception ex)
+                {
+                    // Log del error para debugging
+                    Console.WriteLine($"Error en UpdateRolePermissionAsync: {ex.Message}");
+                    throw new ApplicationException($"Error al actualizar permisos: {ex.Message}", ex);
                 }
             }
         }

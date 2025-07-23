@@ -1,5 +1,7 @@
 ﻿using Identity.Api.DTO;
 using Identity.Api.Interfaces;
+using Identity.Api.Paginado;
+using Microsoft.EntityFrameworkCore;
 using Modelo.laconcordia.Modelo.Database;
 
 namespace Identity.Api.DataRepository
@@ -61,6 +63,46 @@ namespace Identity.Api.DataRepository
                 _context.Empresas.Remove(item);
                 _context.SaveChanges();
             }
+        }
+
+        //paginado
+        public async Task<PagedResult<Empresa>> GetEmpresasPaginados(
+            int pagina,
+            int pageSize,
+            string? ruc = null,
+            string? razonsocial = null,
+            string? telefono = null,
+            string? estado = null)
+        {
+            var query = _context.Empresas.AsQueryable();
+
+            if (!string.IsNullOrEmpty(ruc))
+                query = query.Where(x => x.Ruc.Contains(ruc));
+
+            if (!string.IsNullOrEmpty(razonsocial))
+                query = query.Where(x => x.Razonsocial != null && x.Razonsocial.Contains(razonsocial));
+
+            if (!string.IsNullOrEmpty(telefono))
+                query = query.Where(x => x.Telefono != null && x.Telefono.Contains(telefono));
+
+            if (!string.IsNullOrEmpty(estado))
+                query = query.Where(x => x.Estado == estado);
+
+            var totalItems = await query.CountAsync();
+
+            var items = await query
+                .OrderBy(x => x.Razonsocial)
+                .Skip((pagina - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return new PagedResult<Empresa>
+            {
+                Items = items,
+                TotalItems = totalItems,
+                Page = pagina,
+                PageSize = pageSize
+            };
         }
     }
 }

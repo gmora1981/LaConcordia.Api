@@ -1,4 +1,5 @@
 ﻿using Identity.Api.DTO;
+using Identity.Api.Paginado;
 using Modelo.laconcordia.Modelo.Database;
 
 namespace Identity.Api.Interfaces
@@ -10,6 +11,15 @@ namespace Identity.Api.Interfaces
         void InsertEmpresa(Empresa New);
         void UpdateEmpresa(Empresa UpdItem);
         void DeleteEmpresaByRuc(string ruc);
+
+        //paginado
+        Task<PagedResult<Empresa>> GetEmpresasPaginados(
+        int pagina,
+        int pageSize,
+        string? ruc = null,
+        string? razonsocial = null,
+        string? telefono = null,
+        string? estado = null);
     }
     
 }

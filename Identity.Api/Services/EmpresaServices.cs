@@ -37,10 +37,15 @@ namespace Identity.Api.Services
         }
 
         //paginado
-        // Servicio EmpresaService
         public async Task<PagedResult<Empresa>> GetEmpresasPaginados(int pagina, int pageSize, string? ruc = null, string? razonsocial = null, string? telefono = null, string? estado = null)
         {
             return await _empresa.GetEmpresasPaginados(pagina, pageSize, ruc, razonsocial, telefono, estado);
+        }
+
+        //exportar
+        public List<Empresa> ObtenerEmpresasFiltradas(string? filtro)
+        {
+            return _empresa.ObtenerEmpresasFiltradas(filtro);
         }
     }
 }

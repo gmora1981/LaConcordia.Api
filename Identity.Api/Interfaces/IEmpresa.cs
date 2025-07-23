@@ -20,6 +20,10 @@ namespace Identity.Api.Interfaces
         string? razonsocial = null,
         string? telefono = null,
         string? estado = null);
+
+        //exportar
+        List<Empresa> ObtenerEmpresasFiltradas(string? filtro);
+
     }
-    
+
 }

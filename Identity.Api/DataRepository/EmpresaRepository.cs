@@ -1,5 +1,4 @@
 ﻿using Identity.Api.DTO;
-using Identity.Api.Interfaces;
 using Identity.Api.Paginado;
 using Microsoft.EntityFrameworkCore;
 using Modelo.laconcordia.Modelo.Database;
@@ -40,7 +39,7 @@ namespace Identity.Api.DataRepository
                 Telefono = s.Telefono,
                 Estado = s.Estado
             };
-            
+
         }
 
         public void InsertEmpresa(Empresa nueva)
@@ -103,6 +102,38 @@ namespace Identity.Api.DataRepository
                 Page = pagina,
                 PageSize = pageSize
             };
+        }
+
+        //exportar
+        public List<Empresa> ObtenerEmpresasFiltradas(string? filtro)
+        {
+            using var context = new DbAa5796GmoraContext();
+
+            var query = context.Empresas.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(filtro))
+            {
+                var lowerFiltro = filtro.ToLower();
+                query = query.Where(e =>
+                    e.Razonsocial.ToLower().Contains(lowerFiltro) ||
+                    e.Ruc.ToLower().Contains(lowerFiltro));
+            }
+
+            //if (!string.IsNullOrWhiteSpace(estado))
+            //{
+            //    query = query.Where(e => e.Estado == estado);
+            //}
+
+            return query
+                .Select(e => new Empresa
+                {
+                    Ruc = e.Ruc,
+                    Razonsocial = e.Razonsocial,
+                    Direccion = e.Direccion,
+                    Telefono = e.Telefono,
+                    Estado = e.Estado
+                })
+                .ToList();
         }
     }
 }

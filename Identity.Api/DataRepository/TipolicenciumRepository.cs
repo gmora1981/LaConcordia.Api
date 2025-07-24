@@ -1,5 +1,7 @@
 ﻿using Identity.Api.DTO;
 using Identity.Api.Interfaces;
+using Identity.Api.Paginado;
+using Microsoft.EntityFrameworkCore;
 using Modelo.laconcordia.Modelo.Database;
 
 namespace Identity.Api.DataRepository
@@ -39,11 +41,20 @@ namespace Identity.Api.DataRepository
             };
         }
 
-        public void InsertTipolicencia(Tipolicencium nueva)
+        public void InsertTipolicencia(TipolicenciumDTO nuevaDto)
         {
-            _context.Tipolicencia.Add(nueva);
+            // Convertimos el DTO al modelo real
+            var entidad = new Tipolicencium
+            {
+                Tipolicencia = nuevaDto.Tipolicencia?.ToUpper(), // <-- mayúsculas forzadas
+                Profesional = nuevaDto.Profesional,
+                Estado = nuevaDto.Estado
+            };
+
+            _context.Tipolicencia.Add(entidad);
             _context.SaveChanges();
         }
+
 
         public void UpdateTipolicencia(Tipolicencium actualizada)
         {
@@ -60,6 +71,46 @@ namespace Identity.Api.DataRepository
                 _context.SaveChanges();
             }
 
+        }
+
+        //paginado
+        public async Task<PagedResult<Tipolicencium>> GetTipoLicenciumPaginados(
+            int pagina,
+            int pageSize,
+            int? Idtipo = null,
+            string? Tipolicencia = null,
+            string? Profesional = null,
+            string? Estado = null)
+        {
+            var query = _context.Tipolicencia.AsQueryable();
+
+            if (Idtipo.HasValue)
+                query = query.Where(x => x.Idtipo == Idtipo.Value);
+
+            if (!string.IsNullOrEmpty(Tipolicencia))
+                query = query.Where(x => x.Tipolicencia != null && x.Tipolicencia.Contains(Tipolicencia));
+
+            if (!string.IsNullOrEmpty(Profesional))
+                query = query.Where(x => x.Profesional != null && x.Profesional.Contains(Profesional));
+
+            if (!string.IsNullOrEmpty(Estado))
+                query = query.Where(x => x.Estado == Estado);
+
+            var totalItems = await query.CountAsync();
+
+            var items = await query
+                .OrderBy(x => x.Idtipo)
+                .Skip((pagina - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return new PagedResult<Tipolicencium>
+            {
+                Items = items,
+                TotalItems = totalItems,
+                Page = pagina,
+                PageSize = pageSize
+            };
         }
     }
 }   

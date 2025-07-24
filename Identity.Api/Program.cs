@@ -118,7 +118,7 @@ builder.Services.AddScoped<IAdvancedPermissionService, AdvancedPermissionService
 builder.Services.AddScoped<IParentesco, ParentescoServices>();
 builder.Services.AddScoped<IEstadoCivil, EstadoCivilServices>();
 builder.Services.AddScoped<IEmpresa, EmpresaServices>();    
-
+builder.Services.AddScoped<ITipolicencium, TipolicenciumServices>();
 
 
 builder.Services.AddControllers();

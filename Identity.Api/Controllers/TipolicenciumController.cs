@@ -6,6 +6,8 @@ using Modelo.laconcordia.Modelo.Database;
 
 
 using Microsoft.AspNetCore.Mvc;
+using Identity.Api.Paginado;
+using Identity.Api.DTO;
 
 namespace Identity.Api.Controllers
 {
@@ -38,11 +40,11 @@ namespace Identity.Api.Controllers
         }
 
         [HttpPost("InsertTipolicencia")]
-        public IActionResult Create([FromBody] Tipolicencium nueva)
+        public IActionResult Create([FromBody] TipolicenciumDTO nuevaDto)
         {
             try
             {
-                _tipolicencium.InsertTipolicencia(nueva);
+                _tipolicencium.InsertTipolicencia(nuevaDto);
                 return Ok("Tipo de licencia creado correctamente.");
             }
             catch (Exception ex)
@@ -78,6 +80,27 @@ namespace Identity.Api.Controllers
                 return BadRequest("Error al eliminar: " + ex.Message);
             }
 
+        }
+
+        //paginado  
+        [HttpGet("GetTipoLicenciumPaginados")]
+        public async Task<IActionResult> GetEmpresasPaginados(
+            int pagina = 1,
+            int pageSize = PaginadorHelper.NumeroDeDatosPorPagina,
+            int? Idtipo = null,
+            string? Tipolicencia = null,
+            string? Profesional = null,
+            string? Estado = null)
+        {
+            try
+            {
+                var resultado = await _tipolicencium.GetTipoLicenciumPaginados(pagina, pageSize, Idtipo, Tipolicencia, Profesional, Estado);
+                return Ok(resultado);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
         }
     }
 }

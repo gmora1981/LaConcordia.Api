@@ -1,6 +1,7 @@
 ﻿using Identity.Api.DataRepository;
 using Identity.Api.DTO;
 using Identity.Api.Interfaces;
+using Identity.Api.Paginado;
 using Modelo.laconcordia.Modelo.Database;
 
 namespace Identity.Api.Services
@@ -18,9 +19,9 @@ namespace Identity.Api.Services
         {
             return _tipolicencium.GetTipolicenciaById(idTipoLicencia);
         }
-        public void InsertTipolicencia(Tipolicencium nueva)
+        public void InsertTipolicencia(TipolicenciumDTO nuevaDto)
         {
-            _tipolicencium.InsertTipolicencia(nueva);
+            _tipolicencium.InsertTipolicencia(nuevaDto);
         }
         public void UpdateTipolicencia(Tipolicencium actualizada)
         {
@@ -29,6 +30,17 @@ namespace Identity.Api.Services
         public void DeleteTipolicenciaById(int idTipoLicencia)
         {
             _tipolicencium.DeleteTipolicenciaById(idTipoLicencia);
+        }
+
+        //paginado
+        public async Task<PagedResult<Tipolicencium>> GetTipoLicenciumPaginados(int pagina,
+        int pageSize,
+        int? Idtipo = null,
+        string? Tipolicencia = null,
+        string? Profesional = null,
+        string? Estado = null)
+        {
+            return await _tipolicencium.GetTipoLicenciumPaginados(pagina, pageSize, Idtipo, Tipolicencia, Profesional, Estado);
         }
 
     }

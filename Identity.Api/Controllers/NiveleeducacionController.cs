@@ -1,4 +1,5 @@
 ﻿using Identity.Api.Interfaces;
+using Identity.Api.Paginado;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -17,14 +18,14 @@ namespace Identity.Api.Controllers
             _niveleeducacion = niveleeducacion;
         }
 
-        [HttpGet("NiveleeducacionInfoAll")]
+        [HttpGet("GetNiveleducacionInfoAll")]
         public IActionResult GetAll()
         {
             var lista = _niveleeducacion.GetNiveleducacionInfoAll();
             return Ok(lista);
         }
 
-        [HttpGet("BuscarNiveleeducacion/{id}")]
+        [HttpGet("GetNiveleducacionById/{id}")]
         public IActionResult GetById(int id)
         {
             var item = _niveleeducacion.GetNiveleducacionById(id);
@@ -58,7 +59,7 @@ namespace Identity.Api.Controllers
                 return BadRequest("Error al actualizar: " + ex.Message);
             }
         }
-        [HttpDelete("DeleteNiveleeducacion/{id}")]
+        [HttpDelete("DeleteNiveleducacionById/{id}")]
         public IActionResult DeleteById(int id)
         {
             try
@@ -69,6 +70,26 @@ namespace Identity.Api.Controllers
             catch (Exception ex)
             {
                 return BadRequest("Error al eliminar: " + ex.Message);
+            }
+        }
+
+        //paginado  
+        [HttpGet("GetNiveleducacionPaginados")]
+        public async Task<IActionResult> GetNiveleducacionPaginados(
+            int pagina = 1,
+            int pageSize = PaginadorHelper.NumeroDeDatosPorPagina,
+            string? descripcion = null,
+
+            string? estado = null)
+        {
+            try
+            {
+                var resultado = await _niveleeducacion.GetNiveleducacionPaginados(pagina, pageSize, descripcion,  estado);
+                return Ok(resultado);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
             }
         }
     }

@@ -1,6 +1,7 @@
 ﻿using Identity.Api.DataRepository;
 using Identity.Api.DTO;
 using Identity.Api.Interfaces;
+using Identity.Api.Paginado;
 using Modelo.laconcordia.Modelo.Database;
 
 namespace Identity.Api.Services
@@ -30,5 +31,10 @@ namespace Identity.Api.Services
             _nacionalidadRepository.DeleteNacionalidadById(idNacionalidad);
         }
 
+        //paginado
+        public async Task<PagedResult<Nacionalidad>> GetNacionalPaginados(int pagina, int pageSize, string? nacionalidad = null, string? estado = null)
+        {
+            return await _nacionalidadRepository.GetNacionalPaginados(pagina, pageSize, nacionalidad , estado);
+        }
     }
 }

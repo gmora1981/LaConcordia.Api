@@ -1,5 +1,7 @@
 ﻿using Identity.Api.DTO;
 using Identity.Api.Interfaces;
+using Identity.Api.Paginado;
+using Microsoft.EntityFrameworkCore;
 using Modelo.laconcordia.Modelo.Database;
 
 namespace Identity.Api.DataRepository
@@ -45,6 +47,38 @@ namespace Identity.Api.DataRepository
                 _context.Estadocivils.Remove(item);
                 _context.SaveChanges();
             }
+        }
+
+        //paginado
+        public async Task<PagedResult<Estadocivil>> GetEstadoCivilPaginados(
+            int pagina,
+            int pageSize,
+            string? descripcion = null,
+            string? estado = null)
+        {
+            var query = _context.Estadocivils.AsQueryable();
+
+            if (!string.IsNullOrEmpty(descripcion))
+                query = query.Where(x => x.Descripcion.Contains(descripcion));
+
+            if (!string.IsNullOrEmpty(estado))
+                query = query.Where(x => x.Estado == estado);
+
+            var totalItems = await query.CountAsync();
+
+            var items = await query
+                .OrderBy(x => x.Descripcion)
+                .Skip((pagina - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return new PagedResult<Estadocivil>
+            {
+                Items = items,
+                TotalItems = totalItems,
+                Page = pagina,
+                PageSize = pageSize
+            };
         }
     }
 }

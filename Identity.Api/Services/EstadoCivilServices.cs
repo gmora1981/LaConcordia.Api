@@ -1,6 +1,7 @@
 ﻿using Identity.Api.DataRepository;
 using Identity.Api.DTO;
 using Identity.Api.Interfaces;
+using Identity.Api.Paginado;
 using Modelo.laconcordia.Modelo.Database;
 
 namespace Identity.Api.Services
@@ -28,6 +29,12 @@ namespace Identity.Api.Services
         public void DeleteEstadocivilById(int idEstadoCivil)
         {
             _estadoCivilRepository.DeleteEstadocivilById(idEstadoCivil);
+        }
+
+        //paginado
+        public async Task<PagedResult<Estadocivil>> GetEstadoCivilPaginados(int pagina, int pageSize, string? descripcion = null, string? estado = null)
+        {
+            return await _estadoCivilRepository.GetEstadoCivilPaginados(pagina, pageSize, descripcion, estado);
         }
     }
 }

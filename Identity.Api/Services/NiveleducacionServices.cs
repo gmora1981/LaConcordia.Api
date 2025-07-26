@@ -1,6 +1,7 @@
 ﻿using Identity.Api.DataRepository;
 using Identity.Api.DTO;
 using Identity.Api.Interfaces;
+using Identity.Api.Paginado;
 using Modelo.laconcordia.Modelo.Database;
 
 namespace Identity.Api.Services
@@ -34,6 +35,11 @@ namespace Identity.Api.Services
             _niveleducacionRepository.DeleteNiveleducacionById(idNiveleducacion);
         }
 
-
+        //paginado
+        public async Task<PagedResult<Niveleducacion>> GetNiveleducacionPaginados(int pagina,
+            int pageSize,  string? descripcion = null, string? estado = null)
+        {
+            return await _niveleducacionRepository.GetNiveleducacionPaginados(pagina, pageSize, descripcion, estado);
+        }
     }
 }

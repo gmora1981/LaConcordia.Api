@@ -1,5 +1,7 @@
 ﻿using Identity.Api.DTO;
 using Identity.Api.Interfaces;
+using Identity.Api.Paginado;
+using Microsoft.EntityFrameworkCore;
 using Modelo.laconcordia.Modelo.Database;
 
 namespace Identity.Api.DataRepository
@@ -57,6 +59,42 @@ namespace Identity.Api.DataRepository
                 _context.Nacionalidads.Remove(item);
                 _context.SaveChanges();
             }
+        }
+
+
+        //paginado
+        public async Task<PagedResult<Nacionalidad>> GetNacionalPaginados(
+            int pagina,
+            int pageSize,
+            string? nacionalidad = null,
+
+            string? estado = null)
+        {
+            var query = _context.Nacionalidads.AsQueryable();
+
+            if (!string.IsNullOrEmpty(nacionalidad))
+                query = query.Where(x => x.Nacionalidad1.Contains(nacionalidad));
+
+            
+
+            if (!string.IsNullOrEmpty(estado))
+                query = query.Where(x => x.Estado == estado);
+
+            var totalItems = await query.CountAsync();
+
+            var items = await query
+                .OrderBy(x => x.Nacionalidad1)
+                .Skip((pagina - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return new PagedResult<Nacionalidad>
+            {
+                Items = items,
+                TotalItems = totalItems,
+                Page = pagina,
+                PageSize = pageSize
+            };
         }
     }
 }

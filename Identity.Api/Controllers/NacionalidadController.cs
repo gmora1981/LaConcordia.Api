@@ -1,4 +1,5 @@
 ﻿using Identity.Api.Interfaces;
+using Identity.Api.Paginado;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -68,6 +69,25 @@ namespace Identity.Api.Controllers
             catch (Exception ex)
             {
                 return BadRequest("Error al eliminar: " + ex.Message);
+            }
+        }
+
+        //paginado  
+        [HttpGet("GetNacionalPaginados")]
+        public async Task<IActionResult> GetNacionalPaginados(
+            int pagina = 1,
+            int pageSize = PaginadorHelper.NumeroDeDatosPorPagina,
+            string? nacionalidad = null,
+            string? estado = null)
+        {
+            try
+            {
+                var resultado = await _nacionalidad.GetNacionalPaginados(pagina, pageSize, nacionalidad, estado);
+                return Ok(resultado);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
             }
         }
     }

@@ -1,4 +1,6 @@
 ﻿using Identity.Api.DTO;
+using Identity.Api.Paginado;
+using Microsoft.EntityFrameworkCore;
 using Modelo.laconcordia.Modelo.Database;
 
 namespace Identity.Api.DataRepository
@@ -86,5 +88,33 @@ namespace Identity.Api.DataRepository
         }
 
 
+        public async Task<PagedResult<Cargo>> GetCargoPaginados(int pagina, int pageSize, string? cargo1 = null, string? estado = null)
+        {
+            using (var context = new DbAa5796GmoraContext())
+            {
+                var query = context.Cargos.AsQueryable();
+                if (!string.IsNullOrEmpty(cargo1))
+                {
+                    query = query.Where(c => c.Cargo1.Contains(cargo1));
+                }
+                if (!string.IsNullOrEmpty(estado))
+                {
+                    query = query.Where(c => c.Estado == estado);
+                }
+                var totalItems = await query.CountAsync();
+                var items = await query
+                    .OrderBy(c => c.Idcargo)
+                    .Skip((pagina - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToListAsync();
+                return new PagedResult<Cargo>
+                {
+                    Items = items,
+                    TotalItems = totalItems,
+                    Page = pagina,
+                    PageSize = pageSize
+                };
+            }
+        }
     }
 }

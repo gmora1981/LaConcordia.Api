@@ -80,5 +80,18 @@ namespace Identity.Api.Controllers
 
         }
 
+        [HttpGet("GetDuenopuestosPaginados")]
+        public async Task<IActionResult> GetDuenopuestosPaginados(
+            int pagina = 1,
+            int pageSize = 10,
+            string? cedula = null,
+            string? nombre = null,
+            string? apellidos = null,
+            string? estado = null)
+        {
+            var result = await _duenoPuesto.GetDuenopuestosPaginados(pagina, pageSize, cedula, nombre, apellidos, estado);
+            return Ok(result);
+
+        }
     }
 }

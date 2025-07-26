@@ -1,5 +1,7 @@
 ﻿using Identity.Api.DTO;
+using Identity.Api.Paginado;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Modelo.laconcordia.Modelo.Database;
 
 namespace Identity.Api.DataRepository
@@ -86,6 +88,39 @@ namespace Identity.Api.DataRepository
                 _context.Duenopuestos.Remove(item);
                 _context.SaveChanges();
             }
+        }
+
+        // Paginado
+
+        public async Task<PagedResult<Duenopuesto>> GetDuenopuestosPaginados(
+            int pagina,
+            int pageSize,
+            string? cedula = null,
+            string? nombre = null,
+            string? apellidos = null,
+            string? estado = null)
+        {
+            var query = _context.Duenopuestos.AsQueryable();
+            if (!string.IsNullOrEmpty(cedula))
+                query = query.Where(x => x.Cedula.Contains(cedula));
+            if (!string.IsNullOrEmpty(nombre))
+                query = query.Where(x => x.Nombres.Contains(nombre));
+            if (!string.IsNullOrEmpty(apellidos))
+                query = query.Where(x => x.Apellidos.Contains(apellidos));
+            if (!string.IsNullOrEmpty(estado))
+                query = query.Where(x => x.Estado == estado);
+            var totalItems = await query.CountAsync();
+            var items = await query
+                .Skip((pagina - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+            return new PagedResult<Duenopuesto>
+            {
+                Items = items,
+                TotalItems = totalItems,
+                Page = pagina,
+                PageSize = pageSize
+            };
         }
     }
 }

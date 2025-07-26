@@ -1,6 +1,7 @@
 ﻿using Identity.Api.DataRepository;
 using Identity.Api.DTO;
 using Identity.Api.Interfaces;
+using Identity.Api.Paginado;
 using Modelo.laconcordia.Modelo.Database;
 
 namespace Identity.Api.Services
@@ -40,6 +41,11 @@ namespace Identity.Api.Services
         }
 
 
-
+        //paginado
+        public async Task<PagedResult<Cargo>> GetCargoPaginados(int pagina,
+            int pageSize,  string? cargo1 = null, string? estado = null)
+        {
+            return await data.GetCargoPaginados(pagina, pageSize, cargo1, estado);
+        }
     }
 }

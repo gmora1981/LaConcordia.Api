@@ -18,14 +18,14 @@ namespace Identity.Api.Controllers
             _Cargo = iCargo;
         }
 
-        [HttpGet("CargoInfoAll")]
+        [HttpGet("GetCargoInfoAll")]
         public IActionResult Get1()
         {
             return Ok(_Cargo.CargoInfoAll);
         }
 
-        
-        [HttpGet("BuscarCargo/{id}")]
+
+        [HttpGet("GetCargoById/{id}")]
         public IActionResult GetById(int id)
         {
             var item = _Cargo.GetCargoById(id);
@@ -78,29 +78,9 @@ namespace Identity.Api.Controllers
             return NoContent();
         }
 
-        [HttpDelete("DeleteCargo")]
-        public IActionResult Delete([FromBody] Cargo DelItem)
-        {
-            try
-            {
-                if (DelItem == null || !ModelState.IsValid)
-                {
-                    return BadRequest("Error: Envio de datos");
-                }
+        
 
-                //continuo con el ingreso de datos
-                _Cargo.DeleteCargo(DelItem);
-
-            }
-            catch (Exception ex)
-            {
-                return BadRequest("Error:" + ex.Message);
-            }
-
-            return NoContent();
-        }
-
-        [HttpDelete("DeleteCargo/{IdRegistrado}")]
+        [HttpDelete("DeleteCargoById/{IdRegistrado}")]
         public IActionResult Delete2(int IdRegistrado)
         {
             try
@@ -116,6 +96,25 @@ namespace Identity.Api.Controllers
             }
 
             return NoContent();
+        }
+
+
+        [HttpGet("GetCargoPaginados")]
+        public async Task<IActionResult> GetCargoPaginados(
+            int pagina = 1,
+            int pageSize = 10,
+            string? cargo1 = null,
+            string? estado = null)
+        {
+            try
+            {
+                var result = await _Cargo.GetCargoPaginados(pagina, pageSize, cargo1, estado);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("Error:" + ex.Message);
+            }
         }
 
     }

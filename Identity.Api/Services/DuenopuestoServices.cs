@@ -1,6 +1,7 @@
 ﻿using Identity.Api.DataRepository;
 using Identity.Api.DTO;
 using Identity.Api.Interfaces;
+using Identity.Api.Paginado;
 using Modelo.laconcordia.Modelo.Database;
 
 namespace Identity.Api.Services
@@ -34,5 +35,18 @@ namespace Identity.Api.Services
         {
             _duenopuesto.DeletePDuenopuestoById(cedula);
         }
+
+        //paginado
+        public async Task<PagedResult<Duenopuesto>> GetDuenopuestosPaginados(
+            int pagina,
+            int pageSize,
+            string? cedula = null,
+            string? nombre = null,
+            string? apellidos = null,
+            string? estado = null)
+        {
+            return await _duenopuesto.GetDuenopuestosPaginados(pagina, pageSize, cedula, nombre, apellidos, estado);
+        }
     }
+
 }

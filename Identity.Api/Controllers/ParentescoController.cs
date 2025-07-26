@@ -27,7 +27,7 @@ namespace Identity.Api.Controllers
             return Ok(lista);
         }
 
-        [HttpGet("BuscarParentesco/{id}")]
+        [HttpGet("GetParentescoById/{id}")]
         public IActionResult GetById(int id)
         {
             var item = _parentesco.GetParentescoById(id);
@@ -76,6 +76,24 @@ namespace Identity.Api.Controllers
             catch (Exception ex)
             {
                 return BadRequest("Error al eliminar por ID: " + ex.Message);
+            }
+        }
+
+        [HttpGet("GetParentescoPaginados")]
+        public async Task<IActionResult> GetParentescoPaginados(
+            int pagina = 1,
+            int pageSize = 10,
+            string? parentesco1 = null,
+            string? estado = null)
+        {
+            try
+            {
+                var result = await _parentesco.GetParentescoPaginados(pagina, pageSize, parentesco1, estado);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("Error al obtener paginados: " + ex.Message);
             }
         }
     }

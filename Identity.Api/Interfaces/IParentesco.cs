@@ -1,4 +1,5 @@
 ﻿using Identity.Api.DTO;
+using Identity.Api.Paginado;
 using Modelo.laconcordia.Modelo.Database;
 
 namespace Identity.Api.Interfaces
@@ -10,5 +11,12 @@ namespace Identity.Api.Interfaces
         void InsertParentesco(Parentesco New);
         void UpdateParentesco(Parentesco UpdItem);
         void DeleteParentescoById(int idParentesco);
+
+        //paginado
+        Task<PagedResult<Parentesco>> GetParentescoPaginados(
+        int pagina,
+        int pageSize,
+        string? parentesco1 = null,
+        string? estado = null);
     }
 }

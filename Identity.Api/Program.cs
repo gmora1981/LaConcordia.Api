@@ -121,6 +121,9 @@ builder.Services.AddScoped<IEmpresa, EmpresaServices>();
 builder.Services.AddScoped<ITipolicencium, TipolicenciumServices>();
 builder.Services.AddScoped<INacionalidad, NacionalidadServices>();
 builder.Services.AddScoped<INiveleducacion, NiveleducacionServices>();
+builder.Services.AddScoped<ICargo, CargoServices>();
+builder.Services.AddScoped<IParentesco, ParentescoServices>();
+builder.Services.AddScoped<IDuenopuesto, DuenopuestoServices>();
 
 
 builder.Services.AddControllers();

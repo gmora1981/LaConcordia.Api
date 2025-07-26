@@ -1,6 +1,7 @@
 ﻿using Identity.Api.DataRepository;
 using Identity.Api.DTO;
 using Identity.Api.Interfaces;
+using Identity.Api.Paginado;
 using Modelo.laconcordia.Modelo.Database;
 
 namespace Identity.Api.Services
@@ -33,6 +34,15 @@ namespace Identity.Api.Services
         public void DeleteParentescoById(int idParentesco)
         {
             _parentesco.DeleteParentescoById(idParentesco);
+        }
+
+        public async Task<PagedResult<Parentesco>> GetParentescoPaginados(
+            int pagina,
+            int pageSize,
+            string? parentesco1 = null,
+            string? estado = null)
+        {
+            return await _parentesco.GetParentescoPaginados(pagina, pageSize, parentesco1, estado);
         }
     }
 }

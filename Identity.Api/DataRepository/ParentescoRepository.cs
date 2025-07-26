@@ -1,5 +1,7 @@
 ﻿using Identity.Api.DTO;
 using Identity.Api.Interfaces;
+using Identity.Api.Paginado;
+using Microsoft.EntityFrameworkCore;
 using Modelo.laconcordia.Modelo.Database;
 
 namespace Identity.Api.DataRepository
@@ -58,6 +60,35 @@ namespace Identity.Api.DataRepository
                 _context.Parentescos.Remove(item);
                 _context.SaveChanges();
             }
+        }
+
+        public async Task<PagedResult<Parentesco>> GetParentescoPaginados(
+            int pagina,
+            int pageSize,
+            string? parentesco1 = null,
+            string? estado = null)
+        {
+            var query = _context.Parentescos.AsQueryable();
+            if (!string.IsNullOrEmpty(parentesco1))
+            {
+                query = query.Where(x => x.Parentesco1.Contains(parentesco1));
+            }
+            if (!string.IsNullOrEmpty(estado))
+            {
+                query = query.Where(x => x.Estado == estado);
+            }
+            var totalItems = await query.CountAsync();
+            var items = await query
+                .Skip((pagina - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+            return new PagedResult<Parentesco>
+            {
+                Items = items,
+                TotalItems = totalItems,
+                Page = pagina,
+                PageSize = pageSize
+            };
         }
     }
 }

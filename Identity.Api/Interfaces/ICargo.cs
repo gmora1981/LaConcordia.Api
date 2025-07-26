@@ -1,4 +1,5 @@
 ﻿using Identity.Api.DTO;
+using Identity.Api.Paginado;
 using Modelo.laconcordia.Modelo.Database;
 
 namespace Identity.Api.Interfaces
@@ -14,5 +15,11 @@ namespace Identity.Api.Interfaces
         void DeleteCargo(Cargo DelItem);
         void DeleteCargo2(int idregistrado);
 
+        //Paginado
+        Task<PagedResult<Cargo>> GetCargoPaginados(
+        int pagina,
+        int pageSize,
+        string? cargo1 = null,
+        string? estado = null);
     }
 }

@@ -1,9 +1,11 @@
 ﻿using Identity.Api.DTO;
 using Identity.Api.Interfaces;
+using Identity.Api.Reporteria;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Modelo.laconcordia.Modelo.Database;
+using QuestPDF.Infrastructure;
 
 namespace Identity.Api.Controllers
 {
@@ -92,6 +94,22 @@ namespace Identity.Api.Controllers
             var result = await _duenoPuesto.GetDuenopuestosPaginados(pagina, pageSize, cedula, nombre, apellidos, estado);
             return Ok(result);
 
+        }
+
+        //exportar
+        [HttpGet("exportarPDF")]
+        public IActionResult ExportarEmpresasPdf(string? filtro = null)
+        {
+            QuestPDF.Settings.License = LicenseType.Community;
+
+            var datos = _duenoPuesto.ObtenerDuenoPuestoFiltradas(filtro);
+
+            if (datos == null || !datos.Any())
+                return NotFound("No hay datos para exportar.");
+
+            var pdfBytes = DuenoDePuestoPdfGenerator.GenerarPdf(datos);
+
+            return File(pdfBytes, "application/pdf", "DueñoDePuestoListado.pdf");
         }
     }
 }

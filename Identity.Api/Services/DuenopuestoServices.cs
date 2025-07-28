@@ -47,6 +47,12 @@ namespace Identity.Api.Services
         {
             return await _duenopuesto.GetDuenopuestosPaginados(pagina, pageSize, cedula, nombre, apellidos, estado);
         }
+
+        //exportar
+        public List<Duenopuesto> ObtenerDuenoPuestoFiltradas(string? filtro)
+        {
+            return _duenopuesto.ObtenerDuenoPuestoFiltradas(filtro);
+        }
     }
 
 }

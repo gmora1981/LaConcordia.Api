@@ -20,5 +20,10 @@ namespace Identity.Api.Interfaces
             string? nombre = null,
             string? apellidos = null,
             string? estado = null);
+
+        //exportar
+        List<Duenopuesto> ObtenerDuenoPuestoFiltradas(string? filtro);
+
     }
+
 }

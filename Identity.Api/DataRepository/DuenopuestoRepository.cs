@@ -6,7 +6,7 @@ using Modelo.laconcordia.Modelo.Database;
 
 namespace Identity.Api.DataRepository
 {
-    public class DuenopuestoRepository 
+    public class DuenopuestoRepository
     {
         private readonly DbAa5796GmoraContext _context;
 
@@ -121,6 +121,19 @@ namespace Identity.Api.DataRepository
                 Page = pagina,
                 PageSize = pageSize
             };
+        }
+
+        // Exportar
+        public List<Duenopuesto> ObtenerDuenoPuestoFiltradas(string? filtro)
+        {
+            var query = _context.Duenopuestos.AsQueryable();
+            if (!string.IsNullOrEmpty(filtro))
+            {
+                query = query.Where(x => x.Cedula.Contains(filtro) ||
+                                         x.Nombres.Contains(filtro) ||
+                                         x.Apellidos.Contains(filtro));
+            }
+            return query.ToList();
         }
     }
 }

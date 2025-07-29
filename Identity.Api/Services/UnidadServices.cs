@@ -3,7 +3,6 @@ using Identity.Api.DTO;
 using Identity.Api.Interfaces;
 using Identity.Api.Paginado;
 using Modelo.laconcordia.Modelo.Database;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Identity.Api.Services
 {
@@ -18,7 +17,7 @@ namespace Identity.Api.Services
 
         public Unidad? GetUnidadById(string idUnidad)
         {
-            return data.UnidadXUnidad(idUnidad).FirstOrDefault();
+            return data.GetUnidadById(idUnidad).FirstOrDefault();
         }
         public void InsertUnidad(UnidadDTO nueva)
         {

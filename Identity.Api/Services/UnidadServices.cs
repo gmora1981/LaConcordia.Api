@@ -1,5 +1,7 @@
 ﻿using Identity.Api.DataRepository;
+using Identity.Api.DTO;
 using Identity.Api.Interfaces;
+using Identity.Api.Paginado;
 using Modelo.laconcordia.Modelo.Database;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
@@ -18,7 +20,7 @@ namespace Identity.Api.Services
         {
             return data.UnidadXUnidad(idUnidad).FirstOrDefault();
         }
-        public void InsertUnidad(Unidad nueva)
+        public void InsertUnidad(UnidadDTO nueva)
         {
             data.InsertUnidad(nueva);
         }
@@ -43,5 +45,17 @@ namespace Identity.Api.Services
             }
         }
 
+
+        //paginado
+        public async Task<PagedResult<UnidadDTO>> GetUnidadPaginados(int pagina,
+        int pageSize,
+        string? Placa = null,
+        string? Idpropietario = null,
+        string? Unidad1 = null,
+        string? Propietario = null,
+        string? Estado = null)
+        {
+            return await data.GetUnidadPaginados(pagina, pageSize, Placa, Idpropietario, Unidad1, Propietario, Estado);
+        }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Identity.Api.DataRepository;
+using Identity.Api.DTO;
 using Identity.Api.Interfaces;
 using Identity.Api.Model.DTO;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -28,7 +29,7 @@ namespace Identity.Api.Controllers
             return Ok(lista);
         }
 
-        [HttpGet("BuscarUnidad/{idUnidad}")]
+        [HttpGet("GetUnidadById/{idUnidad}")]
         public IActionResult GetById(string idUnidad)
         {
             var item = _unidadRepository.GetUnidadById(idUnidad);
@@ -38,18 +39,23 @@ namespace Identity.Api.Controllers
         }
 
         [HttpPost("InsertUnidad")]
-        public IActionResult Create([FromBody] Unidad nueva)
+        public IActionResult Create([FromBody] UnidadDTO nueva)
         {
+            if (nueva == null)
+                return BadRequest("La unidad no puede ser nula.");
+
             try
             {
                 _unidadRepository.InsertUnidad(nueva);
-                return Ok("Unidad creada correctamente.");
+                return Ok(new { mensaje = "Unidad creada correctamente." });
             }
             catch (Exception ex)
             {
-                return BadRequest("Error al crear: " + ex.Message);
+                // Puedes registrar el error si usas logging
+                return StatusCode(500, new { error = "Error al crear la unidad.", detalle = ex.Message });
             }
         }
+
 
         [HttpPut("UpdateUnidad")]
         public IActionResult Update([FromBody] Unidad actualizada)

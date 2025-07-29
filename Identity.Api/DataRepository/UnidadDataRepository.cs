@@ -1,5 +1,7 @@
 ﻿using Identity.Api.DTO;
 using Identity.Api.Interfaces;
+using Identity.Api.Paginado;
+using Microsoft.EntityFrameworkCore;
 using Modelo.laconcordia.Modelo.Database;
 
 namespace Identity.Api.DataRepository
@@ -19,14 +21,29 @@ namespace Identity.Api.DataRepository
             return _context.Unidads.Where(x => x.Estado == "a").ToList();
         }
 
-        public IEnumerable<Unidad> UnidadXUnidad(string idUnidad)
+        public IEnumerable<Unidad> GetUnidadById(string idUnidad)
         {
             return _context.Unidads.Where(x => x.Unidad1 == idUnidad && x.Estado == "a").ToList();
         }
 
-        public void InsertUnidad(Unidad nueva)
+        public void InsertUnidad(UnidadDTO dto)
         {
-            _context.Unidads.Add(nueva);
+            if (dto == null) throw new ArgumentNullException(nameof(dto));
+
+            var nuevaUnidad = new Unidad
+            {
+                Unidad1 = dto.Unidad1?.Trim().ToUpper(),
+                Placa = dto.Placa?.Trim().ToUpper(),
+                Idpropietario = dto.Idpropietario?.Trim().ToUpper(),
+                Propietario = dto.Propietario?.Trim().ToUpper(),
+                Marca = dto.Marca?.Trim().ToUpper(),
+                Modelo = dto.Modelo?.Trim().ToUpper(),
+                Anio = dto.Anio,
+                Estado = dto.Estado,
+                Color = dto.Color?.Trim().ToUpper(),
+            };
+
+            _context.Unidads.Add(nuevaUnidad);
             _context.SaveChanges();
         }
 
@@ -44,6 +61,49 @@ namespace Identity.Api.DataRepository
                 _context.Unidads.Remove(item);
                 _context.SaveChanges();
             }
+        }
+
+        //paginado
+        public async Task<PagedResult<UnidadDTO>> GetUnidadPaginados(
+            int pagina,
+            int pageSize,
+            string? Placa = null,
+            string? Idpropietario = null,
+            string? Unidad1 = null,
+            string? Propietario = null,
+            string? Estado = null)
+        {
+            var query = _context.Unidads.AsQueryable();
+            if (!string.IsNullOrEmpty(Placa))
+                query = query.Where(x => x.Placa.Contains(Placa));
+            if (!string.IsNullOrEmpty(Idpropietario))
+                query = query.Where(x => x.Idpropietario.Contains(Idpropietario));
+            if (!string.IsNullOrEmpty(Unidad1))
+                query = query.Where(x => x.Unidad1.Contains(Unidad1));
+            if (!string.IsNullOrEmpty(Propietario))
+                query = query.Where(x => x.Propietario.Contains(Propietario));
+            if (!string.IsNullOrEmpty(Estado))
+                query = query.Where(x => x.Estado == Estado);
+            var totalItems = await query.CountAsync();
+            var items = await query
+                .Skip((pagina - 1) * pageSize)
+                .Take(pageSize)
+                .Select(x => new UnidadDTO
+                {
+                    Unidad1 = x.Unidad1,
+                    Placa = x.Placa,
+                    Idpropietario = x.Idpropietario,
+                    Propietario = x.Propietario,
+                    Estado = x.Estado
+                })
+                .ToListAsync();
+            return new PagedResult<UnidadDTO>
+            {
+                Items = items,
+                TotalItems = totalItems,
+                Page = pagina,
+                PageSize = pageSize
+            };
         }
     }
 }

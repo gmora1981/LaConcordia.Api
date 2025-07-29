@@ -126,6 +126,7 @@ builder.Services.AddScoped<IParentesco, ParentescoServices>();
 builder.Services.AddScoped<IDuenopuesto, DuenopuestoServices>();
 
 
+
 builder.Services.AddControllers();
 
 // Construir la aplicación

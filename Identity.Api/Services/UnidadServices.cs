@@ -18,7 +18,7 @@ namespace Identity.Api.Services
 
         public Unidad? GetUnidadById(string idUnidad)
         {
-            return data.UnidadXUnidad(idUnidad).FirstOrDefault();
+            return data.GetUnidadById(idUnidad).FirstOrDefault();
         }
         public void InsertUnidad(UnidadDTO nueva)
         {

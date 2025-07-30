@@ -85,5 +85,27 @@ namespace Identity.Api.Controllers
             }
         }
 
+        // Paginado
+        [HttpGet("GetUnidadPaginados")]
+        public async Task<IActionResult> GetUnidadPaginados(
+            int pagina = 1,
+            int pageSize = 10,
+            string? Placa = null,
+            string? Idpropietario = null,
+            string? Unidad1 = null,
+            string? Propietario = null,
+            string? Estado = null)
+        {
+            try
+            {
+                var result = await _unidadRepository.GetUnidadPaginados(pagina, pageSize, Placa, Idpropietario, Unidad1, Propietario, Estado);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("Error al obtener unidades paginadas: " + ex.Message);
+            }
+        }
+
     }
 }

@@ -3,7 +3,6 @@ using Identity.Api.DTO;
 using Identity.Api.Interfaces;
 using Identity.Api.Paginado;
 using Modelo.laconcordia.Modelo.Database;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Identity.Api.Services
 {

@@ -1,15 +1,12 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
-using System.Threading.Tasks; // Añadido para Task
-using System.Text;
+﻿using Identity.Api.Interfaces;
 using Identity.Api.Model;
 using Identity.Api.Persistence.DataBase;
 using Identity.Api.Services;
-using Identity.Api.Interfaces;
-using Microsoft.Extensions.Options;
-using Modelo.laconcordia.Modelo.Database;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -45,7 +42,7 @@ builder.Services.AddCors(options =>
                                     "https://localhost:7171",      // Puerto alternativo HTTPS
                                     "http://localhost:5047",       // Blazor Server
                                     "http://localhost:5000",       // Puerto alternativo
-                                    "http://localhost:3000" ,      // Otro puerto común
+                                    "http://localhost:3000",      // Otro puerto común
                                     "http://localhost:5213",        // Otro puerto común
                                      "https://localhost:44377"        // Otro puerto común
                                   )
@@ -61,7 +58,7 @@ builder.Services.AddCors(options =>
                                     "https://lconcordia.compugtech.com",    // Tu dominio principal
                                     "http://lconcordia.compugtech.com",     // HTTP fallback
                                     "https://www.lconcordia.compugtech.com", // Con www
-                                    "http://www.lconcordia.compugtech.com" ,  // Con www HTTP
+                                    "http://www.lconcordia.compugtech.com",  // Con www HTTP
                                     "https://localhost:7180",      // Tu Blazor HTTPS
                                     "http://localhost:7180",       // Tu Blazor HTTP
                                     "https://localhost:7171",      // Puerto alternativo HTTPS
@@ -69,7 +66,7 @@ builder.Services.AddCors(options =>
                                     "http://localhost:5000",       // Puerto alternativo
                                     "http://localhost:3000",      // Otro puerto común
                                     "http://localhost:5213"       // Otro puerto común
-                                    
+
                                   )
                                   .AllowAnyHeader()
                                   .WithExposedHeaders("totalAmountPages")
@@ -117,13 +114,14 @@ builder.Services.AddScoped<IPermissionService, PermissionService>();
 builder.Services.AddScoped<IAdvancedPermissionService, AdvancedPermissionService>();
 builder.Services.AddScoped<IParentesco, ParentescoServices>();
 builder.Services.AddScoped<IEstadoCivil, EstadoCivilServices>();
-builder.Services.AddScoped<IEmpresa, EmpresaServices>();    
+builder.Services.AddScoped<IEmpresa, EmpresaServices>();
 builder.Services.AddScoped<ITipolicencium, TipolicenciumServices>();
 builder.Services.AddScoped<INacionalidad, NacionalidadServices>();
 builder.Services.AddScoped<INiveleducacion, NiveleducacionServices>();
 builder.Services.AddScoped<ICargo, CargoServices>();
 builder.Services.AddScoped<IParentesco, ParentescoServices>();
 builder.Services.AddScoped<IDuenopuesto, DuenopuestoServices>();
+builder.Services.AddScoped<IFichapersona, FichapersonaServices>();
 
 
 

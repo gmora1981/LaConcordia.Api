@@ -129,11 +129,11 @@ namespace Identity.Api.DataRepository
 
             if (string.IsNullOrWhiteSpace(estado))
             {
-                estado = "ACTIVO";
+                estado = "a";
             }
 
             query = query.Where(f => f.Estado == estado);
-            
+
             var totalItems = await query.CountAsync();
             var items = await query
                 .Skip((pagina - 1) * pageSize)

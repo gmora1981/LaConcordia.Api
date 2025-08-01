@@ -1,22 +1,20 @@
-﻿using Identity.Api.DTO;
+﻿using Identity.Api.DataRepository;
+using Identity.Api.DTO;
+using Identity.Api.Interfaces;
 using Identity.Api.Paginado;
 
 namespace Identity.Api.Services
 {
     public class FichapersonaServices : IFichapersona
     {
-        private readonly FichapersonaRepository _fichapersonaRepository;
-        public FichapersonaServices(FichapersonaRepository fichapersonaRepository)
-        {
-            _fichapersonaRepository = fichapersonaRepository;
-        }
+        private FichapersonaRepository _fichapersonaRepository = new FichapersonaRepository();
         public IEnumerable<FichapersonalDTO> GetFichaPersonalInfoAll()
         {
             return _fichapersonaRepository.GetFichaPersonalInfoAll();
         }
-        public FichapersonalDTO GetFichaPersonalById(int idParentesco)
+        public FichapersonalDTO GetFichaPersonalById(string cedula)
         {
-            return _fichapersonaRepository.GetFichaPersonalById(idParentesco);
+            return _fichapersonaRepository.GetFichaPersonalById(cedula);
         }
         public void InsertFichaPersonal(FichapersonalDTO New)
         {
@@ -26,9 +24,9 @@ namespace Identity.Api.Services
         {
             _fichapersonaRepository.UpdateFichaPersonal(UpdItem);
         }
-        public void DeleteFichaPersonalById(int idParentesco)
+        public void DeleteFichaPersonalById(string cedula)
         {
-            _fichapersonaRepository.DeleteFichaPersonalById(idParentesco);
+            _fichapersonaRepository.DeleteFichaPersonalById(cedula);
         }
         //paginado
         public async Task<PagedResult<FichapersonalDTO>> GetFichaPersonalPaginados(

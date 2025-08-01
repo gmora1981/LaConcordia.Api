@@ -1,16 +1,15 @@
 ﻿using Identity.Api.DTO;
 using Identity.Api.Paginado;
-using Modelo.laconcordia.Modelo.Database;
 
 namespace Identity.Api.Interfaces
 {
     public interface IFichapersona
     {
         IEnumerable<FichapersonalDTO> GetFichaPersonalInfoAll();
-        FichapersonalDTO GetFichaPersonalById(string idParentesco);
+        FichapersonalDTO GetFichaPersonalById(string cedula);
         void InsertFichaPersonal(FichapersonalDTO New);
         void UpdateFichaPersonal(FichapersonalDTO UpdItem);
-        void DeleteFichaPersonalById(string idParentesco);
+        void DeleteFichaPersonalById(string cedula);
 
         //paginado
         Task<PagedResult<FichapersonalDTO>> GetFichaPersonalPaginados(

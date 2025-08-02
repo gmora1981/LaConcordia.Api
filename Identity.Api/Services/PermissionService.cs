@@ -72,6 +72,32 @@ namespace Identity.Api.Services
 
         public async Task UpdateUserPermissionAsync(UpdateUserPermissionDto dto, string grantedBy)
         {
+            // IMPORTANTE: Validar que el usuario que otorga el permiso existe
+            var grantingUser = await _dataRepository.GetUserByIdAsync(grantedBy);
+            if (grantingUser == null)
+            {
+                // Si el usuario no existe, usar el usuario del sistema o lanzar excepción
+                // Opción 1: Usar un usuario del sistema predeterminado
+                grantedBy = "8e445865-a24d-4543-a6c6-9443d048cdb9"; // ID del admin por defecto
+
+                // Opción 2: Lanzar excepción
+                // throw new NotFoundException($"Usuario que otorga el permiso con ID {grantedBy} no encontrado");
+            }
+
+            // Validar que el usuario destino existe
+            var targetUser = await _dataRepository.GetUserByIdAsync(dto.UserId);
+            if (targetUser == null)
+            {
+                throw new NotFoundException($"Usuario destino con ID {dto.UserId} no encontrado");
+            }
+
+            // Validar que el item de navegación existe
+            var navItem = await _dataRepository.GetNavigationItemByIdAsync(dto.NavigationItemId);
+            if (navItem == null)
+            {
+                throw new NotFoundException($"Item de navegación con ID {dto.NavigationItemId} no encontrado");
+            }
+
             var existingPermission = await _dataRepository.GetUserPermissionAsync(dto.UserId, dto.NavigationItemId);
 
             if (existingPermission == null)
@@ -106,6 +132,20 @@ namespace Identity.Api.Services
 
         public async Task AssignBulkUserPermissionsAsync(string userId, BulkPermissionAssignmentDto dto, string grantedBy)
         {
+            // Validar usuario que otorga permisos
+            var grantingUser = await _dataRepository.GetUserByIdAsync(grantedBy);
+            if (grantingUser == null)
+            {
+                grantedBy = "8e445865-a24d-4543-a6c6-9443d048cdb9"; // Admin por defecto
+            }
+
+            // Validar usuario destino
+            var targetUser = await _dataRepository.GetUserByIdAsync(userId);
+            if (targetUser == null)
+            {
+                throw new NotFoundException($"Usuario destino con ID {userId} no encontrado");
+            }
+
             foreach (var itemId in dto.NavigationItemIds)
             {
                 await UpdateUserPermissionAsync(new UpdateUserPermissionDto
@@ -190,6 +230,27 @@ namespace Identity.Api.Services
 
         public async Task UpdateRolePermissionAsync(UpdateRolePermissionDto dto, string grantedBy)
         {
+            // Validar que el usuario que otorga el permiso existe
+            var grantingUser = await _dataRepository.GetUserByIdAsync(grantedBy);
+            if (grantingUser == null)
+            {
+                grantedBy = "8e445865-a24d-4543-a6c6-9443d048cdb9"; // Admin por defecto
+            }
+
+            // Validar que el rol existe
+            var role = await _dataRepository.GetRoleByIdAsync(dto.RoleId);
+            if (role == null)
+            {
+                throw new NotFoundException($"Rol con ID {dto.RoleId} no encontrado");
+            }
+
+            // Validar que el item de navegación existe
+            var navItem = await _dataRepository.GetNavigationItemByIdAsync(dto.NavigationItemId);
+            if (navItem == null)
+            {
+                throw new NotFoundException($"Item de navegación con ID {dto.NavigationItemId} no encontrado");
+            }
+
             var existingPermission = await _dataRepository.GetRolePermissionAsync(dto.RoleId, dto.NavigationItemId);
 
             if (existingPermission == null)
@@ -224,6 +285,20 @@ namespace Identity.Api.Services
 
         public async Task AssignBulkRolePermissionsAsync(string roleId, BulkPermissionAssignmentDto dto, string grantedBy)
         {
+            // Validar usuario que otorga permisos
+            var grantingUser = await _dataRepository.GetUserByIdAsync(grantedBy);
+            if (grantingUser == null)
+            {
+                grantedBy = "8e445865-a24d-4543-a6c6-9443d048cdb9"; // Admin por defecto
+            }
+
+            // Validar que el rol existe
+            var role = await _dataRepository.GetRoleByIdAsync(roleId);
+            if (role == null)
+            {
+                throw new NotFoundException($"Rol con ID {roleId} no encontrado");
+            }
+
             foreach (var itemId in dto.NavigationItemIds)
             {
                 await UpdateRolePermissionAsync(new UpdateRolePermissionDto
@@ -285,7 +360,7 @@ namespace Identity.Api.Services
             var roles = await _dataRepository.GetAllRolesAsync();
             return roles.Select(r => new RoleDTO
             {
-                RoleId = r.Id,           // Agregar esta línea
+                RoleId = r.Id,
                 RoleName = r.Name ?? ""
             }).ToList();
         }

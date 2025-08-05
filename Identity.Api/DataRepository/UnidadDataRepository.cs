@@ -1,5 +1,4 @@
 ﻿using Identity.Api.DTO;
-using Identity.Api.Interfaces;
 using Identity.Api.Paginado;
 using Microsoft.EntityFrameworkCore;
 using Modelo.laconcordia.Modelo.Database;
@@ -94,7 +93,12 @@ namespace Identity.Api.DataRepository
                     Placa = x.Placa,
                     Idpropietario = x.Idpropietario,
                     Propietario = x.Propietario,
-                    Estado = x.Estado
+                    Marca = x.Marca,
+                    Modelo = x.Modelo,
+                    Anio = x.Anio,
+                    Estado = x.Estado,
+                    Color = x.Color,
+                    Fecha = x.Fecha,
                 })
                 .ToListAsync();
             return new PagedResult<UnidadDTO>

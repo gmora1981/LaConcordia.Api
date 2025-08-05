@@ -1,7 +1,9 @@
 ﻿using Identity.Api.DTO;
+using Identity.Api.Interfaces;
 using Identity.Api.Paginado;
 using Microsoft.EntityFrameworkCore;
 using Modelo.laconcordia.Modelo.Database;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Identity.Api.DataRepository
 {
@@ -33,72 +35,97 @@ namespace Identity.Api.DataRepository
                     Estado = f.Estado,
                     Estadoservicio = f.Estadoservicio,
                     Cuotaf = f.Cuotaf,
+                    Fknacionalidad = f.Fknacionalidad,
+                    Fktipolicencia = f.Fktipolicencia,
+                    Fkcargo = f.Fkcargo,
+                    Fkniveleducacion = f.Fkniveleducacion,
+                    Fkunidad = f.Fkunidad,
+                    Fkdpuesto = f.Fkdpuesto,
                 })
                 .ToList();
         }
 
         public FichapersonalDTO GetFichaPersonalById(string cedula)
         {
-            var ficha = _context.Fichapersonals.FirstOrDefault(x => x.Cedula == cedula && x.Estado == "a");
-            if (ficha == null) return null;
+            var f = _context.Fichapersonals.FirstOrDefault(x => x.Cedula == cedula && x.Estado == "a");
+            if (f == null) return null;
             return new FichapersonalDTO
             {
-                Cedula = ficha.Cedula,
-                Nombre = ficha.Nombre,
-                Apellidos = ficha.Apellidos,
-                Telefono = ficha.Telefono,
-                Celular = ficha.Celular,
-                Correo = ficha.Correo,
-                Fechanacimiento = ficha.Fechanacimiento,
-                Fechaingreso = ficha.Fechaingreso,
-                Domicilio = ficha.Domicilio,
-                Referencia = ficha.Referencia,
-                Estado = ficha.Estado,
-                Estadoservicio = ficha.Estadoservicio,
-                Cuotaf = ficha.Cuotaf
+                Cedula = f.Cedula,
+                Nombre = f.Nombre,
+                Apellidos = f.Apellidos,
+                Telefono = f.Telefono,
+                Celular = f.Celular,
+                Correo = f.Correo,
+                Fechanacimiento = f.Fechanacimiento,
+                Fechaingreso = f.Fechaingreso,
+                Domicilio = f.Domicilio,
+                Referencia = f.Referencia,
+                Estado = f.Estado,
+                Estadoservicio = f.Estadoservicio,
+                Cuotaf = f.Cuotaf,
+                Fknacionalidad = f.Fknacionalidad,
+                Fktipolicencia = f.Fktipolicencia,
+                Fkcargo = f.Fkcargo,
+                Fkniveleducacion = f.Fkniveleducacion,
+                Fkunidad = f.Fkunidad,
+                Fkdpuesto = f.Fkdpuesto,
             };
         }
 
-        public void InsertFichaPersonal(FichapersonalDTO nueva)
+        public void InsertFichaPersonal(FichapersonalDTO f)
         {
             var ficha = new Fichapersonal
             {
-                Cedula = nueva.Cedula,
-                Nombre = nueva.Nombre,
-                Apellidos = nueva.Apellidos,
-                Telefono = nueva.Telefono,
-                Celular = nueva.Celular,
-                Correo = nueva.Correo,
-                Fechanacimiento = nueva.Fechanacimiento,
-                Fechaingreso = nueva.Fechaingreso,
-                Domicilio = nueva.Domicilio,
-                Referencia = nueva.Referencia,
-                Estadoservicio = nueva.Estadoservicio,
-                Cuotaf = nueva.Cuotaf,
-                Estado = "a" // Asignar estado activo por defecto
+                Cedula = f.Cedula,
+                Nombre = f.Nombre,
+                Apellidos = f.Apellidos,
+                Telefono = f.Telefono,
+                Celular = f.Celular,
+                Correo = f.Correo,
+                Fechanacimiento = f.Fechanacimiento,
+                Fechaingreso = f.Fechaingreso,
+                Domicilio = f.Domicilio,
+                Referencia = f.Referencia,
+                Estado = f.Estado,
+                Estadoservicio = f.Estadoservicio,
+                Cuotaf = f.Cuotaf,
+                Fknacionalidad = f.Fknacionalidad,
+                Fktipolicencia = f.Fktipolicencia,
+                Fkcargo = f.Fkcargo,
+                Fkniveleducacion = f.Fkniveleducacion,
+                Fkunidad = f.Fkunidad,
+                Fkdpuesto = f.Fkdpuesto,
+                //Estado = "a" // Asignar estado activo por defecto
             };
             _context.Fichapersonals.Add(ficha);
             _context.SaveChanges();
         }
 
-        public void UpdateFichaPersonal(FichapersonalDTO actualizada)
+        public void UpdateFichaPersonal(FichapersonalDTO f)
         {
-            var ficha = _context.Fichapersonals.FirstOrDefault(x => x.Cedula == actualizada.Cedula);
+            var ficha = _context.Fichapersonals.FirstOrDefault(x => x.Cedula == f.Cedula);
             if (ficha != null)
             {
-                ficha.Cedula = actualizada.Cedula;
-                ficha.Nombre = actualizada.Nombre;
-                ficha.Apellidos = actualizada.Apellidos;
-                ficha.Telefono = actualizada.Telefono;
-                ficha.Celular = actualizada.Celular;
-                ficha.Correo = actualizada.Correo;
-                ficha.Fechanacimiento = actualizada.Fechanacimiento;
-                ficha.Fechaingreso = actualizada.Fechaingreso;
-                ficha.Domicilio = actualizada.Domicilio;
-                ficha.Referencia = actualizada.Referencia;
-                ficha.Estadoservicio = actualizada.Estadoservicio;
-                ficha.Cuotaf = actualizada.Cuotaf;
-                ficha.Estado = actualizada.Estado; // Actualizar estado
+                ficha.Cedula = f.Cedula;
+                ficha.Nombre = f.Nombre;
+                ficha.Apellidos = f.Apellidos;
+                ficha.Telefono = f.Telefono;
+                ficha.Celular = f.Celular;
+                ficha.Correo = f.Correo;
+                ficha.Fechanacimiento = f.Fechanacimiento;
+                ficha.Fechaingreso = f.Fechaingreso;
+                ficha.Domicilio = f.Domicilio;
+                ficha.Referencia = f.Referencia;
+                ficha.Estado = f.Estado;
+                ficha.Estadoservicio = f.Estadoservicio;
+                ficha.Cuotaf = f.Cuotaf;
+                ficha.Fknacionalidad = f.Fknacionalidad;
+                ficha.Fktipolicencia = f.Fktipolicencia;
+                ficha.Fkcargo = f.Fkcargo;
+                ficha.Fkniveleducacion = f.Fkniveleducacion;
+                ficha.Fkunidad = f.Fkunidad;
+                ficha.Fkdpuesto = f.Fkdpuesto;
                 _context.SaveChanges();
             }
         }
@@ -123,7 +150,10 @@ namespace Identity.Api.DataRepository
             var query = _context.Fichapersonals.AsQueryable();
             if (!string.IsNullOrEmpty(filtro))
             {
-                query = query.Where(f => f.Nombre.Contains(filtro) || f.Apellidos.Contains(filtro));
+                query = query.Where(f =>
+                f.Cedula.Contains(filtro) ||
+                f.Nombre.Contains(filtro) ||
+                f.Apellidos.Contains(filtro));
             }
 
 
@@ -153,6 +183,13 @@ namespace Identity.Api.DataRepository
                     Estado = f.Estado,
                     Estadoservicio = f.Estadoservicio,
                     Cuotaf = f.Cuotaf,
+                    Fknacionalidad = f.Fknacionalidad,
+                    Fktipolicencia = f.Fktipolicencia,
+                    Fkcargo = f.Fkcargo,
+                    Fkniveleducacion = f.Fkniveleducacion,
+                    Fkunidad = f.Fkunidad,
+                    Fkdpuesto = f.Fkdpuesto,
+
                 })
                 .ToListAsync();
             return new PagedResult<FichapersonalDTO>

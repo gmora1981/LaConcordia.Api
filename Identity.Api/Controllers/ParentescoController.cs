@@ -11,6 +11,7 @@ namespace Identity.Api.Controllers
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class ParentescoController : ControllerBase
     {
+        
         private readonly IParentesco _parentesco;
 
         public ParentescoController(IParentesco parentesco)
@@ -18,7 +19,6 @@ namespace Identity.Api.Controllers
             _parentesco = parentesco;
         }
 
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpGet("ParentescoInfoAll")]
         public IActionResult GetAll()
         {

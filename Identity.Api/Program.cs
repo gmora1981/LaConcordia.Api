@@ -122,6 +122,7 @@ builder.Services.AddScoped<ICargo, CargoServices>();
 builder.Services.AddScoped<IParentesco, ParentescoServices>();
 builder.Services.AddScoped<IDuenopuesto, DuenopuestoServices>();
 builder.Services.AddScoped<IFichapersona, FichapersonaServices>();
+builder.Services.AddScoped<IFichaobservacione, FichaobservacioneService>();
 
 
 

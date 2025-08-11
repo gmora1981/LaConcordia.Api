@@ -26,26 +26,35 @@ namespace Identity.Api.Reporteria
                     page.PageColor(Colors.White);
                     page.DefaultTextStyle(x => x.FontSize(10));
 
-                    page.Header().Row(row =>
+                    page.Header().Height(80).Row(row =>
                     {
-                        if (logoImage != null)
-                            row.RelativeColumn(1).Height(40).Image(logoImage);
-                        row.RelativeColumn(9).Column(col =>
+                        // Columna izquierda (logo)
+                        row.RelativeColumn(2).AlignMiddle().AlignLeft().Column(col =>
                         {
-                            col.Item().AlignCenter().Text("Listado de Empresas")
-                                .SemiBold().FontSize(14).FontColor(Colors.Blue.Medium);
+                            col.Item().Image(logoImage);
+                        });
 
+                        // Columna central (título)
+                        row.RelativeColumn(8).Column(col =>
+                        {
+                            col.Item().AlignCenter().Text("SERVICIO DE TRANSPORTE “LA CONCORDIA”")
+                                .SemiBold().FontSize(14).FontColor(Colors.Black);
+
+                            col.Item().AlignCenter().Text("Servicio de Transporte Exclusivo Puerta a Puerta")
+                                .SemiBold().FontSize(12).FontColor(Colors.Black);
+
+                            col.Item().AlignCenter().Text("Tlf: 2606425 Claro: 0994227299 Movistar: 0987117307")
+                                .SemiBold().FontSize(10).FontColor(Colors.Black);
+                        });
+
+                        // Columna derecha (fecha y hora)
+                        row.RelativeColumn(2).Column(col =>
+                        {
                             col.Item().AlignRight().Text($"Fecha Emisión: {DateTime.Now:dd/MM/yyyy}")
                                 .FontSize(7).FontColor(Colors.Grey.Darken1).Bold();
 
-                            col.Item().AlignRight().Text($"Hora Emisión: {DateTime.Now: HH:mm:ss}")
+                            col.Item().AlignRight().Text($"Hora Emisión: {DateTime.Now:HH:mm:ss}")
                                 .FontSize(7).FontColor(Colors.Grey.Darken1).Bold();
-
-                            //if (!string.IsNullOrWhiteSpace(correo))
-                            //{
-                            //    col.Item().AlignRight().Text($"Generado por: {correo}")
-                            //        .FontSize(7).FontColor(Colors.Grey.Darken1).Italic();
-                            //}
                         });
                     });
 

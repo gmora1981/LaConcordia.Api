@@ -1,9 +1,11 @@
 ﻿using Identity.Api.DTO;
 using Identity.Api.Interfaces;
 using Identity.Api.Paginado;
+using Identity.Api.Reporteria;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using QuestPDF.Infrastructure;
 
 namespace Identity.Api.Controllers
 {
@@ -91,6 +93,25 @@ namespace Identity.Api.Controllers
                 return BadRequest(new { error = ex.Message });
             }
         }
+
+        [HttpPost("ExportarFichaCompleta")]
+        public IActionResult ExportarFichaCompleta([FromBody] ExportFichaDTO exportData)
+        {
+            if (exportData == null)
+                return BadRequest("No se recibió la información para exportar.");
+
+            QuestPDF.Settings.License = LicenseType.Community;
+
+            // Llama al generador PDF que devuelve byte[]
+            var pdfBytes = FichaPersonalPdfGenerator.GenerarPdf(exportData);
+
+            if (pdfBytes == null || pdfBytes.Length == 0)
+                return NotFound("No se pudo generar el PDF.");
+
+            return File(pdfBytes, "application/pdf", "FichaCompleta.pdf");
+        }
+
+
 
     }
 }

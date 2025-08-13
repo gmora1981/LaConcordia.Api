@@ -56,10 +56,11 @@ namespace Identity.Api.DataRepository
         public void UpdateSegurovidum(DTO.SegurovidumDTO UpdItem)
         {
             var existingSeguro = _context.Segurovida
-                .FirstOrDefault(s => s.CiBeneficiario == UpdItem.CiBeneficiario);
+                .FirstOrDefault(s => s.CiBeneficiario == UpdItem.CiBeneficiario && s.CiAfiliado == UpdItem.CiAfiliado);
             if (existingSeguro != null)
             {
                 existingSeguro.Pkparentesco = UpdItem.Pkparentesco;
+                existingSeguro.CiBeneficiario = UpdItem.CiBeneficiario;
                 existingSeguro.Nombres = UpdItem.Nombres;
                 existingSeguro.Apellidos = UpdItem.Apellidos;
                 existingSeguro.CiAfiliado = UpdItem.CiAfiliado;
@@ -70,10 +71,12 @@ namespace Identity.Api.DataRepository
             }
         }
 
-        public void DeleteSegurovidumByCedula(string CiBeneficiario)
+
+        public void DeleteSegurovidumByCedula(string CiBeneficiario, string CiAfiliado)
         {
             var seguro = _context.Segurovida
-                .FirstOrDefault(s => s.CiBeneficiario == CiBeneficiario);
+                .FirstOrDefault(s => s.CiBeneficiario == CiBeneficiario && s.CiAfiliado == CiAfiliado);
+
             if (seguro != null)
             {
                 _context.Segurovida.Remove(seguro);

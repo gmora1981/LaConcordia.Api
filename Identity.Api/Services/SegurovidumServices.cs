@@ -25,9 +25,9 @@ namespace Identity.Api.Services
         {
             segurovidumRepository.UpdateSegurovidum(UpdItem);
         }
-        public void DeleteSegurovidumByCedula(string CiBeneficiario)
+        public void DeleteSegurovidumByCedula(string CiBeneficiario, string CiAfiliado)
         {
-            segurovidumRepository.DeleteSegurovidumByCedula(CiBeneficiario);
+            segurovidumRepository.DeleteSegurovidumByCedula(CiBeneficiario, CiAfiliado);
         }
         // Paginado
         public async Task<Paginado.PagedResult<Modelo.laconcordia.Modelo.Database.Segurovidum>> GetSegurovidumPaginados(

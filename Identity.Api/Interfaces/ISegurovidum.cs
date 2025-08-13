@@ -6,7 +6,7 @@
         List<DTO.SegurovidumDTO> GetSegurovidumByCedula(string CiAfiliado); // ahora devuelve lista
         void InsertSegurovidum(DTO.SegurovidumDTO New);
         void UpdateSegurovidum(DTO.SegurovidumDTO UpdItem);
-        void DeleteSegurovidumByCedula(string CiBeneficiario);
+        void DeleteSegurovidumByCedula(string CiBeneficiario, string CiAfiliado);
         // Paginado
         Task<Paginado.PagedResult<Modelo.laconcordia.Modelo.Database.Segurovidum>> GetSegurovidumPaginados(
             int pagina,

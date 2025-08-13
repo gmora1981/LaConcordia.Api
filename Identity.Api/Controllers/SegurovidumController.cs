@@ -61,12 +61,12 @@ namespace Identity.Api.Controllers
             }
         }
 
-        [HttpDelete("DeleteSegurovidumByCedula/{CiBeneficiario}")]
-        public IActionResult DeleteByCedula(string CiBeneficiario)
+        [HttpDelete("DeleteSegurovidumByCedula/{CiBeneficiario}/{CiAfiliado}")]
+        public IActionResult DeleteByCedula(string CiBeneficiario, string CiAfiliado)
         {
             try
             {
-                _segurovidumService.DeleteSegurovidumByCedula(CiBeneficiario);
+                _segurovidumService.DeleteSegurovidumByCedula(CiBeneficiario, CiAfiliado);
                 return Ok("Registro de seguro eliminado correctamente.");
             }
             catch (Exception ex)
@@ -74,6 +74,7 @@ namespace Identity.Api.Controllers
                 return BadRequest("Error al eliminar: " + ex.Message);
             }
         }
+
 
         [HttpGet("GetSegurovidumPaginados")]
         public async Task<IActionResult> GetPaginados(

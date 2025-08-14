@@ -63,32 +63,66 @@ namespace Identity.Api.Reporteria
                     page.Content().Column(col =>
                     {
                         // Datos Ficha
-                        col.Item().Text("Datos Personales").Bold().FontSize(12);
-                        col.Item().Text($"Nombre: {ficha.Nombre} {ficha.Apellidos}");
+                        col.Item()
+                        .Border(2) // borde de 1px
+                        .BorderColor(Colors.Grey.Darken1) // color del borde
+                        .Background(Colors.Grey.Lighten3) // color de fondo para resaltar
+                        .Padding(5) // espacio interno
+                        .AlignCenter() // centrar el texto horizontalmente
+                        .Text("Datos Personales")
+                            .Bold()
+                            .FontSize(14)
+                            .FontColor(Colors.Black);
                         col.Item().Text($"Cédula: {ficha.Cedula}");
+                        col.Item().Text($"Nombre: {ficha.Nombre} {ficha.Apellidos}");
+                        col.Item().Text($"Tipo Licencia: {ficha.TipoLicenciaDescripcion}");
+                        col.Item().Text($"Fecha Nacimiento: {ficha.Fechanacimiento}");
+                        col.Item().Text($"Fecha Ingreso: {ficha.Fechaingreso}");
                         col.Item().Text($"Nacionalidad: {ficha.NacionalidadDescripcion}");
                         col.Item().Text($"Estado Civil: {ficha.EstadoCivilDescripcion}");
-                        col.Item().Text($"Cargo: {ficha.CargoDescripcion}");
                         col.Item().Text($"Nivel Educación: {ficha.NivelEducacionDescripcion}");
-                        col.Item().Text($"Tipo Licencia: {ficha.TipoLicenciaDescripcion}");
+                        col.Item().Text($"Teléfono: {ficha.Telefono}");
+                        col.Item().Text($"Celular: {ficha.Celular}");
+                        col.Item().Text($"Correo: {ficha.Correo}");
+                        col.Item().Text($"Cargo: {ficha.CargoDescripcion}");
+                        col.Item().Text($"Dirección Actual: {ficha.Domicilio}");
+                        col.Item().Text($"Referencia: {ficha.Referencia}");
                         col.Item().Text($"Cuota Semanal: {ficha.Cuotaf}");
 
                         col.Item().LineHorizontal(1).LineColor(Colors.Grey.Lighten1);
 
                         // Datos Unidad
-                        col.Item().Text("Datos Unidad").Bold().FontSize(12);
+                        col.Item()
+                        .Border(2) // borde de 1px
+                        .BorderColor(Colors.Grey.Darken1) // color del borde
+                        .Background(Colors.Grey.Lighten3) // color de fondo para resaltar
+                        .Padding(5) // espacio interno
+                        .AlignCenter() // centrar el texto horizontalmente
+                        .Text("Datos Unidad")
+                            .Bold()
+                            .FontSize(14)
+                            .FontColor(Colors.Black);
                         col.Item().Text($"Unidad: {unidad.Unidad1}");
                         col.Item().Text($"Placa: {unidad.Placa}");
                         col.Item().Text($"Marca: {unidad.Marca}");
                         col.Item().Text($"Modelo: {unidad.Modelo}");
                         col.Item().Text($"Año: {unidad.Anio}");
                         col.Item().Text($"Color: {unidad.Color}");
-                        col.Item().Text($"Estado: {unidad.Estado}");
+                        //col.Item().Text($"Estado: {unidad.Estado}");
 
                         col.Item().LineHorizontal(1).LineColor(Colors.Grey.Lighten1);
 
                         // Datos Dueño Puesto
-                        col.Item().Text("Datos Dueño de Puesto").Bold().FontSize(12);
+                        col.Item()
+                        .Border(2) // borde de 1px
+                        .BorderColor(Colors.Grey.Darken1) // color del borde
+                        .Background(Colors.Grey.Lighten3) // color de fondo para resaltar
+                        .Padding(5) // espacio interno
+                        .AlignCenter() // centrar el texto horizontalmente
+                        .Text("Datos Del Dueño Del Puesto")
+                            .Bold()
+                            .FontSize(14)
+                            .FontColor(Colors.Black);
                         col.Item().Text($"Cédula: {duenopuesto.Cedula}");
                         col.Item().Text($"Nombres: {duenopuesto.Nombres}");
                         col.Item().Text($"Apellidos: {duenopuesto.Apellidos}");
@@ -96,7 +130,16 @@ namespace Identity.Api.Reporteria
                         col.Item().LineHorizontal(1).LineColor(Colors.Grey.Lighten1);
 
                         // Beneficiarios
-                        col.Item().Text("Beneficiarios").Bold().FontSize(12);
+                        col.Item()
+                        .Border(2) // borde de 1px
+                        .BorderColor(Colors.Grey.Darken1) // color del borde
+                        .Background(Colors.Grey.Lighten3) // color de fondo para resaltar
+                        .Padding(5) // espacio interno
+                        .AlignCenter() // centrar el texto horizontalmente
+                        .Text("Beneficiario")
+                            .Bold()
+                            .FontSize(14)
+                            .FontColor(Colors.Black);
                         col.Item().Table(table =>
                         {
                             table.ColumnsDefinition(columns =>

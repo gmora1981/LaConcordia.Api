@@ -80,7 +80,7 @@ namespace Identity.Api.Reporteria
                         col.Item().Text($"Fecha Ingreso: {ficha.Fechaingreso}");
                         col.Item().Text($"Nacionalidad: {ficha.NacionalidadDescripcion}");
                         col.Item().Text($"Estado Civil: {ficha.EstadoCivilDescripcion}");
-                        col.Item().Text($"Nivel Educación: {ficha.NivelEducacionDescripcion}");
+                        col.Item().Text($"Nivel Educación: {ficha.Fkniveleducacion}");
                         col.Item().Text($"Teléfono: {ficha.Telefono}");
                         col.Item().Text($"Celular: {ficha.Celular}");
                         col.Item().Text($"Correo: {ficha.Correo}");
@@ -147,6 +147,7 @@ namespace Identity.Api.Reporteria
                                 columns.RelativeColumn(3);
                                 columns.RelativeColumn(3);
                                 columns.RelativeColumn(3);
+                                columns.RelativeColumn(3);
                             });
 
                             table.Header(header =>
@@ -154,13 +155,16 @@ namespace Identity.Api.Reporteria
                                 header.Cell().Text("Nombres").Bold();
                                 header.Cell().Text("Apellidos").Bold();
                                 header.Cell().Text("Parentesco").Bold();
+                                header.Cell().Text("Tipo").Bold();
                             });
 
                             foreach (var b in beneficiarios)
                             {
                                 table.Cell().Text(b.Nombres);
                                 table.Cell().Text(b.Apellidos);
-                                table.Cell().Text(b.Pkparentesco);
+                                //table.Cell().Text(b.Pkparentesco);
+                                table.Cell().Text(b.ParentescoDescripcion);
+                                table.Cell().Text(b.Tipo == "1" ? "BENEFICIARIO" : b.Tipo == "2" ? "AYUDA" : "DESCONOCIDO");
                             }
                         });
                     });

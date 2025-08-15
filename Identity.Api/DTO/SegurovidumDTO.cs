@@ -5,7 +5,7 @@
         public string CiBeneficiario { get; set; } = null!;
 
         public int? Pkparentesco { get; set; }
-
+        public string? ParentescoDescripcion { get; set; }
         public string? Nombres { get; set; }
 
         public string? Apellidos { get; set; }

@@ -301,9 +301,140 @@ namespace Identity.Api.Controllers
         }
 
 
+        //ingresar y reemplazar imagen
 
+        [HttpPost("SubirImagenChofer")]
+        public async Task<IActionResult> SubirImagenChofer([FromForm] IFormFile archivo, [FromForm] string cedula)
+        {
+            try
+            {
+                if (archivo == null || archivo.Length == 0)
+                    return BadRequest("No se ha proporcionado ninguna imagen.");
 
+                var carpeta = Path.Combine("documentos");
+                if (!Directory.Exists(carpeta))
+                    Directory.CreateDirectory(carpeta);
 
+                // Nombre de archivo = cedula + extensión original
+                var extension = Path.GetExtension(archivo.FileName);
+                var rutaArchivo = Path.Combine(carpeta, $"{cedula}{extension}");
+
+                // 🔄 Si ya existe una imagen con esa cédula → eliminarla
+                var archivosExistentes = Directory.GetFiles(carpeta, $"{cedula}.*");
+                foreach (var file in archivosExistentes)
+                {
+                    System.IO.File.Delete(file);
+                }
+
+                // Guardar nueva imagen
+                using (var stream = new FileStream(rutaArchivo, FileMode.Create))
+                {
+                    await archivo.CopyToAsync(stream);
+                }
+
+                return Ok(new { mensaje = "Imagen guardada correctamente", nombreArchivo = $"{cedula}{extension}" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error al guardar la imagen: {ex.Message}");
+            }
+        }
+
+        //Buscar imagen por cédula
+        [HttpGet("BuscarImagenChofer")]
+        public IActionResult BuscarImagenChofer(string cedula)
+        {
+            try
+            {
+                var carpeta = Path.Combine("documentos");
+                var archivos = Directory.GetFiles(carpeta, $"{cedula}.*");
+
+                if (archivos.Length == 0)
+                    return NotFound("No se encontró ninguna imagen para esta cédula.");
+
+                var archivo = archivos.First();
+                var extension = Path.GetExtension(archivo).ToLower();
+
+                var contentType = extension switch
+                {
+                    ".jpg" or ".jpeg" => "image/jpeg",
+                    ".png" => "image/png",
+                    ".gif" => "image/gif",
+                    _ => "application/octet-stream"
+                };
+
+                var bytes = System.IO.File.ReadAllBytes(archivo);
+                return File(bytes, contentType);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error al buscar la imagen: {ex.Message}");
+            }
+        }
+
+        //Eliminar imagen por cédula
+        [HttpDelete("EliminarImagenChofer")]
+        public IActionResult EliminarImagenChofer(string cedula)
+        {
+            try
+            {
+                var carpeta = Path.Combine("documentos");
+                var archivos = Directory.GetFiles(carpeta, $"{cedula}.*");
+
+                if (archivos.Length == 0)
+                    return NotFound("No se encontró ninguna imagen para esta cédula.");
+
+                foreach (var archivo in archivos)
+                {
+                    System.IO.File.Delete(archivo);
+                }
+
+                return Ok(new { mensaje = "Imagen eliminada correctamente" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error al eliminar la imagen: {ex.Message}");
+            }
+        }
+
+        //debug
+        [HttpGet("VerificarImagen/{cedula}")]
+        public IActionResult VerificarImagen(string cedula)
+        {
+            try
+            {
+                // Ruta base de las imágenes en tu servidor
+                string carpeta = "/documentos"; // 👈 ajusta si fuera absoluta (ej: "C:/inetpub/wwwroot/documentos")
+
+                // Buscamos por cédula (puede ser cualquier extensión: .jpg, .png, etc.)
+                var archivo = Directory.GetFiles(carpeta, $"{cedula}.*").FirstOrDefault();
+
+                if (archivo == null)
+                {
+                    return NotFound($"No se encontró ninguna imagen para la cédula {cedula}.");
+                }
+
+                // Intentamos leer el archivo para comprobar permisos
+                using (var stream = System.IO.File.OpenRead(archivo))
+                {
+                    // Si se puede abrir, significa que hay permisos de lectura
+                }
+
+                return Ok($"Imagen encontrada y con permisos correctos: {Path.GetFileName(archivo)}");
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return StatusCode(403, "No tienes permisos para acceder a la carpeta o al archivo.");
+            }
+            catch (DirectoryNotFoundException)
+            {
+                return NotFound("La carpeta no existe en el servidor.");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error inesperado: {ex.Message}");
+            }
+        }
 
     }
 }

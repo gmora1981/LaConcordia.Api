@@ -98,103 +98,6 @@ namespace Identity.Api.Controllers
             }
         }
 
-        //[HttpPost("ExportarFichaCompleta")]
-        //public IActionResult ExportarFichaCompleta([FromBody] ExportFichaDTO exportData)
-        //{
-        //    if (string.IsNullOrWhiteSpace(exportData?.Ficha?.Cedula))
-        //        return BadRequest("No se recibió la cédula para exportar.");
-
-        //    QuestPDF.Settings.License = LicenseType.Community;
-
-        //    // 🔹 Usar DbContext temporal para no afectar el resto
-        //    using var context = new DbAa5796GmoraContext();
-
-        //    // 🔹 Buscar ficha personal con relaciones
-        //    var ficha = context.Fichapersonals
-        //        .Include(f => f.FknacionalidadNavigation)
-        //        .Include(f => f.FkestadocivilNavigation)
-        //        .Include(f => f.FkcargoNavigation)
-        //        .Include(f => f.FktipolicenciaNavigation)
-        //        .Include(f => f.FkniveleducacionNavigation)
-        //        .FirstOrDefault(f => f.Cedula == exportData.Ficha.Cedula);
-
-        //    if (ficha == null)
-        //        return NotFound("No se encontró la ficha personal.");
-
-        //    // 🔹 Buscar unidad si existe
-        //    Unidad unidad = null;
-        //    if (!string.IsNullOrEmpty(ficha.Fkunidad))
-        //        unidad = context.Unidads.FirstOrDefault(u => u.Unidad1 == ficha.Fkunidad);
-
-        //    // 🔹 Buscar dueño del puesto si existe
-        //    Duenopuesto duenopuesto = null;
-        //    if (!string.IsNullOrEmpty(ficha.Fkdpuesto))
-        //        duenopuesto = context.Duenopuestos.FirstOrDefault(d => d.Cedula == ficha.Fkdpuesto);
-
-        //    // 🔹 Beneficiarios
-        //    var beneficiarios = context.Segurovida
-        //        .Where(b => b.CiBeneficiario == ficha.Cedula)
-        //        .Include(b => b.PkparentescoNavigation)
-        //        .AsEnumerable()
-        //        .Select(b => new SegurovidumDTO
-        //        {
-        //            Nombres = b.Nombres,
-        //            Apellidos = b.Apellidos,
-        //            Pkparentesco = b.Pkparentesco,
-        //            ParentescoDescripcion = b.PkparentescoNavigation?.Parentesco1
-        //        })
-        //        .ToList();
-
-        //    // 🔹 Armar DTO completo
-        //    var exportDataCompleto = new ExportFichaDTO
-        //    {
-        //        Ficha = new FichapersonalDTO
-        //        {
-        //            Cedula = ficha.Cedula,
-        //            Nombre = ficha.Nombre,
-        //            Apellidos = ficha.Apellidos,
-        //            TipoLicenciaDescripcion = ficha.FktipolicenciaNavigation?.Tipolicencia,
-        //            Fechanacimiento = ficha.Fechanacimiento,
-        //            Fechaingreso = ficha.Fechaingreso,
-        //            NacionalidadDescripcion = ficha.FknacionalidadNavigation?.Nacionalidad1,
-        //            EstadoCivilDescripcion = ficha.FkestadocivilNavigation?.Descripcion,
-        //            NivelEducacionDescripcion = ficha.FkniveleducacionNavigation?.Descripcion,
-        //            Telefono = ficha.Telefono,
-        //            Celular = ficha.Celular,
-        //            Correo = ficha.Correo,
-        //            CargoDescripcion = ficha.FkcargoNavigation?.Cargo1,
-        //            Domicilio = ficha.Domicilio,
-        //            Referencia = ficha.Referencia,
-        //            Cuotaf = ficha.Cuotaf,
-        //            Fkunidad = ficha.Fkunidad,
-        //            Fkdpuesto = ficha.Fkdpuesto
-        //        },
-        //        Unidad = unidad != null ? new UnidadDTO
-        //        {
-        //            Unidad1 = unidad.Unidad1,
-        //            Placa = unidad.Placa,
-        //            Marca = unidad.Marca,
-        //            Modelo = unidad.Modelo,
-        //            Anio = unidad.Anio,
-        //            Color = unidad.Color,
-        //            Estado = unidad.Estado
-        //        } : null,
-        //        Duenopuesto = duenopuesto != null ? new DuenopuestoDTO
-        //        {
-        //            Cedula = duenopuesto.Cedula,
-        //            Nombres = duenopuesto.Nombres,
-        //            Apellidos = duenopuesto.Apellidos
-        //        } : null,
-        //        Beneficiarios = beneficiarios
-        //    };
-
-        //    var pdfBytes = FichaPersonalPdfGenerator.GenerarPdf(exportDataCompleto);
-
-        //    if (pdfBytes == null || pdfBytes.Length == 0)
-        //        return StatusCode(StatusCodes.Status500InternalServerError, "No se pudo generar el PDF.");
-
-        //    return File(pdfBytes, "application/pdf", "FichaCompleta.pdf");
-        //}
         [HttpPost("ExportarFichaCompleta")]
         public IActionResult ExportarFichaCompleta([FromBody] ExportFichaDTO exportData)
         {
@@ -303,36 +206,41 @@ namespace Identity.Api.Controllers
 
         //ingresar y reemplazar imagen
 
+        // 📌 Subir imagen del chofer
         [HttpPost("SubirImagenChofer")]
-        public async Task<IActionResult> SubirImagenChofer([FromForm] IFormFile archivo, [FromForm] string cedula)
+        public async Task<IActionResult> SubirImagenChofer([FromForm] IFormFile? archivo, [FromForm] string cedula)
         {
             try
             {
-                if (archivo == null || archivo.Length == 0)
-                    return BadRequest("No se ha proporcionado ninguna imagen.");
-
+                // Carpeta donde se guardan las imágenes
                 var carpeta = Path.Combine("documentos");
                 if (!Directory.Exists(carpeta))
                     Directory.CreateDirectory(carpeta);
 
-                // Nombre de archivo = cedula + extensión original
-                var extension = Path.GetExtension(archivo.FileName);
-                var rutaArchivo = Path.Combine(carpeta, $"{cedula}{extension}");
-
-                // 🔄 Si ya existe una imagen con esa cédula → eliminarla
-                var archivosExistentes = Directory.GetFiles(carpeta, $"{cedula}.*");
-                foreach (var file in archivosExistentes)
+                if (archivo != null && archivo.Length > 0)
                 {
-                    System.IO.File.Delete(file);
+                    // Nombre de archivo = cedula + extensión original
+                    var extension = Path.GetExtension(archivo.FileName);
+                    var rutaArchivo = Path.Combine(carpeta, $"{cedula}{extension}");
+
+                    // 🔄 Si ya existe una imagen con esa cédula → eliminarla
+                    var archivosExistentes = Directory.GetFiles(carpeta, $"{cedula}.*");
+                    foreach (var file in archivosExistentes)
+                    {
+                        System.IO.File.Delete(file);
+                    }
+
+                    // Guardar nueva imagen
+                    using (var stream = new FileStream(rutaArchivo, FileMode.Create))
+                    {
+                        await archivo.CopyToAsync(stream);
+                    }
+
+                    return Ok(new { mensaje = "Imagen guardada correctamente", nombreArchivo = $"{cedula}{extension}" });
                 }
 
-                // Guardar nueva imagen
-                using (var stream = new FileStream(rutaArchivo, FileMode.Create))
-                {
-                    await archivo.CopyToAsync(stream);
-                }
-
-                return Ok(new { mensaje = "Imagen guardada correctamente", nombreArchivo = $"{cedula}{extension}" });
+                // Caso en que no se subió archivo → conservar la existente
+                return Ok(new { mensaje = "No se subió nueva imagen, se conserva la existente." });
             }
             catch (Exception ex)
             {
@@ -340,8 +248,8 @@ namespace Identity.Api.Controllers
             }
         }
 
-        //Buscar imagen por cédula
-        [HttpGet("BuscarImagenChofer")]
+        // 📌 Buscar imagen por cédula (devuelve ruta relativa para <img>)
+        [HttpGet("BuscarImagenChofer/{cedula}")]
         public IActionResult BuscarImagenChofer(string cedula)
         {
             try
@@ -349,22 +257,13 @@ namespace Identity.Api.Controllers
                 var carpeta = Path.Combine("documentos");
                 var archivos = Directory.GetFiles(carpeta, $"{cedula}.*");
 
-                if (archivos.Length == 0)
+                if (!archivos.Any())
                     return NotFound("No se encontró ninguna imagen para esta cédula.");
 
-                var archivo = archivos.First();
-                var extension = Path.GetExtension(archivo).ToLower();
+                var archivo = Path.GetFileName(archivos.First());
+                var urlRelativa = $"documentos/{archivo}"; // ruta relativa para usar en <img>
 
-                var contentType = extension switch
-                {
-                    ".jpg" or ".jpeg" => "image/jpeg",
-                    ".png" => "image/png",
-                    ".gif" => "image/gif",
-                    _ => "application/octet-stream"
-                };
-
-                var bytes = System.IO.File.ReadAllBytes(archivo);
-                return File(bytes, contentType);
+                return Ok(urlRelativa);
             }
             catch (Exception ex)
             {
@@ -372,8 +271,8 @@ namespace Identity.Api.Controllers
             }
         }
 
-        //Eliminar imagen por cédula
-        [HttpDelete("EliminarImagenChofer")]
+        // 📌 Eliminar imagen por cédula
+        [HttpDelete("EliminarImagenChofer/{cedula}")]
         public IActionResult EliminarImagenChofer(string cedula)
         {
             try
@@ -381,7 +280,7 @@ namespace Identity.Api.Controllers
                 var carpeta = Path.Combine("documentos");
                 var archivos = Directory.GetFiles(carpeta, $"{cedula}.*");
 
-                if (archivos.Length == 0)
+                if (!archivos.Any())
                     return NotFound("No se encontró ninguna imagen para esta cédula.");
 
                 foreach (var archivo in archivos)
@@ -397,28 +296,20 @@ namespace Identity.Api.Controllers
             }
         }
 
-        //debug
+        // 📌 Método de debug para verificar existencia y permisos de la imagen
         [HttpGet("VerificarImagen/{cedula}")]
         public IActionResult VerificarImagen(string cedula)
         {
             try
             {
-                // Ruta base de las imágenes en tu servidor
-                string carpeta = "/documentos"; // 👈 ajusta si fuera absoluta (ej: "C:/inetpub/wwwroot/documentos")
-
-                // Buscamos por cédula (puede ser cualquier extensión: .jpg, .png, etc.)
+                var carpeta = Path.Combine("documentos");
                 var archivo = Directory.GetFiles(carpeta, $"{cedula}.*").FirstOrDefault();
 
                 if (archivo == null)
-                {
                     return NotFound($"No se encontró ninguna imagen para la cédula {cedula}.");
-                }
 
-                // Intentamos leer el archivo para comprobar permisos
-                using (var stream = System.IO.File.OpenRead(archivo))
-                {
-                    // Si se puede abrir, significa que hay permisos de lectura
-                }
+                // Comprobar permisos de lectura
+                using (var stream = System.IO.File.OpenRead(archivo)) { }
 
                 return Ok($"Imagen encontrada y con permisos correctos: {Path.GetFileName(archivo)}");
             }
@@ -435,6 +326,7 @@ namespace Identity.Api.Controllers
                 return StatusCode(500, $"Error inesperado: {ex.Message}");
             }
         }
+
 
     }
 }

@@ -1,4 +1,5 @@
-﻿using Identity.Api.DTO;
+﻿
+using Identity.Api.DTO;
 using Identity.Api.Interfaces;
 using Identity.Api.Paginado;
 using Identity.Api.Reporteria;
@@ -8,6 +9,15 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Modelo.laconcordia.Modelo.Database;
 using QuestPDF.Infrastructure;
+using FluentFTP;
+using Microsoft.Extensions.Configuration;
+using System.Net;
+using FluentFTP.Exceptions;
+using System.IO;
+using Microsoft.AspNetCore.Http;
+
+
+//se usar FluentFTP par aenvio ft
 
 namespace Identity.Api.Controllers
 {
@@ -204,128 +214,210 @@ namespace Identity.Api.Controllers
         }
 
 
-        //ingresar y reemplazar imagen
-
         // 📌 Subir imagen del chofer
         [HttpPost("SubirImagenChofer")]
-        public async Task<IActionResult> SubirImagenChofer([FromForm] IFormFile? archivo, [FromForm] string cedula)
+        public IActionResult SubirImagenChofer([FromForm] IFormFile? archivo, [FromForm] string cedula)
         {
             try
             {
-                // Carpeta donde se guardan las imágenes
-                var carpeta = Path.Combine("documentos");
-                if (!Directory.Exists(carpeta))
-                    Directory.CreateDirectory(carpeta);
-
                 if (archivo != null && archivo.Length > 0)
                 {
-                    // Nombre de archivo = cedula + extensión original
                     var extension = Path.GetExtension(archivo.FileName);
-                    var rutaArchivo = Path.Combine(carpeta, $"{cedula}{extension}");
+                    var nombreArchivo = $"{cedula}{extension}";
+                    var rutaRemota = $"/documentos/{nombreArchivo}";
 
-                    // 🔄 Si ya existe una imagen con esa cédula → eliminarla
-                    var archivosExistentes = Directory.GetFiles(carpeta, $"{cedula}.*");
-                    foreach (var file in archivosExistentes)
+                    using (var client = new FtpClient("win8104.site4now.net", new NetworkCredential("lconcordiadoc", "TU_PASSWORD")))
                     {
-                        System.IO.File.Delete(file);
+                        client.Connect();
+
+                        // 🔄 Borrar archivos viejos con esa cédula
+                        foreach (var item in client.GetListing("/documentos"))
+                        {
+                            if (item.Type == FtpObjectType.File && item.Name.StartsWith(cedula))
+                                client.DeleteFile(item.FullName);
+                        }
+
+                        // Subir archivo
+                        using (var stream = archivo.OpenReadStream())
+                        {
+                            client.UploadStream(stream, rutaRemota, FtpRemoteExists.Overwrite, true);
+                        }
                     }
 
-                    // Guardar nueva imagen
-                    using (var stream = new FileStream(rutaArchivo, FileMode.Create))
-                    {
-                        await archivo.CopyToAsync(stream);
-                    }
-
-                    return Ok(new { mensaje = "Imagen guardada correctamente", nombreArchivo = $"{cedula}{extension}" });
+                    return Ok(new { mensaje = "Imagen subida correctamente", nombreArchivo });
                 }
 
-                // Caso en que no se subió archivo → conservar la existente
-                return Ok(new { mensaje = "No se subió nueva imagen, se conserva la existente." });
+                return BadRequest("No se envió ningún archivo.");
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Error al guardar la imagen: {ex.Message}");
+                return StatusCode(500, $"Error al subir la imagen: {ex.Message}");
             }
         }
 
-        // 📌 Buscar imagen por cédula (devuelve ruta relativa para <img>)
+
+        // 📌 Buscar imagen por cédula en FTP
         [HttpGet("BuscarImagenChofer/{cedula}")]
         public IActionResult BuscarImagenChofer(string cedula)
         {
+            string host = "win8104.site4now.net";
+            string user = "lconcordiadoc";
+            string pass = "Geo100100.";
+            string basePath = "/documentos";
+
+            var log = new List<string>();
+
             try
             {
-                var carpeta = Path.Combine("documentos");
-                var archivos = Directory.GetFiles(carpeta, $"{cedula}.*");
+                using var client = new FtpClient(host, new NetworkCredential(user, pass));
+                client.Connect();
+                log.Add("Conexión FTP establecida.");
 
-                if (!archivos.Any())
+                if (!client.DirectoryExists(basePath))
+                    return NotFound("Carpeta '/documentos' no encontrada en FTP.");
+
+                var archivo = client.GetListing(basePath)
+                    .FirstOrDefault(f => f.Name.StartsWith(cedula));
+
+                if (archivo == null)
                     return NotFound("No se encontró ninguna imagen para esta cédula.");
 
-                var archivo = Path.GetFileName(archivos.First());
-                var urlRelativa = $"documentos/{archivo}"; // ruta relativa para usar en <img>
-
-                return Ok(urlRelativa);
+                return Ok(new { url = $"ftp://{user}:{pass}@{host}{archivo.FullName}", log });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Error al buscar la imagen: {ex.Message}");
+                log.Add($"Error al buscar imagen: {ex.Message}");
+                return StatusCode(500, new { mensaje = "Error al buscar imagen", log });
             }
         }
 
-        // 📌 Eliminar imagen por cédula
+        // 📌 Eliminar imagen por cédula en FTP
         [HttpDelete("EliminarImagenChofer/{cedula}")]
         public IActionResult EliminarImagenChofer(string cedula)
         {
+            string host = "win8104.site4now.net";
+            string user = "lconcordiadoc";
+            string pass = "Geo100100.";
+            string basePath = "/documentos";
+
+            var log = new List<string>();
+
             try
             {
-                var carpeta = Path.Combine("documentos");
-                var archivos = Directory.GetFiles(carpeta, $"{cedula}.*");
+                using var client = new FtpClient(host, new NetworkCredential(user, pass));
+                client.Connect();
+                log.Add("Conexión FTP establecida.");
+
+                if (!client.DirectoryExists(basePath))
+                    return Ok(new { mensaje = "No hay carpeta '/documentos' en FTP.", log });
+
+                var archivos = client.GetListing(basePath)
+                    .Where(f => f.Name.StartsWith(cedula))
+                    .Select(f => f.FullName)
+                    .ToList();
 
                 if (!archivos.Any())
-                    return NotFound("No se encontró ninguna imagen para esta cédula.");
+                    return Ok(new { mensaje = "No se encontró ninguna imagen para esta cédula.", log });
 
-                foreach (var archivo in archivos)
+                foreach (var file in archivos)
                 {
-                    System.IO.File.Delete(archivo);
+                    client.DeleteFile(file);
+                    log.Add($"Archivo '{file}' eliminado.");
                 }
 
-                return Ok(new { mensaje = "Imagen eliminada correctamente" });
+                return Ok(new { mensaje = "Imagen eliminada correctamente del FTP", log });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Error al eliminar la imagen: {ex.Message}");
+                log.Add($"Error al eliminar imagen: {ex.Message}");
+                return StatusCode(500, new { mensaje = "Error al eliminar imagen", log });
             }
         }
+
+
 
         // 📌 Método de debug para verificar existencia y permisos de la imagen
-        [HttpGet("VerificarImagen/{cedula}")]
-        public IActionResult VerificarImagen(string cedula)
+
+        [HttpGet("ProbarFtp")]
+        public IActionResult ProbarFtp()
         {
+            string host = "win8104.site4now.net";
+            string user = "lconcordiadoc";
+            string pass = "Geo100100.";
+            string basePath = "/documentos";
+
+            var log = new List<string>();
+            FtpClient client = null;
+
             try
             {
-                var carpeta = Path.Combine("documentos");
-                var archivo = Directory.GetFiles(carpeta, $"{cedula}.*").FirstOrDefault();
+                // 🔹 Inicializar cliente FTP
+                client = new FtpClient(host, new NetworkCredential(user, pass));
+                log.Add("Cliente FTP creado.");
 
-                if (archivo == null)
-                    return NotFound($"No se encontró ninguna imagen para la cédula {cedula}.");
+                // 🔹 Conectar al servidor FTP
+                client.Connect();
+                log.Add("Conexión al servidor FTP establecida.");
 
-                // Comprobar permisos de lectura
-                using (var stream = System.IO.File.OpenRead(archivo)) { }
+                if (!client.IsConnected)
+                {
+                    log.Add("Autenticación fallida.");
+                    return StatusCode(403, new { mensaje = "Error de autenticación FTP", log });
+                }
+                log.Add("Autenticación exitosa.");
 
-                return Ok($"Imagen encontrada y con permisos correctos: {Path.GetFileName(archivo)}");
+                // 🔹 Listar la raíz para depuración
+                var raiz = client.GetListing("/");
+                log.Add("Contenido raíz del FTP:");
+                foreach (var item in raiz)
+                {
+                    log.Add($"- {item.Type}: {item.FullName}");
+                }
+
+                // 🔹 Verificar existencia de la carpeta y crear si no existe
+                if (!client.DirectoryExists(basePath))
+                {
+                    log.Add($"Carpeta '{basePath}' no existe. Creándola...");
+                    client.CreateDirectory(basePath);
+                    log.Add($"Carpeta '{basePath}' creada correctamente.");
+                }
+                else
+                {
+                    log.Add($"Carpeta '{basePath}' encontrada.");
+                }
+
+                // 🔹 Listar archivos dentro de la carpeta
+                var archivos = client.GetListing(basePath);
+                log.Add($"Se encontraron {archivos.Length} archivos en '{basePath}'.");
+
+                // 🔹 Retornar información
+                return Ok(new
+                {
+                    mensaje = "Conexión FTP exitosa ✅",
+                    cantidadArchivos = archivos.Length,
+                    ejemplos = archivos.Take(5).Select(a => a.FullName),
+                    log
+                });
             }
-            catch (UnauthorizedAccessException)
+            catch (FluentFTP.Exceptions.FtpCommandException ftpEx)
             {
-                return StatusCode(403, "No tienes permisos para acceder a la carpeta o al archivo.");
-            }
-            catch (DirectoryNotFoundException)
-            {
-                return NotFound("La carpeta no existe en el servidor.");
+                log.Add($"Error FTP: Código {ftpEx.CompletionCode}, Mensaje: {ftpEx.Message}");
+                return StatusCode(403, new { mensaje = "Error de autenticación FTP", log });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Error inesperado: {ex.Message}");
+                log.Add($"Error inesperado: {ex.Message}");
+                return StatusCode(500, new { mensaje = "Error inesperado", log });
+            }
+            finally
+            {
+                client?.Dispose();
             }
         }
+
+
+
+
 
 
     }

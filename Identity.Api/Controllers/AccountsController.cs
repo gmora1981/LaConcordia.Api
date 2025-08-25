@@ -119,16 +119,23 @@ namespace Identity.Api.Controllers
 
         private async Task<UserToken> BuildToken(UserInfo userinfo)
         {
-            var claims = new List<Claim>()
-            {
-                new Claim(ClaimTypes.Name, userinfo.Email),
-                new Claim(ClaimTypes.Email, userinfo.Email),
-                new Claim("myvalue", "whatever I want")
-            };
-
+            // 🔥 IMPORTANTE: Obtener el usuario de la base de datos para tener el ID
             var identityUser = await _userManager.FindByEmailAsync(userinfo.Email);
-            var claimsDB = await _userManager.GetClaimsAsync(identityUser);
+            if (identityUser == null)
+            {
+                throw new Exception("Usuario no encontrado");
+            }
 
+            var claims = new List<Claim>()
+    {
+        // 🚨 CRÍTICO: Agregar el NameIdentifier claim con el ID del usuario
+        new Claim(ClaimTypes.NameIdentifier, identityUser.Id),
+        new Claim(ClaimTypes.Name, userinfo.Email),
+        new Claim(ClaimTypes.Email, userinfo.Email),
+        new Claim("myvalue", "whatever I want")
+    };
+
+            var claimsDB = await _userManager.GetClaimsAsync(identityUser);
             claims.AddRange(claimsDB);
 
             // IMPORTANTE: Agregar los roles del usuario como claims
@@ -137,7 +144,6 @@ namespace Identity.Api.Controllers
             {
                 claims.Add(new Claim(ClaimTypes.Role, role));
             }
-
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["jwt:key"]));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
@@ -155,7 +161,7 @@ namespace Identity.Api.Controllers
             {
                 Token = new JwtSecurityTokenHandler().WriteToken(token),
                 Expiration = expiration,
-                Rol= roles.FirstOrDefault() ?? "User" // Asignar el primer rol o "User" si no hay roles
+                Rol = roles.FirstOrDefault() ?? "User" // Asignar el primer rol o "User" si no hay roles
             };
         }
     }

@@ -226,7 +226,7 @@ namespace Identity.Api.Controllers
                     var nombreArchivo = $"{cedula}{extension}";
                     var rutaRemota = $"/documentos/{nombreArchivo}";
 
-                    using (var client = new FtpClient("win8104.site4now.net", new NetworkCredential("lconcordiadoc", "TU_PASSWORD")))
+                    using (var client = new FtpClient("win8104.site4now.net", new NetworkCredential("lconcordiadoc", "Geo100100.")))
                     {
                         client.Connect();
 
@@ -253,6 +253,7 @@ namespace Identity.Api.Controllers
             {
                 return StatusCode(500, $"Error al subir la imagen: {ex.Message}");
             }
+
         }
 
 
@@ -265,13 +266,10 @@ namespace Identity.Api.Controllers
             string pass = "Geo100100.";
             string basePath = "/documentos";
 
-            var log = new List<string>();
-
             try
             {
                 using var client = new FtpClient(host, new NetworkCredential(user, pass));
                 client.Connect();
-                log.Add("Conexión FTP establecida.");
 
                 if (!client.DirectoryExists(basePath))
                     return NotFound("Carpeta '/documentos' no encontrada en FTP.");
@@ -282,14 +280,23 @@ namespace Identity.Api.Controllers
                 if (archivo == null)
                     return NotFound("No se encontró ninguna imagen para esta cédula.");
 
-                return Ok(new { url = $"ftp://{user}:{pass}@{host}{archivo.FullName}", log });
+                // Descargar bytes de la imagen
+                using var ms = new MemoryStream();
+                client.DownloadStream(ms, archivo.FullName);
+                ms.Position = 0;
+
+                // Detectar tipo MIME según extensión
+                var contentType = "image/jpeg"; // por defecto
+                if (archivo.Name.EndsWith(".png")) contentType = "image/png";
+
+                return File(ms.ToArray(), contentType);
             }
             catch (Exception ex)
             {
-                log.Add($"Error al buscar imagen: {ex.Message}");
-                return StatusCode(500, new { mensaje = "Error al buscar imagen", log });
+                return StatusCode(500, $"Error al buscar la imagen: {ex.Message}");
             }
         }
+
 
         // 📌 Eliminar imagen por cédula en FTP
         [HttpDelete("EliminarImagenChofer/{cedula}")]

@@ -274,28 +274,25 @@ namespace Identity.Api.Controllers
                 if (!client.DirectoryExists(basePath))
                     return NotFound("Carpeta '/documentos' no encontrada en FTP.");
 
+                // Buscar archivo que empiece con la cédula
                 var archivo = client.GetListing(basePath)
-                    .FirstOrDefault(f => f.Name.StartsWith(cedula));
+                    .FirstOrDefault(f => f.Name.StartsWith(cedula, StringComparison.OrdinalIgnoreCase));
 
                 if (archivo == null)
                     return NotFound("No se encontró ninguna imagen para esta cédula.");
 
-                // Descargar bytes de la imagen
-                using var ms = new MemoryStream();
-                client.DownloadStream(ms, archivo.FullName);
-                ms.Position = 0;
+                // ⚡ Aquí en vez de descargar devolvemos la URL pública
+                string urlPublica = $"https://laconcordia.somee.com/documentos/{archivo.Name}";
 
-                // Detectar tipo MIME según extensión
-                var contentType = "image/jpeg"; // por defecto
-                if (archivo.Name.EndsWith(".png")) contentType = "image/png";
-
-                return File(ms.ToArray(), contentType);
+                return Ok(urlPublica);
             }
             catch (Exception ex)
             {
                 return StatusCode(500, $"Error al buscar la imagen: {ex.Message}");
             }
         }
+
+
 
 
         // 📌 Eliminar imagen por cédula en FTP

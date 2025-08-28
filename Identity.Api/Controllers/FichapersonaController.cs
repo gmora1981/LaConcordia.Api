@@ -1,4 +1,5 @@
 ﻿
+using FluentFTP;
 using Identity.Api.DTO;
 using Identity.Api.Interfaces;
 using Identity.Api.Paginado;
@@ -9,12 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Modelo.laconcordia.Modelo.Database;
 using QuestPDF.Infrastructure;
-using FluentFTP;
-using Microsoft.Extensions.Configuration;
 using System.Net;
-using FluentFTP.Exceptions;
-using System.IO;
-using Microsoft.AspNetCore.Http;
 
 
 //se usar FluentFTP par aenvio ft
@@ -215,46 +211,61 @@ namespace Identity.Api.Controllers
 
 
         // 📌 Subir imagen del chofer
-        [HttpPost("SubirImagenChofer")]
-        public IActionResult SubirImagenChofer([FromForm] IFormFile? archivo, [FromForm] string cedula)
+        [HttpPost("SubirImagenChoferDocumentos")]
+        public IActionResult SubirImagenChofer([FromForm] IFormFile? archivo, [FromForm] string cedula, [FromForm] string tipoDocumento)
         {
+            string host = "win8104.site4now.net";
+            string user = "lconcordiadoc";
+            string pass = "Geo100100.";
+            string basePath = "/documentos";
+            string urlBase = "https://lconcordia.compugtech.com/documentos";
+
+            var log = new List<string>();
+
             try
             {
                 if (archivo != null && archivo.Length > 0)
                 {
                     var extension = Path.GetExtension(archivo.FileName);
-                    var nombreArchivo = $"{cedula}{extension}";
-                    var rutaRemota = $"/documentos/{nombreArchivo}";
+                    var nombreArchivo = $"{cedula}-{tipoDocumento}{extension}";
+                    var rutaRemota = $"{basePath}/{nombreArchivo}";
 
-                    using (var client = new FtpClient("win8104.site4now.net", new NetworkCredential("lconcordiadoc", "Geo100100.")))
+                    using (var client = new FtpClient(host, new NetworkCredential(user, pass)))
                     {
                         client.Connect();
+                        log.Add("Conexión FTP establecida.");
 
-                        // 🔄 Borrar archivos viejos con esa cédula
-                        foreach (var item in client.GetListing("/documentos"))
+                        // 🔄 Borrar únicamente el archivo viejo del mismo tipo
+                        foreach (var item in client.GetListing(basePath))
                         {
-                            if (item.Type == FtpObjectType.File && item.Name.StartsWith(cedula))
+                            if (item.Type == FtpObjectType.File && item.Name.StartsWith($"{cedula}-{tipoDocumento}"))
+                            {
                                 client.DeleteFile(item.FullName);
+                                log.Add($"Archivo viejo eliminado: {item.Name}");
+                            }
                         }
 
-                        // Subir archivo
+                        // 📤 Subir nuevo archivo
                         using (var stream = archivo.OpenReadStream())
                         {
                             client.UploadStream(stream, rutaRemota, FtpRemoteExists.Overwrite, true);
+                            log.Add($"Archivo subido: {nombreArchivo}");
                         }
                     }
 
-                    return Ok(new { mensaje = "Imagen subida correctamente", nombreArchivo });
+                    string urlPublica = $"{urlBase}/{nombreArchivo}";
+                    return Ok(new { mensaje = "Imagen subida correctamente ✅", url = urlPublica, log });
                 }
 
                 return BadRequest("No se envió ningún archivo.");
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Error al subir la imagen: {ex.Message}");
+                log.Add($"Error: {ex.Message}");
+                return StatusCode(500, new { mensaje = "Error al subir la imagen", log });
             }
-
         }
+
 
 
         // 📌 Buscar imagen por cédula en FTP
@@ -266,31 +277,47 @@ namespace Identity.Api.Controllers
             string pass = "Geo100100.";
             string basePath = "/documentos";
 
+            using var client = new FtpClient(host, new NetworkCredential(user, pass));
             try
             {
-                using var client = new FtpClient(host, new NetworkCredential(user, pass));
                 client.Connect();
 
-                if (!client.DirectoryExists(basePath))
-                    return NotFound("Carpeta '/documentos' no encontrada en FTP.");
+                if (!client.IsConnected)
+                    return StatusCode(403, new { mensaje = "Error de autenticación FTP" });
 
-                // Buscar archivo que empiece con la cédula
+                // Buscar el archivo que empiece con la cédula
                 var archivo = client.GetListing(basePath)
-                    .FirstOrDefault(f => f.Name.StartsWith(cedula, StringComparison.OrdinalIgnoreCase));
+                    .FirstOrDefault(f => f.Type == FtpObjectType.File &&
+                                         f.Name.StartsWith(cedula, StringComparison.OrdinalIgnoreCase));
 
                 if (archivo == null)
-                    return NotFound("No se encontró ninguna imagen para esta cédula.");
+                    return NotFound(new { mensaje = $"No se encontró imagen para la cédula {cedula}" });
 
-                // ⚡ Aquí en vez de descargar devolvemos la URL pública
-                string urlPublica = $"https://laconcordia.somee.com/documentos/{archivo.Name}";
+                var remotePath = $"{basePath}/{archivo.Name}";
 
-                return Ok(urlPublica);
+                using var ms = new MemoryStream();
+                client.DownloadStream(ms, remotePath);
+                ms.Position = 0;
+
+                var extension = Path.GetExtension(archivo.Name).ToLowerInvariant();
+                string contentType = extension switch
+                {
+                    ".jpg" or ".jpeg" => "image/jpeg",
+                    ".png" => "image/png",
+                    ".gif" => "image/gif",
+                    _ => "application/octet-stream"
+                };
+
+                // ⚠️ Aquí devuelvo igual que tu método DescargarFoto
+                // Se podrá mostrar en <img src="..."> y también con <a download>
+                return File(ms.ToArray(), contentType, archivo.Name);
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Error al buscar la imagen: {ex.Message}");
+                return StatusCode(500, new { mensaje = $"Error al buscar imagen: {ex.Message}" });
             }
         }
+
 
 
 
@@ -326,17 +353,18 @@ namespace Identity.Api.Controllers
                 foreach (var file in archivos)
                 {
                     client.DeleteFile(file);
-                    log.Add($"Archivo '{file}' eliminado.");
+                    log.Add($"Archivo eliminado: {file}");
                 }
 
-                return Ok(new { mensaje = "Imagen eliminada correctamente del FTP", log });
+                return Ok(new { mensaje = "Imagen eliminada correctamente ✅", log });
             }
             catch (Exception ex)
             {
-                log.Add($"Error al eliminar imagen: {ex.Message}");
+                log.Add($"Error: {ex.Message}");
                 return StatusCode(500, new { mensaje = "Error al eliminar imagen", log });
             }
         }
+
 
 
 
@@ -349,17 +377,16 @@ namespace Identity.Api.Controllers
             string user = "lconcordiadoc";
             string pass = "Geo100100.";
             string basePath = "/documentos";
+            string publicBaseUrl = "https://lconcordia.compugtech.com/documentos";
 
             var log = new List<string>();
             FtpClient client = null;
 
             try
             {
-                // 🔹 Inicializar cliente FTP
                 client = new FtpClient(host, new NetworkCredential(user, pass));
                 log.Add("Cliente FTP creado.");
 
-                // 🔹 Conectar al servidor FTP
                 client.Connect();
                 log.Add("Conexión al servidor FTP establecida.");
 
@@ -370,7 +397,6 @@ namespace Identity.Api.Controllers
                 }
                 log.Add("Autenticación exitosa.");
 
-                // 🔹 Listar la raíz para depuración
                 var raiz = client.GetListing("/");
                 log.Add("Contenido raíz del FTP:");
                 foreach (var item in raiz)
@@ -378,7 +404,6 @@ namespace Identity.Api.Controllers
                     log.Add($"- {item.Type}: {item.FullName}");
                 }
 
-                // 🔹 Verificar existencia de la carpeta y crear si no existe
                 if (!client.DirectoryExists(basePath))
                 {
                     log.Add($"Carpeta '{basePath}' no existe. Creándola...");
@@ -390,16 +415,19 @@ namespace Identity.Api.Controllers
                     log.Add($"Carpeta '{basePath}' encontrada.");
                 }
 
-                // 🔹 Listar archivos dentro de la carpeta
                 var archivos = client.GetListing(basePath);
-                log.Add($"Se encontraron {archivos.Length} archivos en '{basePath}'.");
 
-                // 🔹 Retornar información
+                // Construir URLs públicas
+                var urlsPublicas = archivos
+                    .Where(a => a.Type == FtpObjectType.File)
+                    .Take(5)
+                    .Select(a => $"{publicBaseUrl}/{a.Name}");
+
                 return Ok(new
                 {
                     mensaje = "Conexión FTP exitosa ✅",
                     cantidadArchivos = archivos.Length,
-                    ejemplos = archivos.Take(5).Select(a => a.FullName),
+                    ejemplos = urlsPublicas,
                     log
                 });
             }
@@ -420,6 +448,49 @@ namespace Identity.Api.Controllers
         }
 
 
+
+        [HttpGet("DescargarFoto/{fileName}")]
+        public IActionResult DescargarFoto(string fileName)
+        {
+            string host = "win8104.site4now.net";
+            string user = "lconcordiadoc";
+            string pass = "Geo100100.";
+            string basePath = "/documentos";
+
+            using var client = new FtpClient(host, new NetworkCredential(user, pass));
+            try
+            {
+                client.Connect();
+
+                if (!client.IsConnected)
+                    return StatusCode(403, new { mensaje = "Error de autenticación FTP" });
+
+                var remotePath = $"{basePath}/{fileName}";
+
+                if (!client.FileExists(remotePath))
+                    return NotFound(new { mensaje = $"Archivo {fileName} no existe en FTP" });
+
+                using var ms = new MemoryStream();
+                client.DownloadStream(ms, remotePath);
+                ms.Position = 0;
+
+                // Detectar content type simple (puedes mejorar con un helper si tienes más tipos)
+                var extension = Path.GetExtension(fileName).ToLowerInvariant();
+                string contentType = extension switch
+                {
+                    ".jpg" or ".jpeg" => "image/jpeg",
+                    ".png" => "image/png",
+                    ".gif" => "image/gif",
+                    _ => "application/octet-stream"
+                };
+
+                return File(ms.ToArray(), contentType, fileName);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { mensaje = $"Error al descargar archivo: {ex.Message}" });
+            }
+        }
 
 
 

@@ -270,9 +270,9 @@ namespace Identity.Api.Controllers
         //subir imagen para capeta Licencia, Matricula, vehiculo
         [HttpPost("SubirImagenChoferLMV")]
         public IActionResult SubirImagenChoferLMV(
-    [FromForm] IFormFile? archivo,
-    [FromForm] string cedula,
-    [FromForm] string tipoCarpeta) // <-- Licencia | Matricula | Vehiculo
+        [FromForm] IFormFile? archivo,
+        [FromForm] string cedula,
+        [FromForm] string tipoCarpeta) // <-- Licencia | Matricula | Vehiculo
         {
             return SubirArchivoFtp(archivo, cedula, tipoCarpeta);
         }
@@ -390,9 +390,6 @@ namespace Identity.Api.Controllers
                 return StatusCode(500, new { mensaje = $"Error al buscar imagen: {ex.Message}" });
             }
         }
-
-
-
 
 
         // 📌 Eliminar imagen por cédula en FTP

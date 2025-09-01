@@ -267,6 +267,79 @@ namespace Identity.Api.Controllers
         }
 
 
+        //subir imagen para capeta Licencia, Matricula, vehiculo
+        [HttpPost("SubirImagenChoferLMV")]
+        public IActionResult SubirImagenChoferLMV(
+    [FromForm] IFormFile? archivo,
+    [FromForm] string cedula,
+    [FromForm] string tipoCarpeta) // <-- Licencia | Matricula | Vehiculo
+        {
+            return SubirArchivoFtp(archivo, cedula, tipoCarpeta);
+        }
+
+        private IActionResult SubirArchivoFtp(IFormFile? archivo, string cedula, string carpeta)
+        {
+            string host = "win8104.site4now.net";
+            string user = "lconcordiadoc";
+            string pass = "Geo100100.";
+            string basePath = $"/{carpeta}";
+            string urlBase = $"https://lconcordia.compugtech.com/{carpeta}";
+
+            var log = new List<string>();
+
+            try
+            {
+                if (archivo != null && archivo.Length > 0)
+                {
+                    var extension = Path.GetExtension(archivo.FileName);
+                    var nombreArchivo = $"{cedula}{extension}";
+                    var rutaRemota = $"{basePath}/{nombreArchivo}";
+
+                    using (var client = new FtpClient(host, new NetworkCredential(user, pass)))
+                    {
+                        client.Connect();
+                        log.Add("Conexión FTP establecida.");
+
+                        // 🔧 Crear carpeta si no existe
+                        client.CreateDirectory(basePath, true);
+
+                        // 🔄 Borrar archivo viejo del mismo chofer
+                        foreach (var item in client.GetListing(basePath))
+                        {
+                            if (item.Type == FtpObjectType.File && item.Name.StartsWith(cedula))
+                            {
+                                client.DeleteFile(item.FullName);
+                                log.Add($"Archivo viejo eliminado: {item.Name}");
+                            }
+                        }
+
+                        // 📤 Subir nuevo archivo
+                        using (var stream = archivo.OpenReadStream())
+                        {
+                            client.UploadStream(stream, rutaRemota, FtpRemoteExists.Overwrite, true);
+                            log.Add($"Archivo subido: {nombreArchivo}");
+                        }
+                    }
+
+                    string urlPublica = $"{urlBase}/{nombreArchivo}";
+                    return Ok(new { mensaje = $"Imagen subida en {carpeta} ✅", url = urlPublica, log });
+                }
+
+                return BadRequest("No se envió ningún archivo.");
+            }
+            catch (Exception ex)
+            {
+                log.Add($"Error: {ex.Message}");
+                return StatusCode(500, new { mensaje = "Error al subir la imagen", log });
+            }
+        }
+
+
+
+
+
+
+
 
         // 📌 Buscar imagen por cédula en FTP
         [HttpGet("BuscarImagenChofer/{cedula}")]

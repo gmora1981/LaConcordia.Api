@@ -426,13 +426,6 @@ namespace Identity.Api.Controllers
 
 
 
-
-
-
-
-
-
-
         // 📌 Buscar imagen por cédula en FTP
         [HttpGet("BuscarImagenesChofer/{cedula}")]
         public IActionResult BuscarImagenesChofer(string cedula)

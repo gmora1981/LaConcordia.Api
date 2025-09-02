@@ -632,49 +632,127 @@ namespace Identity.Api.Controllers
 
 
 
-        [HttpGet("DescargarFoto/{fileName}")]
-        public IActionResult DescargarFoto(string fileName)
+        //[HttpGet("DescargarFoto/{fileName}")]
+        //public IActionResult DescargarFoto(string fileName)
+        //{
+        //    string host = "win8104.site4now.net";
+        //    string user = "lconcordiadoc";
+        //    string pass = "Geo100100.";
+        //    string basePath = "/documentos";
+
+        //    using var client = new FtpClient(host, new NetworkCredential(user, pass));
+        //    try
+        //    {
+        //        client.Connect();
+
+        //        if (!client.IsConnected)
+        //            return StatusCode(403, new { mensaje = "Error de autenticación FTP" });
+
+        //        var remotePath = $"{basePath}/{fileName}";
+
+        //        if (!client.FileExists(remotePath))
+        //            return NotFound(new { mensaje = $"Archivo {fileName} no existe en FTP" });
+
+        //        using var ms = new MemoryStream();
+        //        client.DownloadStream(ms, remotePath);
+        //        ms.Position = 0;
+
+        //        // Detectar content type simple (puedes mejorar con un helper si tienes más tipos)
+        //        var extension = Path.GetExtension(fileName).ToLowerInvariant();
+        //        string contentType = extension switch
+        //        {
+        //            ".jpg" or ".jpeg" => "image/jpeg",
+        //            ".png" => "image/png",
+        //            ".gif" => "image/gif",
+        //            _ => "application/octet-stream"
+        //        };
+
+        //        return File(ms.ToArray(), contentType, fileName);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return StatusCode(500, new { mensaje = $"Error al descargar archivo: {ex.Message}" });
+        //    }
+        //}
+
+        [HttpGet("DescargarImagenesChofer/{cedula}")]
+        public IActionResult DescargarImagenesChofer(string cedula)
         {
             string host = "win8104.site4now.net";
             string user = "lconcordiadoc";
             string pass = "Geo100100.";
-            string basePath = "/documentos";
+
+            var carpetas = new Dictionary<string, string>
+    {
+        { "Documento", "/documentos" },
+        { "Licencia", "/Licencia" },
+        { "Matricula", "/Matricula" },
+        { "Vehiculo", "/Vehiculo" }
+    };
+
+            var resultado = new
+            {
+                Frontal = (string?)null,
+                Trasera = (string?)null,
+                Licencia = (string?)null,
+                Matricula = (string?)null,
+                Vehiculo = (string?)null
+            };
 
             using var client = new FtpClient(host, new NetworkCredential(user, pass));
             try
             {
                 client.Connect();
-
                 if (!client.IsConnected)
                     return StatusCode(403, new { mensaje = "Error de autenticación FTP" });
 
-                var remotePath = $"{basePath}/{fileName}";
+                // variables locales
+                string? frontal = null, trasera = null, licencia = null, matricula = null, vehiculo = null;
 
-                if (!client.FileExists(remotePath))
-                    return NotFound(new { mensaje = $"Archivo {fileName} no existe en FTP" });
-
-                using var ms = new MemoryStream();
-                client.DownloadStream(ms, remotePath);
-                ms.Position = 0;
-
-                // Detectar content type simple (puedes mejorar con un helper si tienes más tipos)
-                var extension = Path.GetExtension(fileName).ToLowerInvariant();
-                string contentType = extension switch
+                foreach (var item in carpetas)
                 {
-                    ".jpg" or ".jpeg" => "image/jpeg",
-                    ".png" => "image/png",
-                    ".gif" => "image/gif",
-                    _ => "application/octet-stream"
-                };
+                    var carpetaNombre = item.Key;
+                    var carpetaRuta = item.Value;
 
-                return File(ms.ToArray(), contentType, fileName);
+                    var archivos = client.GetListing(carpetaRuta)
+                                         .Where(f => f.Type == FtpObjectType.File &&
+                                                     f.Name.StartsWith(cedula, StringComparison.OrdinalIgnoreCase))
+                                         .ToList();
+
+                    foreach (var archivo in archivos)
+                    {
+                        using var ms = new MemoryStream();
+                        client.DownloadStream(ms, archivo.FullName);
+                        ms.Position = 0;
+                        var base64 = Convert.ToBase64String(ms.ToArray());
+
+                        if (carpetaNombre == "Documento" && archivo.Name.Contains("FRONTAL", StringComparison.OrdinalIgnoreCase))
+                            frontal = base64;
+                        else if (carpetaNombre == "Documento" && archivo.Name.Contains("TRASERA", StringComparison.OrdinalIgnoreCase))
+                            trasera = base64;
+                        else if (carpetaNombre == "Licencia")
+                            licencia = base64;
+                        else if (carpetaNombre == "Matricula")
+                            matricula = base64;
+                        else if (carpetaNombre == "Vehiculo")
+                            vehiculo = base64;
+                    }
+                }
+
+                return Ok(new
+                {
+                    Frontal = frontal,
+                    Trasera = trasera,
+                    Licencia = licencia,
+                    Matricula = matricula,
+                    Vehiculo = vehiculo
+                });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { mensaje = $"Error al descargar archivo: {ex.Message}" });
+                return StatusCode(500, new { mensaje = $"Error al descargar imágenes: {ex.Message}" });
             }
         }
-
 
 
 

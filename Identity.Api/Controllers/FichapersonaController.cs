@@ -266,25 +266,15 @@ namespace Identity.Api.Controllers
             }
         }
 
-
-        //subir imagen para capeta Licencia, Matricula, vehiculo
-        [HttpPost("SubirImagenChoferLMV")]
-        public IActionResult SubirImagenChoferLMV(
-    [FromForm] IFormFile? archivo,
-    [FromForm] string cedula,
-    [FromForm] string tipoCarpeta) // <-- Licencia | Matricula | Vehiculo
-        {
-            return SubirArchivoFtp(archivo, cedula, tipoCarpeta);
-        }
-
-        private IActionResult SubirArchivoFtp(IFormFile? archivo, string cedula, string carpeta)
+        // 📌 Subir imagen de Matrícula
+        [HttpPost("SubirImagenMatricula")]
+        public IActionResult SubirImagenMatricula([FromForm] IFormFile? archivo, [FromForm] string cedula)
         {
             string host = "win8104.site4now.net";
             string user = "lconcordiadoc";
             string pass = "Geo100100.";
-            string basePath = $"/{carpeta}";
-            string urlBase = $"https://lconcordia.compugtech.com/{carpeta}";
-
+            string basePath = "/matricula";
+            string urlBase = "https://lconcordia.compugtech.com/matricula";
             var log = new List<string>();
 
             try
@@ -300,29 +290,23 @@ namespace Identity.Api.Controllers
                         client.Connect();
                         log.Add("Conexión FTP establecida.");
 
-                        // 🔧 Crear carpeta si no existe
-                        client.CreateDirectory(basePath, true);
+                        if (!client.DirectoryExists(basePath)) client.CreateDirectory(basePath);
 
-                        // 🔄 Borrar archivo viejo del mismo chofer
                         foreach (var item in client.GetListing(basePath))
-                        {
                             if (item.Type == FtpObjectType.File && item.Name.StartsWith(cedula))
                             {
                                 client.DeleteFile(item.FullName);
                                 log.Add($"Archivo viejo eliminado: {item.Name}");
                             }
-                        }
 
-                        // 📤 Subir nuevo archivo
                         using (var stream = archivo.OpenReadStream())
-                        {
                             client.UploadStream(stream, rutaRemota, FtpRemoteExists.Overwrite, true);
-                            log.Add($"Archivo subido: {nombreArchivo}");
-                        }
+
+                        log.Add($"Archivo subido: {nombreArchivo}");
                     }
 
                     string urlPublica = $"{urlBase}/{nombreArchivo}";
-                    return Ok(new { mensaje = $"Imagen subida en {carpeta} ✅", url = urlPublica, log });
+                    return Ok(new { mensaje = "Imagen de matrícula subida correctamente ✅", url = urlPublica, log });
                 }
 
                 return BadRequest("No se envió ningún archivo.");
@@ -330,9 +314,117 @@ namespace Identity.Api.Controllers
             catch (Exception ex)
             {
                 log.Add($"Error: {ex.Message}");
-                return StatusCode(500, new { mensaje = "Error al subir la imagen", log });
+                return StatusCode(500, new { mensaje = "Error al subir la imagen de matrícula", log });
             }
         }
+
+        // 📌 Subir imagen de Vehículo
+        [HttpPost("SubirImagenVehiculo")]
+        public IActionResult SubirImagenVehiculo([FromForm] IFormFile? archivo, [FromForm] string cedula)
+        {
+            string host = "win8104.site4now.net";
+            string user = "lconcordiadoc";
+            string pass = "Geo100100.";
+            string basePath = "/vehiculo";
+            string urlBase = "https://lconcordia.compugtech.com/vehiculo";
+            var log = new List<string>();
+
+            try
+            {
+                if (archivo != null && archivo.Length > 0)
+                {
+                    var extension = Path.GetExtension(archivo.FileName);
+                    var nombreArchivo = $"{cedula}{extension}";
+                    var rutaRemota = $"{basePath}/{nombreArchivo}";
+
+                    using (var client = new FtpClient(host, new NetworkCredential(user, pass)))
+                    {
+                        client.Connect();
+                        log.Add("Conexión FTP establecida.");
+
+                        if (!client.DirectoryExists(basePath)) client.CreateDirectory(basePath);
+
+                        foreach (var item in client.GetListing(basePath))
+                            if (item.Type == FtpObjectType.File && item.Name.StartsWith(cedula))
+                            {
+                                client.DeleteFile(item.FullName);
+                                log.Add($"Archivo viejo eliminado: {item.Name}");
+                            }
+
+                        using (var stream = archivo.OpenReadStream())
+                            client.UploadStream(stream, rutaRemota, FtpRemoteExists.Overwrite, true);
+
+                        log.Add($"Archivo subido: {nombreArchivo}");
+                    }
+
+                    string urlPublica = $"{urlBase}/{nombreArchivo}";
+                    return Ok(new { mensaje = "Imagen de vehículo subida correctamente ✅", url = urlPublica, log });
+                }
+
+                return BadRequest("No se envió ningún archivo.");
+            }
+            catch (Exception ex)
+            {
+                log.Add($"Error: {ex.Message}");
+                return StatusCode(500, new { mensaje = "Error al subir la imagen de vehículo", log });
+            }
+        }
+
+        // 📌 Subir imagen de Licencia
+        [HttpPost("SubirImagenLicencia")]
+        public IActionResult SubirImagenLicencia([FromForm] IFormFile? archivo, [FromForm] string cedula)
+        {
+            string host = "win8104.site4now.net";
+            string user = "lconcordiadoc";
+            string pass = "Geo100100.";
+            string basePath = "/licencia";
+            string urlBase = "https://lconcordia.compugtech.com/licencia";
+            var log = new List<string>();
+
+            try
+            {
+                if (archivo != null && archivo.Length > 0)
+                {
+                    var extension = Path.GetExtension(archivo.FileName);
+                    var nombreArchivo = $"{cedula}{extension}";
+                    var rutaRemota = $"{basePath}/{nombreArchivo}";
+
+                    using (var client = new FtpClient(host, new NetworkCredential(user, pass)))
+                    {
+                        client.Connect();
+                        log.Add("Conexión FTP establecida.");
+
+                        if (!client.DirectoryExists(basePath)) client.CreateDirectory(basePath);
+
+                        foreach (var item in client.GetListing(basePath))
+                            if (item.Type == FtpObjectType.File && item.Name.StartsWith(cedula))
+                            {
+                                client.DeleteFile(item.FullName);
+                                log.Add($"Archivo viejo eliminado: {item.Name}");
+                            }
+
+                        using (var stream = archivo.OpenReadStream())
+                            client.UploadStream(stream, rutaRemota, FtpRemoteExists.Overwrite, true);
+
+                        log.Add($"Archivo subido: {nombreArchivo}");
+                    }
+
+                    string urlPublica = $"{urlBase}/{nombreArchivo}";
+                    return Ok(new { mensaje = "Imagen de licencia subida correctamente ✅", url = urlPublica, log });
+                }
+
+                return BadRequest("No se envió ningún archivo.");
+            }
+            catch (Exception ex)
+            {
+                log.Add($"Error: {ex.Message}");
+                return StatusCode(500, new { mensaje = "Error al subir la imagen de licencia", log });
+            }
+        }
+
+
+
+
 
 
 
@@ -342,54 +434,79 @@ namespace Identity.Api.Controllers
 
 
         // 📌 Buscar imagen por cédula en FTP
-        [HttpGet("BuscarImagenChofer/{cedula}")]
-        public IActionResult BuscarImagenChofer(string cedula)
+        [HttpGet("BuscarImagenesChofer/{cedula}")]
+        public IActionResult BuscarImagenesChofer(string cedula)
         {
             string host = "win8104.site4now.net";
             string user = "lconcordiadoc";
             string pass = "Geo100100.";
-            string basePath = "/documentos";
+
+            var carpetas = new Dictionary<string, string>
+    {
+        { "Documento", "/documentos" },
+        { "Licencia", "/Licencia" },
+        { "Matricula", "/Matricula" },
+        { "Vehiculo", "/Vehiculo" }
+    };
+
+            bool frontal = false;
+            bool trasera = false;
+            bool licencia = false;
+            bool matricula = false;
+            bool vehiculo = false;
 
             using var client = new FtpClient(host, new NetworkCredential(user, pass));
             try
             {
                 client.Connect();
-
                 if (!client.IsConnected)
                     return StatusCode(403, new { mensaje = "Error de autenticación FTP" });
 
-                // Buscar el archivo que empiece con la cédula
-                var archivo = client.GetListing(basePath)
-                    .FirstOrDefault(f => f.Type == FtpObjectType.File &&
-                                         f.Name.StartsWith(cedula, StringComparison.OrdinalIgnoreCase));
-
-                if (archivo == null)
-                    return NotFound(new { mensaje = $"No se encontró imagen para la cédula {cedula}" });
-
-                var remotePath = $"{basePath}/{archivo.Name}";
-
-                using var ms = new MemoryStream();
-                client.DownloadStream(ms, remotePath);
-                ms.Position = 0;
-
-                var extension = Path.GetExtension(archivo.Name).ToLowerInvariant();
-                string contentType = extension switch
+                foreach (var item in carpetas)
                 {
-                    ".jpg" or ".jpeg" => "image/jpeg",
-                    ".png" => "image/png",
-                    ".gif" => "image/gif",
-                    _ => "application/octet-stream"
-                };
+                    var carpetaNombre = item.Key;
+                    var carpetaRuta = item.Value;
 
-                // ⚠️ Aquí devuelvo igual que tu método DescargarFoto
-                // Se podrá mostrar en <img src="..."> y también con <a download>
-                return File(ms.ToArray(), contentType, archivo.Name);
+                    var archivos = client.GetListing(carpetaRuta)
+                                         .Where(f => f.Type == FtpObjectType.File &&
+                                                     f.Name.StartsWith(cedula, StringComparison.OrdinalIgnoreCase))
+                                         .ToList();
+
+                    if (carpetaNombre == "Documento")
+                    {
+                        frontal = archivos.Any(a => a.Name.Contains("FRONTAL", StringComparison.OrdinalIgnoreCase));
+                        trasera = archivos.Any(a => a.Name.Contains("TRASERA", StringComparison.OrdinalIgnoreCase));
+                    }
+                    else if (carpetaNombre == "Licencia")
+                    {
+                        licencia = archivos.Any();
+                    }
+                    else if (carpetaNombre == "Matricula")
+                    {
+                        matricula = archivos.Any();
+                    }
+                    else if (carpetaNombre == "Vehiculo")
+                    {
+                        vehiculo = archivos.Any();
+                    }
+                }
+
+                return Ok(new
+                {
+                    Frontal = frontal,
+                    Trasera = trasera,
+                    Licencia = licencia,
+                    Matricula = matricula,
+                    Vehiculo = vehiculo
+                });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { mensaje = $"Error al buscar imagen: {ex.Message}" });
+                return StatusCode(500, new { mensaje = $"Error al buscar imágenes: {ex.Message}" });
             }
         }
+
+
 
 
 

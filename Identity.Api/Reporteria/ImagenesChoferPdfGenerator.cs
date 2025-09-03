@@ -1,5 +1,6 @@
 ﻿using QuestPDF.Fluent;
 using QuestPDF.Helpers;
+using QuestPDF.Infrastructure;
 
 namespace Identity.Api.Reporteria
 {
@@ -22,7 +23,7 @@ namespace Identity.Api.Reporteria
                     page.Margin(20);
                     page.Size(PageSizes.A4);
                     page.PageColor(Colors.White);
-                    page.DefaultTextStyle(x => x.FontSize(10));
+                    page.DefaultTextStyle(x => x.FontSize(10).FontColor(Colors.Black));
 
                     // ===== CABECERA =====
                     page.Header().Height(80).Row(row =>
@@ -31,7 +32,7 @@ namespace Identity.Api.Reporteria
                         row.RelativeColumn(2).AlignMiddle().AlignLeft().Column(col =>
                         {
                             if (logoImage != null)
-                                col.Item().Image(logoImage);
+                                col.Item().Image(logoImage).FitWidth();
                         });
 
                         // Columna central (título)
@@ -41,82 +42,94 @@ namespace Identity.Api.Reporteria
                                 .SemiBold().FontSize(14).FontColor(Colors.Black);
 
                             col.Item().AlignCenter().Text("Servicio de Transporte Exclusivo Puerta a Puerta")
-                                .SemiBold().FontSize(12).FontColor(Colors.Black);
+                                .SemiBold().FontSize(12).FontColor(Colors.Grey.Darken2);
 
                             col.Item().AlignCenter().Text("Tlf: 2606425 Claro: 0994227299 Movistar: 0987117307")
-                                .SemiBold().FontSize(10).FontColor(Colors.Black);
+                                .SemiBold().FontSize(10).FontColor(Colors.Grey.Darken2);
                         });
 
                         // Columna derecha (fecha y hora)
                         row.RelativeColumn(2).Column(col =>
                         {
                             col.Item().AlignRight().Text($"Fecha Emisión: {DateTime.Now:dd/MM/yyyy}")
-                                .FontSize(7).FontColor(Colors.Grey.Darken1).Bold();
+                                .FontSize(8).FontColor(Colors.Grey.Darken1).Bold();
 
                             col.Item().AlignRight().Text($"Hora Emisión: {DateTime.Now:HH:mm:ss}")
-                                .FontSize(7).FontColor(Colors.Grey.Darken1).Bold();
+                                .FontSize(8).FontColor(Colors.Grey.Darken1).Bold();
                         });
                     });
 
                     // ===== CONTENIDO =====
                     page.Content().PaddingVertical(10).Column(col =>
                     {
-                        // DOCUMENTOS (Frontal y Trasera en fila)
-                        col.Item().Text("Documento de Identidad").Bold().FontSize(12).Underline();
-                        col.Item().Row(row =>
+                        // Bloque helper
+                        void SeccionConBorde(string titulo, Action<IContainer> contenido)
                         {
-                            row.RelativeColumn().Element(e =>
+                            col.Item().PaddingBottom(15).Border(1).BorderColor(Colors.Grey.Lighten1).Padding(10).Column(c =>
                             {
-                                if (!string.IsNullOrEmpty(frontal))
-                                    e.Image(Convert.FromBase64String(frontal)).FitArea();
-                                else
-                                    e.Text("Frontal no encontrado").FontColor(Colors.Red.Medium);
-                            });
+                                c.Item().Background(Colors.Grey.Lighten3).Padding(5).Text(titulo)
+                                    .SemiBold().FontSize(12).FontColor(Colors.Black);
 
-                            row.RelativeColumn().Element(e =>
+                                c.Item().PaddingTop(5).Element(contenido);
+                            });
+                        }
+
+                        // Documento de Identidad
+                        SeccionConBorde("Documento de Identidad", e =>
+                        {
+                            e.Row(row =>
                             {
-                                if (!string.IsNullOrEmpty(trasera))
-                                    e.Image(Convert.FromBase64String(trasera)).FitArea();
-                                else
-                                    e.Text("Trasera no encontrada").FontColor(Colors.Red.Medium);
+                                row.RelativeColumn().Element(cell =>
+                                {
+                                    if (!string.IsNullOrEmpty(frontal))
+                                        cell.Image(Convert.FromBase64String(frontal)).FitArea();
+                                    else
+                                        cell.Text("Frontal no encontrado").FontColor(Colors.Red.Medium).Bold();
+                                });
+
+                                row.RelativeColumn().Element(cell =>
+                                {
+                                    if (!string.IsNullOrEmpty(trasera))
+                                        cell.Image(Convert.FromBase64String(trasera)).FitArea();
+                                    else
+                                        cell.Text("Trasera no encontrada").FontColor(Colors.Red.Medium).Bold();
+                                });
                             });
                         });
 
-                        col.Item().PaddingVertical(10);
-
-                        // MATRICULA
-                        col.Item().Text("Matrícula").Bold().FontSize(12).Underline();
-                        col.Item().Element(e =>
+                        // Matrícula
+                        SeccionConBorde("Matrícula", e =>
                         {
                             if (!string.IsNullOrEmpty(matricula))
                                 e.Image(Convert.FromBase64String(matricula)).FitArea();
                             else
-                                e.Text("Matrícula no encontrada").FontColor(Colors.Red.Medium);
+                                e.Text("Matrícula no encontrada").FontColor(Colors.Red.Medium).Bold();
                         });
 
-                        col.Item().PaddingVertical(10);
-
-                        // LICENCIA
-                        col.Item().Text("Licencia").Bold().FontSize(12).Underline();
-                        col.Item().Element(e =>
+                        // Licencia
+                        SeccionConBorde("Licencia", e =>
                         {
                             if (!string.IsNullOrEmpty(licencia))
                                 e.Image(Convert.FromBase64String(licencia)).FitArea();
                             else
-                                e.Text("Licencia no encontrada").FontColor(Colors.Red.Medium);
+                                e.Text("Licencia no encontrada").FontColor(Colors.Red.Medium).Bold();
                         });
 
-                        col.Item().PaddingVertical(10);
-
-                        // VEHICULO (ocupa casi toda la hoja)
-                        col.Item().Text("Vehículo").Bold().FontSize(12).Underline();
-                        col.Item().Element(e =>
+                        // Vehículo
+                        SeccionConBorde("Vehículo", e =>
                         {
                             if (!string.IsNullOrEmpty(vehiculo))
                                 e.Image(Convert.FromBase64String(vehiculo)).FitArea();
                             else
-                                e.Text("Vehículo no encontrado").FontColor(Colors.Red.Medium);
+                                e.Text("Vehículo no encontrado").FontColor(Colors.Red.Medium).Bold();
                         });
+                    });
+
+                    // ===== FOOTER =====
+                    page.Footer().AlignCenter().Text(txt =>
+                    {
+                        txt.Span("Documento generado automáticamente - ").FontSize(8).FontColor(Colors.Grey.Darken1);
+                        txt.Span("SERVICIO DE TRANSPORTE “LA CONCORDIA”").Bold().FontSize(8).FontColor(Colors.Grey.Darken2);
                     });
                 });
             });

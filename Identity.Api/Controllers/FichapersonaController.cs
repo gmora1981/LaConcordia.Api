@@ -690,14 +690,7 @@ namespace Identity.Api.Controllers
         { "Vehiculo", "/Vehiculo" }
     };
 
-            var resultado = new
-            {
-                Frontal = (string?)null,
-                Trasera = (string?)null,
-                Licencia = (string?)null,
-                Matricula = (string?)null,
-                Vehiculo = (string?)null
-            };
+            string? frontal = null, trasera = null, licencia = null, matricula = null, vehiculo = null;
 
             using var client = new FtpClient(host, new NetworkCredential(user, pass));
             try
@@ -705,9 +698,6 @@ namespace Identity.Api.Controllers
                 client.Connect();
                 if (!client.IsConnected)
                     return StatusCode(403, new { mensaje = "Error de autenticación FTP" });
-
-                // variables locales
-                string? frontal = null, trasera = null, licencia = null, matricula = null, vehiculo = null;
 
                 foreach (var item in carpetas)
                 {
@@ -739,20 +729,20 @@ namespace Identity.Api.Controllers
                     }
                 }
 
-                return Ok(new
-                {
-                    Frontal = frontal,
-                    Trasera = trasera,
-                    Licencia = licencia,
-                    Matricula = matricula,
-                    Vehiculo = vehiculo
-                });
+                // 🔹 Configurar licencia de QuestPDF ANTES de generar el PDF
+                QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
+
+                // Generar PDF con el generador
+                var pdfBytes = ImagenesChoferPdfGenerator.GenerarPdf(frontal, trasera, licencia, matricula, vehiculo);
+
+                return File(pdfBytes, "application/pdf", $"ImagenesChofer_{cedula}.pdf");
             }
             catch (Exception ex)
             {
                 return StatusCode(500, new { mensaje = $"Error al descargar imágenes: {ex.Message}" });
             }
         }
+
 
 
 

@@ -62,27 +62,18 @@ namespace Identity.Api.Reporteria
                     // ===== CONTENIDO =====
                     page.Content().PaddingVertical(10).Column(col =>
                     {
-                        // Bloque helper
-                        void SeccionConBorde(string titulo, Action<IContainer> contenido)
+                        // Documento de Identidad (2 columnas)
+                        col.Item().Border(1).BorderColor(Colors.Grey.Lighten1).Padding(5).Column(c =>
                         {
-                            col.Item().PaddingBottom(15).Border(1).BorderColor(Colors.Grey.Lighten1).Padding(10).Column(c =>
-                            {
-                                c.Item().Background(Colors.Grey.Lighten3).Padding(5).Text(titulo)
-                                    .SemiBold().FontSize(12).FontColor(Colors.Black);
+                            c.Item().Background(Colors.Grey.Lighten3).Padding(5).Text("Documento de Identidad")
+                                .SemiBold().FontSize(12).FontColor(Colors.Black);
 
-                                c.Item().PaddingTop(5).Element(contenido);
-                            });
-                        }
-
-                        // Documento de Identidad
-                        SeccionConBorde("Documento de Identidad", e =>
-                        {
-                            e.Row(row =>
+                            c.Item().Row(row =>
                             {
                                 row.RelativeColumn().Element(cell =>
                                 {
                                     if (!string.IsNullOrEmpty(frontal))
-                                        cell.Image(Convert.FromBase64String(frontal)).FitArea();
+                                        cell.Height(150).Image(Convert.FromBase64String(frontal)).FitHeight(); // Altura controlada
                                     else
                                         cell.Text("Frontal no encontrado").FontColor(Colors.Red.Medium).Bold();
                                 });
@@ -90,40 +81,52 @@ namespace Identity.Api.Reporteria
                                 row.RelativeColumn().Element(cell =>
                                 {
                                     if (!string.IsNullOrEmpty(trasera))
-                                        cell.Image(Convert.FromBase64String(trasera)).FitArea();
+                                        cell.Height(150).Image(Convert.FromBase64String(trasera)).FitHeight();
                                     else
                                         cell.Text("Trasera no encontrada").FontColor(Colors.Red.Medium).Bold();
                                 });
                             });
                         });
 
-                        // Matrícula
-                        SeccionConBorde("Matrícula", e =>
+                        // Matrícula y Licencia (dos columnas en la misma fila)
+                        col.Item().PaddingTop(10).Row(row =>
                         {
-                            if (!string.IsNullOrEmpty(matricula))
-                                e.Image(Convert.FromBase64String(matricula)).FitArea();
-                            else
-                                e.Text("Matrícula no encontrada").FontColor(Colors.Red.Medium).Bold();
+                            row.RelativeColumn().Border(1).BorderColor(Colors.Grey.Lighten1).Padding(5).Column(c =>
+                            {
+                                c.Item().Background(Colors.Grey.Lighten3).Padding(5).Text("Matrícula")
+                                    .SemiBold().FontSize(12).FontColor(Colors.Black);
+
+                                if (!string.IsNullOrEmpty(matricula))
+                                    c.Item().Height(150).Image(Convert.FromBase64String(matricula)).FitHeight();
+                                else
+                                    c.Item().Text("Matrícula no encontrada").FontColor(Colors.Red.Medium).Bold();
+                            });
+
+                            row.RelativeColumn().Border(1).BorderColor(Colors.Grey.Lighten1).Padding(5).Column(c =>
+                            {
+                                c.Item().Background(Colors.Grey.Lighten3).Padding(5).Text("Licencia")
+                                    .SemiBold().FontSize(12).FontColor(Colors.Black);
+
+                                if (!string.IsNullOrEmpty(licencia))
+                                    c.Item().Height(150).Image(Convert.FromBase64String(licencia)).FitHeight();
+                                else
+                                    c.Item().Text("Licencia no encontrada").FontColor(Colors.Red.Medium).Bold();
+                            });
                         });
 
-                        // Licencia
-                        SeccionConBorde("Licencia", e =>
+                        // Vehículo (ocupa toda la fila)
+                        col.Item().PaddingTop(10).Border(1).BorderColor(Colors.Grey.Lighten1).Padding(5).Column(c =>
                         {
-                            if (!string.IsNullOrEmpty(licencia))
-                                e.Image(Convert.FromBase64String(licencia)).FitArea();
-                            else
-                                e.Text("Licencia no encontrada").FontColor(Colors.Red.Medium).Bold();
-                        });
+                            c.Item().Background(Colors.Grey.Lighten3).Padding(5).Text("Vehículo")
+                                .SemiBold().FontSize(12).FontColor(Colors.Black);
 
-                        // Vehículo
-                        SeccionConBorde("Vehículo", e =>
-                        {
                             if (!string.IsNullOrEmpty(vehiculo))
-                                e.Image(Convert.FromBase64String(vehiculo)).FitArea();
+                                c.Item().Height(200).Image(Convert.FromBase64String(vehiculo)).FitHeight(); // un poco más alto
                             else
-                                e.Text("Vehículo no encontrado").FontColor(Colors.Red.Medium).Bold();
+                                c.Item().Text("Vehículo no encontrado").FontColor(Colors.Red.Medium).Bold();
                         });
                     });
+
 
                     // ===== FOOTER =====
                     page.Footer().AlignCenter().Text(txt =>

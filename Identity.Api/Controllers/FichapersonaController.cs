@@ -44,6 +44,15 @@ namespace Identity.Api.Controllers
             return Ok(item);
         }
 
+        [HttpGet("GetFichaPersonalByCorreo/{correo}")]
+        public IActionResult GetByCorreo(string correo)
+        {
+            var item = _fichapersona.GetFichaPersonalByCorreo(correo);
+            if (item == null)
+                return NotFound("Ficha personal con ese correo no encontrado.");
+            return Ok(item);
+        }
+
         [HttpPost("InsertFichaPersonal")]
         public IActionResult Create([FromBody] FichapersonalDTO nueva)
         {

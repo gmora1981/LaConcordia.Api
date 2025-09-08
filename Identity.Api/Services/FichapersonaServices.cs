@@ -16,6 +16,10 @@ namespace Identity.Api.Services
         {
             return _fichapersonaRepository.GetFichaPersonalById(cedula);
         }
+        public FichapersonalDTO GetFichaPersonalByCorreo(string correo)
+        {
+            return _fichapersonaRepository.GetFichaPersonalByCorreo(correo);
+        }
         public void InsertFichaPersonal(FichapersonalDTO New)
         {
             _fichapersonaRepository.InsertFichaPersonal(New);

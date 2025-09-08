@@ -1,9 +1,7 @@
 ﻿using Identity.Api.DTO;
-using Identity.Api.Interfaces;
 using Identity.Api.Paginado;
 using Microsoft.EntityFrameworkCore;
 using Modelo.laconcordia.Modelo.Database;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Identity.Api.DataRepository
 {
@@ -73,9 +71,15 @@ namespace Identity.Api.DataRepository
             };
         }
 
-        public void InsertFichaPersonal(FichapersonalDTO f)
+        public FichapersonalDTO GetFichaPersonalByCorreo(string correo)
         {
-            var ficha = new Fichapersonal
+            //trae todo
+            var f = _context.Fichapersonals
+            .FirstOrDefault(x => x.Correo.ToLower() == correo.ToLower());
+            //var f = _context.Fichapersonals
+            //.FirstOrDefault(x => x.Correo.ToLower() == correo.ToLower() && x.Estado == "a");
+            if (f == null) return null;
+            return new FichapersonalDTO
             {
                 Cedula = f.Cedula,
                 Nombre = f.Nombre,
@@ -96,11 +100,67 @@ namespace Identity.Api.DataRepository
                 Fkniveleducacion = f.Fkniveleducacion,
                 Fkunidad = f.Fkunidad,
                 Fkdpuesto = f.Fkdpuesto,
-                //Estado = "a" // Asignar estado activo por defecto
             };
-            _context.Fichapersonals.Add(ficha);
-            _context.SaveChanges();
         }
+
+        public void InsertFichaPersonal(FichapersonalDTO f)
+        {
+            // Validaciones previas
+
+            if (string.IsNullOrWhiteSpace(f.Cedula))
+                throw new Exception("La cédula es obligatoria.");
+
+            if (_context.Fichapersonals.Any(x => x.Cedula == f.Cedula))
+                throw new Exception("Ya existe una ficha con esa cédula.");
+
+            if (string.IsNullOrWhiteSpace(f.Nombre))
+                throw new Exception("El nombre es obligatorio.");
+
+            if (f.Fkcargo == 0)
+                throw new Exception("Debe seleccionar un cargo.");
+
+            if (f.Fktipolicencia == 0)
+                throw new Exception("Debe seleccionar un tipo de licencia.");
+
+            if (f.Fknacionalidad == 0)
+                throw new Exception("Debe seleccionar una nacionalidad.");
+
+            // Crear entidad
+            var ficha = new Fichapersonal
+            {
+                Cedula = f.Cedula,
+                Nombre = f.Nombre,
+                Apellidos = f.Apellidos,
+                Telefono = f.Telefono,
+                Celular = f.Celular,
+                Correo = f.Correo,
+                Fechanacimiento = f.Fechanacimiento,
+                Fechaingreso = f.Fechaingreso,
+                Domicilio = f.Domicilio,
+                Referencia = f.Referencia,
+                Estado = f.Estado ?? "a", // Por defecto activo
+                Estadoservicio = f.Estadoservicio,
+                Cuotaf = f.Cuotaf,
+                Fknacionalidad = f.Fknacionalidad,
+                Fktipolicencia = f.Fktipolicencia,
+                Fkcargo = f.Fkcargo,
+                Fkniveleducacion = f.Fkniveleducacion,
+                Fkunidad = f.Fkunidad,
+                Fkdpuesto = f.Fkdpuesto,
+            };
+
+            try
+            {
+                _context.Fichapersonals.Add(ficha);
+                _context.SaveChanges();
+            }
+            catch (DbUpdateException ex)
+            {
+                // Mostrar mensaje más específico de la InnerException
+                throw new Exception("Error al crear: " + ex.InnerException?.Message ?? ex.Message);
+            }
+        }
+
 
         public void UpdateFichaPersonal(FichapersonalDTO f)
         {

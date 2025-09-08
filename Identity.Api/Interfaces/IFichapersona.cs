@@ -7,6 +7,7 @@ namespace Identity.Api.Interfaces
     {
         IEnumerable<FichapersonalDTO> GetFichaPersonalInfoAll();
         FichapersonalDTO GetFichaPersonalById(string cedula);
+        FichapersonalDTO GetFichaPersonalByCorreo(string correo);
         void InsertFichaPersonal(FichapersonalDTO New);
         void UpdateFichaPersonal(FichapersonalDTO UpdItem);
         void DeleteFichaPersonalById(string cedula);

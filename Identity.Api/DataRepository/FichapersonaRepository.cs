@@ -1,7 +1,9 @@
-﻿using Identity.Api.DTO;
+﻿using FluentFTP;
+using Identity.Api.DTO;
 using Identity.Api.Paginado;
 using Microsoft.EntityFrameworkCore;
 using Modelo.laconcordia.Modelo.Database;
+using System.Net;
 
 namespace Identity.Api.DataRepository
 {
@@ -202,20 +204,20 @@ namespace Identity.Api.DataRepository
 
         // Paginado
         public async Task<PagedResult<FichapersonalDTO>> GetFichaPersonalPaginados(
-            int pagina,
-            int pageSize,
-            string? filtro = null,
-            string? estado = null)
+    int pagina,
+    int pageSize,
+    string? filtro = null,
+    string? estado = null)
         {
             var query = _context.Fichapersonals.AsQueryable();
+
             if (!string.IsNullOrEmpty(filtro))
             {
                 query = query.Where(f =>
-                f.Cedula.Contains(filtro) ||
-                f.Nombre.Contains(filtro) ||
-                f.Apellidos.Contains(filtro));
+                    f.Cedula.Contains(filtro) ||
+                    f.Nombre.Contains(filtro) ||
+                    f.Apellidos.Contains(filtro));
             }
-
 
             if (string.IsNullOrWhiteSpace(estado))
             {
@@ -225,6 +227,8 @@ namespace Identity.Api.DataRepository
             query = query.Where(f => f.Estado == estado);
 
             var totalItems = await query.CountAsync();
+
+            // Solo traemos los datos de la ficha, sin validar documentos
             var items = await query
                 .Skip((pagina - 1) * pageSize)
                 .Take(pageSize)
@@ -250,8 +254,11 @@ namespace Identity.Api.DataRepository
                     Fkunidad = f.Fkunidad,
                     Fkdpuesto = f.Fkdpuesto,
 
+                    // Inicializamos como null para que el frontend lo calcule
+                    DocumentosCompletos = null
                 })
                 .ToListAsync();
+
             return new PagedResult<FichapersonalDTO>
             {
                 Items = items,
@@ -260,6 +267,8 @@ namespace Identity.Api.DataRepository
                 PageSize = pageSize
             };
         }
+
+
 
     }
 }

@@ -255,7 +255,7 @@ namespace Identity.Api.DataRepository
                     Fkdpuesto = f.Fkdpuesto,
 
                     // Inicializamos como null para que el frontend lo calcule
-                    DocumentosCompletos = null
+                    
                 })
                 .ToListAsync();
 

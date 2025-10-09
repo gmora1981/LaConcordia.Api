@@ -743,71 +743,7 @@ namespace Identity.Api.Controllers
             }
         }
 
-        // validar si falta aunque sea una imagen por cargar
-        [HttpGet("ValidarImagenesChofer/{cedula}")]
-        public async Task<ActionResult<bool>> ValidarImagenesChofer(string cedula)
-        {
-            string host = "win8104.site4now.net";
-            string user = "lconcordiadoc";
-            string pass = "Geo100100.";
-
-            var carpetas = new Dictionary<string, string>
-    {
-        { "Documento", "/documentos" },
-        { "Licencia", "/Licencia" },
-        { "Matricula", "/Matricula" },
-        { "Vehiculo", "/Vehiculo" }
-    };
-
-            // 🔹 Variables booleanas para validar
-            bool tieneFrontal = false;
-            bool tieneTrasera = false;
-            bool tieneLicencia = false;
-            bool tieneMatricula = false;
-            bool tieneVehiculo = false;
-
-            using var client = new FtpClient(host, new NetworkCredential(user, pass));
-            try
-            {
-                client.Connect();
-                if (!client.IsConnected)
-                    return Forbid(); // 🔹 Devuelve 403 si no conecta
-
-                foreach (var item in carpetas)
-                {
-                    var carpetaNombre = item.Key;
-                    var carpetaRuta = item.Value;
-
-                    var archivos = client.GetListing(carpetaRuta)
-                                         .Where(f => f.Type == FtpObjectType.File &&
-                                                     f.Name.StartsWith(cedula, StringComparison.OrdinalIgnoreCase))
-                                         .ToList();
-
-                    foreach (var archivo in archivos)
-                    {
-                        if (carpetaNombre == "Documento" && archivo.Name.Contains("FRONTAL", StringComparison.OrdinalIgnoreCase))
-                            tieneFrontal = true;
-                        else if (carpetaNombre == "Documento" && archivo.Name.Contains("TRASERA", StringComparison.OrdinalIgnoreCase))
-                            tieneTrasera = true;
-                        else if (carpetaNombre == "Licencia")
-                            tieneLicencia = true;
-                        else if (carpetaNombre == "Matricula")
-                            tieneMatricula = true;
-                        else if (carpetaNombre == "Vehiculo")
-                            tieneVehiculo = true;
-                    }
-                }
-
-                // 🔹 Validar que todas existan
-                bool todasExisten = tieneFrontal && tieneTrasera && tieneLicencia && tieneMatricula && tieneVehiculo;
-
-                return Ok(todasExisten);
-            }
-            catch
-            {
-                return StatusCode(500, false); // 🔹 Si hay error, devuelve false
-            }
-        }
+        
 
 
 

@@ -18,7 +18,10 @@ if (builder.Environment.IsDevelopment())
 }
 else
 {
+    //Usar esta para servidor desarollo y hacer pruebas con datos reales
     baseApiUrl = "https://api.laconcordia.compugtech.com";
+    //Usar esta para servidor producción
+    // baseApiUrl = "https://api.lconcordia.com";
 }
 
 // Agregamos la URL como un valor de configuración disponible para toda la aplicación
@@ -59,6 +62,10 @@ builder.Services.AddCors(options =>
                                     "http://lconcordia.compugtech.com",     // HTTP fallback
                                     "https://www.lconcordia.compugtech.com", // Con www
                                     "http://www.lconcordia.compugtech.com",  // Con www HTTP
+                                    "https://lconcordia.com",    // Tu dominio principal
+                                    "http://lconcordia.com",     // HTTP fallback
+                                    "https://www.lconcordia.com", // Con www
+                                    "http://www.lconcordia.com",  // Con www HTTP
                                     "https://localhost:7180",      // Tu Blazor HTTPS
                                     "http://localhost:7180",       // Tu Blazor HTTP
                                     "https://localhost:7171",      // Puerto alternativo HTTPS

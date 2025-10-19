@@ -17,11 +17,25 @@ using System.Net;
 
 namespace Identity.Api.Controllers
 {
+
     [Route("api/[controller]")]
     [ApiController]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class FichapersonaController : Controller
     {
+        // Usar las variables globales FTP  DESAROLLO
+
+        //string host = "win8104.site4now.net";
+        //string user = "lconcordiadoc";
+        //string pass = "Geo100100.";
+        //string urlBaseGlobal = "https://lconcordia.compugtech.com";
+
+        // Usar las variables globales FTP PRODUCCIÓN
+        string host = "win8176.site4now.net";
+        string user = "laconcordiadoc";
+        string pass = "Geo100100.";
+        string urlBaseGlobal = "https://lconcordia.com";
+
         private readonly DbAa5796GmoraContext _context;
 
         private readonly IFichapersona _fichapersona;
@@ -223,11 +237,9 @@ namespace Identity.Api.Controllers
         [HttpPost("SubirImagenChoferDocumentos")]
         public IActionResult SubirImagenChofer([FromForm] IFormFile? archivo, [FromForm] string cedula, [FromForm] string tipoDocumento)
         {
-            string host = "win8104.site4now.net";
-            string user = "lconcordiadoc";
-            string pass = "Geo100100.";
+           
             string basePath = "/documentos";
-            string urlBase = "https://lconcordia.compugtech.com/documentos";
+            string urlBase = urlBaseGlobal + basePath;
 
             var log = new List<string>();
 
@@ -279,11 +291,8 @@ namespace Identity.Api.Controllers
         [HttpPost("SubirImagenMatricula")]
         public IActionResult SubirImagenMatricula([FromForm] IFormFile? archivo, [FromForm] string cedula)
         {
-            string host = "win8104.site4now.net";
-            string user = "lconcordiadoc";
-            string pass = "Geo100100.";
             string basePath = "/matricula";
-            string urlBase = "https://lconcordia.compugtech.com/matricula";
+            string urlBase = urlBaseGlobal + basePath;
             var log = new List<string>();
 
             try
@@ -331,11 +340,9 @@ namespace Identity.Api.Controllers
         [HttpPost("SubirImagenVehiculo")]
         public IActionResult SubirImagenVehiculo([FromForm] IFormFile? archivo, [FromForm] string cedula)
         {
-            string host = "win8104.site4now.net";
-            string user = "lconcordiadoc";
-            string pass = "Geo100100.";
+            
             string basePath = "/vehiculo";
-            string urlBase = "https://lconcordia.compugtech.com/vehiculo";
+            string urlBase = urlBaseGlobal + basePath;
             var log = new List<string>();
 
             try
@@ -383,11 +390,9 @@ namespace Identity.Api.Controllers
         [HttpPost("SubirImagenLicencia")]
         public IActionResult SubirImagenLicencia([FromForm] IFormFile? archivo, [FromForm] string cedula)
         {
-            string host = "win8104.site4now.net";
-            string user = "lconcordiadoc";
-            string pass = "Geo100100.";
+            
             string basePath = "/licencia";
-            string urlBase = "https://lconcordia.compugtech.com/licencia";
+            string urlBase = urlBaseGlobal + basePath;
             var log = new List<string>();
 
             try
@@ -436,11 +441,7 @@ namespace Identity.Api.Controllers
         [HttpGet("BuscarImagenesChofer/{cedula}")]
         public IActionResult BuscarImagenesChofer(string cedula)
         {
-            string host = "win8104.site4now.net";
-            string user = "lconcordiadoc";
-            string pass = "Geo100100.";
-
-            var carpetas = new Dictionary<string, string>
+           var carpetas = new Dictionary<string, string>
     {
         { "Documento", "/documentos" },
         { "Licencia", "/Licencia" },
@@ -509,9 +510,7 @@ namespace Identity.Api.Controllers
         [HttpDelete("EliminarImagenChofer/{cedula}")]
         public IActionResult EliminarImagenChofer(string cedula)
         {
-            string host = "win8104.site4now.net";
-            string user = "lconcordiadoc";
-            string pass = "Geo100100.";
+            
             string basePath = "/documentos";
 
             var log = new List<string>();
@@ -556,11 +555,9 @@ namespace Identity.Api.Controllers
         [HttpGet("ProbarFtp")]
         public IActionResult ProbarFtp()
         {
-            string host = "win8104.site4now.net";
-            string user = "lconcordiadoc";
-            string pass = "Geo100100.";
+            
             string basePath = "/documentos";
-            string publicBaseUrl = "https://lconcordia.compugtech.com/documentos";
+            string publicBaseUrl = urlBaseGlobal + basePath;
 
             var log = new List<string>();
             FtpClient client = null;
@@ -678,9 +675,7 @@ namespace Identity.Api.Controllers
         [HttpGet("DescargarImagenesChofer/{cedula}")]
         public IActionResult DescargarImagenesChofer(string cedula)
         {
-            string host = "win8104.site4now.net";
-            string user = "lconcordiadoc";
-            string pass = "Geo100100.";
+           
 
             var carpetas = new Dictionary<string, string>
     {

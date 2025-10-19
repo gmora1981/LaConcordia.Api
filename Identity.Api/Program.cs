@@ -19,9 +19,9 @@ if (builder.Environment.IsDevelopment())
 else
 {
     //Usar esta para servidor desarollo y hacer pruebas con datos reales
-    baseApiUrl = "https://api.laconcordia.compugtech.com";
+    //baseApiUrl = "https://api.laconcordia.compugtech.com";
     //Usar esta para servidor producción
-    // baseApiUrl = "https://api.lconcordia.com";
+     baseApiUrl = "https://api.lconcordia.com";
 }
 
 // Agregamos la URL como un valor de configuración disponible para toda la aplicación
@@ -111,8 +111,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     });
 
 
-builder.Services.AddScoped<IMenuInfo, MenuInfoServices>();
-builder.Services.AddScoped<IMenuInfo, MenuInfoServices>();
+
 builder.Services.AddScoped<INavigation, NavigationServices>();
 builder.Services.AddScoped<ICargo, CargoServices>();
 builder.Services.AddScoped<IUnidad, UnidadServices>();

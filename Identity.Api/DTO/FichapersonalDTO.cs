@@ -35,6 +35,9 @@
         public string? Fkunidad { get; set; }
         public string? UnidadDescripcion { get; set; }  // si deseas mostrar "Unidad1", "Placa", etc.
 
+        //para que el administrado pueda poner COMPLETA O INCOMPLETA
+        public string? Documentacion { get; set; }
+
         public string? Fkdpuesto { get; set; }
         public string? DuenoCedula { get; set; }
         public string? DuenoNombres { get; set; }

@@ -41,6 +41,7 @@ namespace Identity.Api.DataRepository
                     Fkniveleducacion = f.Fkniveleducacion,
                     Fkunidad = f.Fkunidad,
                     Fkdpuesto = f.Fkdpuesto,
+                    Documentacion = f.Documentacion,
                 })
                 .ToList();
         }
@@ -70,6 +71,7 @@ namespace Identity.Api.DataRepository
                 Fkniveleducacion = f.Fkniveleducacion,
                 Fkunidad = f.Fkunidad,
                 Fkdpuesto = f.Fkdpuesto,
+                Documentacion = f.Documentacion
             };
         }
 
@@ -102,6 +104,7 @@ namespace Identity.Api.DataRepository
                 Fkniveleducacion = f.Fkniveleducacion,
                 Fkunidad = f.Fkunidad,
                 Fkdpuesto = f.Fkdpuesto,
+                Documentacion = f.Documentacion,
             };
         }
 
@@ -149,6 +152,7 @@ namespace Identity.Api.DataRepository
                 Fkniveleducacion = f.Fkniveleducacion,
                 Fkunidad = f.Fkunidad,
                 Fkdpuesto = f.Fkdpuesto,
+                Documentacion = f.Documentacion,
             };
 
             try
@@ -188,6 +192,7 @@ namespace Identity.Api.DataRepository
                 ficha.Fkniveleducacion = f.Fkniveleducacion;
                 ficha.Fkunidad = f.Fkunidad;
                 ficha.Fkdpuesto = f.Fkdpuesto;
+                ficha.Documentacion = f.Documentacion;
                 _context.SaveChanges();
             }
         }
@@ -253,9 +258,9 @@ namespace Identity.Api.DataRepository
                     Fkniveleducacion = f.Fkniveleducacion,
                     Fkunidad = f.Fkunidad,
                     Fkdpuesto = f.Fkdpuesto,
-
+                    Documentacion = f.Documentacion,
                     // Inicializamos como null para que el frontend lo calcule
-                    
+
                 })
                 .ToListAsync();
 

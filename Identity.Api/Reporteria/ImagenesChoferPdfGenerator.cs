@@ -1,12 +1,18 @@
 ﻿using QuestPDF.Fluent;
 using QuestPDF.Helpers;
-using QuestPDF.Infrastructure;
 
 namespace Identity.Api.Reporteria
 {
     public static class ImagenesChoferPdfGenerator
     {
-        public static byte[] GenerarPdf(string frontal, string trasera, string matricula, string licencia, string vehiculo)
+        //public static byte[] GenerarPdf(string frontal, string trasera, string matricula, string licencia, string vehiculo)
+        public static byte[] GenerarPdf(
+        string frontal,
+        string trasera,
+        string licencia,
+        string matriculaFrontal,
+        string matriculaTrasera,
+        string vehiculo)
         {
             var doc = Document.Create(container =>
             {
@@ -91,27 +97,53 @@ namespace Identity.Api.Reporteria
                         // Matrícula y Licencia (dos columnas en la misma fila)
                         col.Item().PaddingTop(10).Row(row =>
                         {
-                            row.RelativeColumn().Border(1).BorderColor(Colors.Grey.Lighten1).Padding(5).Column(c =>
-                            {
-                                c.Item().Background(Colors.Grey.Lighten3).Padding(5).Text("Matrícula")
-                                    .SemiBold().FontSize(12).FontColor(Colors.Black);
+                            //row.RelativeColumn().Border(1).BorderColor(Colors.Grey.Lighten1).Padding(5).Column(c =>
+                            //{
+                            //    c.Item().Background(Colors.Grey.Lighten3).Padding(5).Text("Licencia")
+                            //        .SemiBold().FontSize(12).FontColor(Colors.Black);
 
-                                if (!string.IsNullOrEmpty(matricula))
-                                    c.Item().Height(150).Image(Convert.FromBase64String(matricula)).FitHeight();
-                                else
-                                    c.Item().Text("Matrícula no encontrada").FontColor(Colors.Red.Medium).Bold();
-                            });
+                            //    if (!string.IsNullOrEmpty(matricula))
+                            //        c.Item().Height(150).Image(Convert.FromBase64String(matricula)).FitHeight();
+                            //    else
+                            //        c.Item().Text("Licencia no encontrada").FontColor(Colors.Red.Medium).Bold();
+                            //});
 
                             row.RelativeColumn().Border(1).BorderColor(Colors.Grey.Lighten1).Padding(5).Column(c =>
                             {
                                 c.Item().Background(Colors.Grey.Lighten3).Padding(5).Text("Licencia")
-                                    .SemiBold().FontSize(12).FontColor(Colors.Black);
+                                .SemiBold().FontSize(12).FontColor(Colors.Black);
 
                                 if (!string.IsNullOrEmpty(licencia))
                                     c.Item().Height(150).Image(Convert.FromBase64String(licencia)).FitHeight();
                                 else
-                                    c.Item().Text("Licencia no encontrada").FontColor(Colors.Red.Medium).Bold();
+                                    c.Item().Text(" no encontrada").FontColor(Colors.Red.Medium).Bold();
                             });
+
+                            row.RelativeColumn().Border(1).BorderColor(Colors.Grey.Lighten1).Padding(5).Column(c =>
+                            {
+                                c.Item().Background(Colors.Grey.Lighten3).Padding(5).Text("Matrícula")
+                                .SemiBold().FontSize(12).FontColor(Colors.Black);
+
+                                c.Item().Row(r =>
+                                {
+                                    r.RelativeColumn().Element(cell =>
+                                    {
+                                        if (!string.IsNullOrEmpty(matriculaFrontal))
+                                            cell.Height(150).Image(Convert.FromBase64String(matriculaFrontal)).FitHeight();
+                                        else
+                                            cell.Text("Frontal no encontrada").FontColor(Colors.Red.Medium).Bold();
+                                    });
+
+                                    r.RelativeColumn().Element(cell =>
+                                    {
+                                        if (!string.IsNullOrEmpty(matriculaTrasera))
+                                            cell.Height(150).Image(Convert.FromBase64String(matriculaTrasera)).FitHeight();
+                                        else
+                                            cell.Text("Trasera no encontrada").FontColor(Colors.Red.Medium).Bold();
+                                    });
+                                });
+                            });
+
                         });
 
                         // Vehículo (ocupa toda la fila)

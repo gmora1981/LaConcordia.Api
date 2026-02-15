@@ -237,7 +237,7 @@ namespace Identity.Api.Controllers
         [HttpPost("SubirImagenChoferDocumentos")]
         public IActionResult SubirImagenChofer([FromForm] IFormFile? archivo, [FromForm] string cedula, [FromForm] string tipoDocumento)
         {
-           
+
             string basePath = "/documentos";
             string urlBase = urlBaseGlobal + basePath;
 
@@ -289,7 +289,10 @@ namespace Identity.Api.Controllers
 
         // 📌 Subir imagen de Matrícula
         [HttpPost("SubirImagenMatricula")]
-        public IActionResult SubirImagenMatricula([FromForm] IFormFile? archivo, [FromForm] string cedula)
+        public IActionResult SubirImagenMatricula(
+        [FromForm] IFormFile? archivo,
+        [FromForm] string cedula,
+        [FromForm] string tipoImagen) // <-- frontal o trasera
         {
             string basePath = "/matricula";
             string urlBase = urlBaseGlobal + basePath;
@@ -299,8 +302,11 @@ namespace Identity.Api.Controllers
             {
                 if (archivo != null && archivo.Length > 0)
                 {
+                    if (string.IsNullOrWhiteSpace(tipoImagen))
+                        return BadRequest("Debe especificar el tipo de imagen (frontal o trasera).");
+
                     var extension = Path.GetExtension(archivo.FileName);
-                    var nombreArchivo = $"{cedula}{extension}";
+                    var nombreArchivo = $"{cedula}-{tipoImagen}{extension}";
                     var rutaRemota = $"{basePath}/{nombreArchivo}";
 
                     using (var client = new FtpClient(host, new NetworkCredential(user, pass)))
@@ -308,23 +314,35 @@ namespace Identity.Api.Controllers
                         client.Connect();
                         log.Add("Conexión FTP establecida.");
 
-                        if (!client.DirectoryExists(basePath)) client.CreateDirectory(basePath);
+                        if (!client.DirectoryExists(basePath))
+                            client.CreateDirectory(basePath);
 
+                        // 🔄 Eliminar solo la imagen del mismo tipo (frontal o trasera)
                         foreach (var item in client.GetListing(basePath))
-                            if (item.Type == FtpObjectType.File && item.Name.StartsWith(cedula))
+                        {
+                            if (item.Type == FtpObjectType.File &&
+                                item.Name.StartsWith($"{cedula}-{tipoImagen}"))
                             {
                                 client.DeleteFile(item.FullName);
                                 log.Add($"Archivo viejo eliminado: {item.Name}");
                             }
+                        }
 
+                        // 📤 Subir nueva imagen
                         using (var stream = archivo.OpenReadStream())
+                        {
                             client.UploadStream(stream, rutaRemota, FtpRemoteExists.Overwrite, true);
-
-                        log.Add($"Archivo subido: {nombreArchivo}");
+                            log.Add($"Archivo subido: {nombreArchivo}");
+                        }
                     }
 
                     string urlPublica = $"{urlBase}/{nombreArchivo}";
-                    return Ok(new { mensaje = "Imagen de matrícula subida correctamente ✅", url = urlPublica, log });
+                    return Ok(new
+                    {
+                        mensaje = "Imagen de matrícula subida correctamente ✅",
+                        url = urlPublica,
+                        log
+                    });
                 }
 
                 return BadRequest("No se envió ningún archivo.");
@@ -332,15 +350,67 @@ namespace Identity.Api.Controllers
             catch (Exception ex)
             {
                 log.Add($"Error: {ex.Message}");
-                return StatusCode(500, new { mensaje = "Error al subir la imagen de matrícula", log });
+                return StatusCode(500, new
+                {
+                    mensaje = "Error al subir la imagen de matrícula",
+                    log
+                });
             }
         }
+
+        //[HttpPost("SubirImagenMatricula")]
+        //public IActionResult SubirImagenMatricula([FromForm] IFormFile? archivo, [FromForm] string cedula)
+        //{
+        //    string basePath = "/matricula";
+        //    string urlBase = urlBaseGlobal + basePath;
+        //    var log = new List<string>();
+
+        //    try
+        //    {
+        //        if (archivo != null && archivo.Length > 0)
+        //        {
+        //            var extension = Path.GetExtension(archivo.FileName);
+        //            var nombreArchivo = $"{cedula}{extension}";
+        //            var rutaRemota = $"{basePath}/{nombreArchivo}";
+
+        //            using (var client = new FtpClient(host, new NetworkCredential(user, pass)))
+        //            {
+        //                client.Connect();
+        //                log.Add("Conexión FTP establecida.");
+
+        //                if (!client.DirectoryExists(basePath)) client.CreateDirectory(basePath);
+
+        //                foreach (var item in client.GetListing(basePath))
+        //                    if (item.Type == FtpObjectType.File && item.Name.StartsWith(cedula))
+        //                    {
+        //                        client.DeleteFile(item.FullName);
+        //                        log.Add($"Archivo viejo eliminado: {item.Name}");
+        //                    }
+
+        //                using (var stream = archivo.OpenReadStream())
+        //                    client.UploadStream(stream, rutaRemota, FtpRemoteExists.Overwrite, true);
+
+        //                log.Add($"Archivo subido: {nombreArchivo}");
+        //            }
+
+        //            string urlPublica = $"{urlBase}/{nombreArchivo}";
+        //            return Ok(new { mensaje = "Imagen de matrícula subida correctamente ✅", url = urlPublica, log });
+        //        }
+
+        //        return BadRequest("No se envió ningún archivo.");
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        log.Add($"Error: {ex.Message}");
+        //        return StatusCode(500, new { mensaje = "Error al subir la imagen de matrícula", log });
+        //    }
+        //}
 
         // 📌 Subir imagen de Vehículo
         [HttpPost("SubirImagenVehiculo")]
         public IActionResult SubirImagenVehiculo([FromForm] IFormFile? archivo, [FromForm] string cedula)
         {
-            
+
             string basePath = "/vehiculo";
             string urlBase = urlBaseGlobal + basePath;
             var log = new List<string>();
@@ -390,7 +460,7 @@ namespace Identity.Api.Controllers
         [HttpPost("SubirImagenLicencia")]
         public IActionResult SubirImagenLicencia([FromForm] IFormFile? archivo, [FromForm] string cedula)
         {
-            
+
             string basePath = "/licencia";
             string urlBase = urlBaseGlobal + basePath;
             var log = new List<string>();
@@ -441,7 +511,7 @@ namespace Identity.Api.Controllers
         [HttpGet("BuscarImagenesChofer/{cedula}")]
         public IActionResult BuscarImagenesChofer(string cedula)
         {
-           var carpetas = new Dictionary<string, string>
+            var carpetas = new Dictionary<string, string>
     {
         { "Documento", "/documentos" },
         { "Licencia", "/Licencia" },
@@ -451,8 +521,10 @@ namespace Identity.Api.Controllers
 
             bool frontal = false;
             bool trasera = false;
+            bool matriculaFrontal = false;
+            bool matriculaTrasera = false;
             bool licencia = false;
-            bool matricula = false;
+            //bool matricula = false;
             bool vehiculo = false;
 
             using var client = new FtpClient(host, new NetworkCredential(user, pass));
@@ -481,9 +553,18 @@ namespace Identity.Api.Controllers
                     {
                         licencia = archivos.Any();
                     }
+                    //else if (carpetaNombre == "Matricula")
+                    //{
+                    //    matricula = archivos.Any();
+                    //}
                     else if (carpetaNombre == "Matricula")
                     {
-                        matricula = archivos.Any();
+                        // 🔥 SOLO ESTA PARTE CAMBIA
+                        matriculaFrontal = archivos.Any(a =>
+                            a.Name.Contains("frontal", StringComparison.OrdinalIgnoreCase));
+
+                        matriculaTrasera = archivos.Any(a =>
+                            a.Name.Contains("trasera", StringComparison.OrdinalIgnoreCase));
                     }
                     else if (carpetaNombre == "Vehiculo")
                     {
@@ -496,7 +577,10 @@ namespace Identity.Api.Controllers
                     Frontal = frontal,
                     Trasera = trasera,
                     Licencia = licencia,
-                    Matricula = matricula,
+                    //Matricula = matricula,
+                    MatriculaFrontal = matriculaFrontal,
+                    MatriculaTrasera = matriculaTrasera,
+
                     Vehiculo = vehiculo
                 });
             }
@@ -510,7 +594,7 @@ namespace Identity.Api.Controllers
         [HttpDelete("EliminarImagenChofer/{cedula}")]
         public IActionResult EliminarImagenChofer(string cedula)
         {
-            
+
             string basePath = "/documentos";
 
             var log = new List<string>();
@@ -547,15 +631,12 @@ namespace Identity.Api.Controllers
             }
         }
 
-
-
-
         // 📌 Método de debug para verificar existencia y permisos de la imagen
 
         [HttpGet("ProbarFtp")]
         public IActionResult ProbarFtp()
         {
-            
+
             string basePath = "/documentos";
             string publicBaseUrl = urlBaseGlobal + basePath;
 
@@ -628,64 +709,21 @@ namespace Identity.Api.Controllers
         }
 
 
-
-        //[HttpGet("DescargarFoto/{fileName}")]
-        //public IActionResult DescargarFoto(string fileName)
-        //{
-        //    string host = "win8104.site4now.net";
-        //    string user = "lconcordiadoc";
-        //    string pass = "Geo100100.";
-        //    string basePath = "/documentos";
-
-        //    using var client = new FtpClient(host, new NetworkCredential(user, pass));
-        //    try
-        //    {
-        //        client.Connect();
-
-        //        if (!client.IsConnected)
-        //            return StatusCode(403, new { mensaje = "Error de autenticación FTP" });
-
-        //        var remotePath = $"{basePath}/{fileName}";
-
-        //        if (!client.FileExists(remotePath))
-        //            return NotFound(new { mensaje = $"Archivo {fileName} no existe en FTP" });
-
-        //        using var ms = new MemoryStream();
-        //        client.DownloadStream(ms, remotePath);
-        //        ms.Position = 0;
-
-        //        // Detectar content type simple (puedes mejorar con un helper si tienes más tipos)
-        //        var extension = Path.GetExtension(fileName).ToLowerInvariant();
-        //        string contentType = extension switch
-        //        {
-        //            ".jpg" or ".jpeg" => "image/jpeg",
-        //            ".png" => "image/png",
-        //            ".gif" => "image/gif",
-        //            _ => "application/octet-stream"
-        //        };
-
-        //        return File(ms.ToArray(), contentType, fileName);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return StatusCode(500, new { mensaje = $"Error al descargar archivo: {ex.Message}" });
-        //    }
-        //}
-
         [HttpGet("DescargarImagenesChofer/{cedula}")]
         public IActionResult DescargarImagenesChofer(string cedula)
         {
-           
-
             var carpetas = new Dictionary<string, string>
-    {
-        { "Documento", "/documentos" },
-        { "Licencia", "/Licencia" },
-        { "Matricula", "/Matricula" },
-        { "Vehiculo", "/Vehiculo" }
-    };
+        {
+            { "Documento", "/documentos" },
+            { "Licencia", "/Licencia" },
+            { "Matricula", "/Matricula" },
+            { "Vehiculo", "/Vehiculo" }
+        };
 
-            string? frontal = null, trasera = null, licencia = null, matricula = null, vehiculo = null;
+            //string? frontal = null, trasera = null, licencia = null, matricula = null, vehiculo = null;
+            string? frontal = null, trasera = null, licencia = null,
+            matriculaFrontal = null, matriculaTrasera = null,
+            vehiculo = null;
 
             using var client = new FtpClient(host, new NetworkCredential(user, pass));
             try
@@ -717,8 +755,16 @@ namespace Identity.Api.Controllers
                             trasera = base64;
                         else if (carpetaNombre == "Licencia")
                             licencia = base64;
-                        else if (carpetaNombre == "Matricula")
-                            matricula = base64;
+                        //else if (carpetaNombre == "Matricula")
+                        //    matricula = base64;
+                        else if (carpetaNombre == "Matricula" &&
+                            archivo.Name.Contains("frontal", StringComparison.OrdinalIgnoreCase))
+                            matriculaFrontal = base64;
+
+                        else if (carpetaNombre == "Matricula" &&
+                                 archivo.Name.Contains("trasera", StringComparison.OrdinalIgnoreCase))
+                            matriculaTrasera = base64;
+
                         else if (carpetaNombre == "Vehiculo")
                             vehiculo = base64;
                     }
@@ -728,7 +774,16 @@ namespace Identity.Api.Controllers
                 QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
 
                 // Generar PDF con el generador
-                var pdfBytes = ImagenesChoferPdfGenerator.GenerarPdf(frontal, trasera, licencia, matricula, vehiculo);
+                //var pdfBytes = ImagenesChoferPdfGenerator.GenerarPdf(frontal, trasera, licencia, matricula, vehiculo);
+                var pdfBytes = ImagenesChoferPdfGenerator.GenerarPdf(
+                frontal,
+                trasera,
+                licencia,
+                matriculaFrontal,
+                matriculaTrasera,
+                vehiculo
+            );
+
 
                 return File(pdfBytes, "application/pdf", $"ImagenesChofer_{cedula}.pdf");
             }
@@ -738,7 +793,7 @@ namespace Identity.Api.Controllers
             }
         }
 
-        
+
 
 
 

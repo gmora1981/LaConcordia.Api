@@ -1,9 +1,7 @@
-﻿using FluentFTP;
-using Identity.Api.DTO;
+﻿using Identity.Api.DTO;
 using Identity.Api.Paginado;
 using Microsoft.EntityFrameworkCore;
 using Modelo.laconcordia.Modelo.Database;
-using System.Net;
 
 namespace Identity.Api.DataRepository
 {
@@ -167,7 +165,6 @@ namespace Identity.Api.DataRepository
             }
         }
 
-
         public void UpdateFichaPersonal(FichapersonalDTO f)
         {
             var ficha = _context.Fichapersonals.FirstOrDefault(x => x.Cedula == f.Cedula);
@@ -260,7 +257,6 @@ namespace Identity.Api.DataRepository
                     Fkdpuesto = f.Fkdpuesto,
                     Documentacion = f.Documentacion,
                     // Inicializamos como null para que el frontend lo calcule
-
                 })
                 .ToListAsync();
 
@@ -272,8 +268,6 @@ namespace Identity.Api.DataRepository
                 PageSize = pageSize
             };
         }
-
-
 
     }
 }

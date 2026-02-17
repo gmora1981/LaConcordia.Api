@@ -121,41 +121,42 @@ namespace Identity.Api.Reporteria
 
                             row.RelativeColumn().Border(1).BorderColor(Colors.Grey.Lighten1).Padding(5).Column(c =>
                             {
-                                c.Item().Background(Colors.Grey.Lighten3).Padding(5).Text("Matrícula")
+                                c.Item().Background(Colors.Grey.Lighten3).Padding(5).Text("Vehículo")
                                 .SemiBold().FontSize(12).FontColor(Colors.Black);
 
-                                c.Item().Row(r =>
-                                {
-                                    r.RelativeColumn().Element(cell =>
-                                    {
-                                        if (!string.IsNullOrEmpty(matriculaFrontal))
-                                            cell.Height(150).Image(Convert.FromBase64String(matriculaFrontal)).FitHeight();
-                                        else
-                                            cell.Text("Frontal no encontrada").FontColor(Colors.Red.Medium).Bold();
-                                    });
+                                if (!string.IsNullOrEmpty(vehiculo))
+                                    c.Item().Height(200).Image(Convert.FromBase64String(vehiculo)).FitHeight(); // un poco más alto
+                                else
+                                    c.Item().Text("Vehículo no encontrado").FontColor(Colors.Red.Medium).Bold();
 
-                                    r.RelativeColumn().Element(cell =>
-                                    {
-                                        if (!string.IsNullOrEmpty(matriculaTrasera))
-                                            cell.Height(150).Image(Convert.FromBase64String(matriculaTrasera)).FitHeight();
-                                        else
-                                            cell.Text("Trasera no encontrada").FontColor(Colors.Red.Medium).Bold();
-                                    });
-                                });
                             });
 
                         });
 
-                        // Vehículo (ocupa toda la fila)
+                        // MAtricula (ocupa toda la fila)
                         col.Item().PaddingTop(10).Border(1).BorderColor(Colors.Grey.Lighten1).Padding(5).Column(c =>
                         {
-                            c.Item().Background(Colors.Grey.Lighten3).Padding(5).Text("Vehículo")
+                            c.Item().Background(Colors.Grey.Lighten3).Padding(5).Text("Matrícula")
                                 .SemiBold().FontSize(12).FontColor(Colors.Black);
 
-                            if (!string.IsNullOrEmpty(vehiculo))
-                                c.Item().Height(200).Image(Convert.FromBase64String(vehiculo)).FitHeight(); // un poco más alto
-                            else
-                                c.Item().Text("Vehículo no encontrado").FontColor(Colors.Red.Medium).Bold();
+                            c.Item().Row(r =>
+                            {
+                                r.RelativeColumn().Element(cell =>
+                                {
+                                    if (!string.IsNullOrEmpty(matriculaFrontal))
+                                        cell.Height(150).Image(Convert.FromBase64String(matriculaFrontal)).FitHeight();
+                                    else
+                                        cell.Text("Frontal no encontrada").FontColor(Colors.Red.Medium).Bold();
+                                });
+
+                                r.RelativeColumn().Element(cell =>
+                                {
+                                    if (!string.IsNullOrEmpty(matriculaTrasera))
+                                        cell.Height(150).Image(Convert.FromBase64String(matriculaTrasera)).FitHeight();
+                                    else
+                                        cell.Text("Trasera no encontrada").FontColor(Colors.Red.Medium).Bold();
+                                });
+                            });
                         });
                     });
 

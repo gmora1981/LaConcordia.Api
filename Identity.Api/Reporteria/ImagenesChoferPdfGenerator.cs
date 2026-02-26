@@ -79,7 +79,11 @@ namespace Identity.Api.Reporteria
                                 row.RelativeColumn().Element(cell =>
                                 {
                                     if (!string.IsNullOrEmpty(frontal))
-                                        cell.Height(150).Image(Convert.FromBase64String(frontal)).FitHeight(); // Altura controlada
+                                        //cell.Height(150).Image(Convert.FromBase64String(frontal)).FitHeight(); // Altura controlada
+                                        cell
+    .MaxHeight(150)
+    .Image(Convert.FromBase64String(frontal))
+    .FitArea();
                                     else
                                         cell.Text("Frontal no encontrado").FontColor(Colors.Red.Medium).Bold();
                                 });
@@ -87,34 +91,31 @@ namespace Identity.Api.Reporteria
                                 row.RelativeColumn().Element(cell =>
                                 {
                                     if (!string.IsNullOrEmpty(trasera))
-                                        cell.Height(150).Image(Convert.FromBase64String(trasera)).FitHeight();
+                                        //cell.Height(150).Image(Convert.FromBase64String(trasera)).FitHeight();
+                                        cell
+    .MaxHeight(150)
+    .Image(Convert.FromBase64String(trasera))
+    .FitArea();
                                     else
                                         cell.Text("Trasera no encontrada").FontColor(Colors.Red.Medium).Bold();
                                 });
                             });
                         });
 
-                        // Matrícula y Licencia (dos columnas en la misma fila)
+                        //Matrícula y Licencia (dos columnas en la misma fila)
                         col.Item().PaddingTop(10).Row(row =>
                         {
-                            //row.RelativeColumn().Border(1).BorderColor(Colors.Grey.Lighten1).Padding(5).Column(c =>
-                            //{
-                            //    c.Item().Background(Colors.Grey.Lighten3).Padding(5).Text("Licencia")
-                            //        .SemiBold().FontSize(12).FontColor(Colors.Black);
-
-                            //    if (!string.IsNullOrEmpty(matricula))
-                            //        c.Item().Height(150).Image(Convert.FromBase64String(matricula)).FitHeight();
-                            //    else
-                            //        c.Item().Text("Licencia no encontrada").FontColor(Colors.Red.Medium).Bold();
-                            //});
-
                             row.RelativeColumn().Border(1).BorderColor(Colors.Grey.Lighten1).Padding(5).Column(c =>
                             {
                                 c.Item().Background(Colors.Grey.Lighten3).Padding(5).Text("Licencia")
                                 .SemiBold().FontSize(12).FontColor(Colors.Black);
 
                                 if (!string.IsNullOrEmpty(licencia))
-                                    c.Item().Height(150).Image(Convert.FromBase64String(licencia)).FitHeight();
+                                    //c.Item().Height(150).Image(Convert.FromBase64String(licencia)).FitHeight();
+                                    c.Item()
+                                        .MaxHeight(150)
+                                        .Image(Convert.FromBase64String(licencia))
+                                        .FitArea();
                                 else
                                     c.Item().Text(" no encontrada").FontColor(Colors.Red.Medium).Bold();
                             });
@@ -125,7 +126,11 @@ namespace Identity.Api.Reporteria
                                 .SemiBold().FontSize(12).FontColor(Colors.Black);
 
                                 if (!string.IsNullOrEmpty(vehiculo))
-                                    c.Item().Height(200).Image(Convert.FromBase64String(vehiculo)).FitHeight(); // un poco más alto
+                                    //c.Item().Height(200).Image(Convert.FromBase64String(vehiculo)).FitHeight(); // un poco más alto
+                                    c.Item()
+    .MaxHeight(200)
+    .Image(Convert.FromBase64String(vehiculo))
+    .FitArea();
                                 else
                                     c.Item().Text("Vehículo no encontrado").FontColor(Colors.Red.Medium).Bold();
 
@@ -144,7 +149,11 @@ namespace Identity.Api.Reporteria
                                 r.RelativeColumn().Element(cell =>
                                 {
                                     if (!string.IsNullOrEmpty(matriculaFrontal))
-                                        cell.Height(150).Image(Convert.FromBase64String(matriculaFrontal)).FitHeight();
+                                        //cell.Height(150).Image(Convert.FromBase64String(matriculaFrontal)).FitHeight();
+                                        cell
+    .MaxHeight(150)
+    .Image(Convert.FromBase64String(matriculaFrontal))
+    .FitArea();
                                     else
                                         cell.Text("Frontal no encontrada").FontColor(Colors.Red.Medium).Bold();
                                 });
@@ -152,7 +161,11 @@ namespace Identity.Api.Reporteria
                                 r.RelativeColumn().Element(cell =>
                                 {
                                     if (!string.IsNullOrEmpty(matriculaTrasera))
-                                        cell.Height(150).Image(Convert.FromBase64String(matriculaTrasera)).FitHeight();
+                                        //cell.Height(150).Image(Convert.FromBase64String(matriculaTrasera)).FitHeight();
+                                        cell
+    .MaxHeight(150)
+    .Image(Convert.FromBase64String(matriculaTrasera))
+    .FitArea();
                                     else
                                         cell.Text("Trasera no encontrada").FontColor(Colors.Red.Medium).Bold();
                                 });

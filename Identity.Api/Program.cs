@@ -159,10 +159,18 @@ else
 }
 
 // ORDEN CORRECTO DEL PIPELINE
-app.UseCors(MyAllowSpecificOrigins); // CORS PRIMERO
+/*app.UseCors(MyAllowSpecificOrigins); // CORS PRIMERO
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
+app.UseAuthentication();
+app.UseAuthorization();
+app.MapControllers();*/
+
+app.UseHttpsRedirection();
+app.UseStaticFiles();
+app.UseRouting();           // 1. Routing primero
+app.UseCors(MyAllowSpecificOrigins);  // 2. CORS después de Routing
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

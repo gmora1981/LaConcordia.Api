@@ -27,5 +27,10 @@ namespace Identity.Api.Services
         {
             return _ordenPago.GenerarOrdenPago(request, usuario);
         }
+
+        public List<OrdenPagoResumenDTO> GetOrdenPagoPorEmpresa(string ruc)
+        {
+            return _ordenPago.GetOrdenPagoPorEmpresa(ruc);
+        }
     }
 }

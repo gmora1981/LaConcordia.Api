@@ -15,5 +15,8 @@ namespace Identity.Api.Interfaces
         // Guarda de forma atomica: OrdenPago + actualizacion del Pedido (voucher) + auditoria + egreso de caja.
         // Valida que el saldo final de caja no quede negativo antes de escribir nada.
         OrdenPagoResultadoDTO GenerarOrdenPago(GenerarOrdenPagoRequestDTO request, string usuario);
+
+        // Facturacion: listado de vouchers ya generados para una empresa.
+        List<OrdenPagoResumenDTO> GetOrdenPagoPorEmpresa(string ruc);
     }
 }

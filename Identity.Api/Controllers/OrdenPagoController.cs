@@ -54,5 +54,11 @@ namespace Identity.Api.Controllers
                 return BadRequest("Error al generar la orden de pago: " + ex.Message);
             }
         }
+
+        [HttpGet("GetOrdenPagoPorEmpresa/{ruc}")]
+        public IActionResult GetOrdenPagoPorEmpresa(string ruc)
+        {
+            return Ok(_ordenPago.GetOrdenPagoPorEmpresa(ruc));
+        }
     }
 }

@@ -147,5 +147,25 @@ namespace Identity.Api.DataRepository
                 SaldoFinal = saldoFinal
             };
         }
+
+        public List<OrdenPagoResumenDTO> GetOrdenPagoPorEmpresa(string ruc)
+        {
+            using var context = new DbAa5796GmoraContext();
+
+            return context.Ordendepagos
+                .Where(o => o.Ruc == ruc)
+                .OrderByDescending(o => o.Fechayhora)
+                .Select(o => new OrdenPagoResumenDTO
+                {
+                    Numvoucher = o.Numvoucher,
+                    Fechayhora = o.Fechayhora,
+                    Unidad = o.Unidad,
+                    Conductor = o.Conductor,
+                    Precio = o.Precio,
+                    Preciodesc = o.Preciodesc,
+                    Estadoproceso = o.Estadoproceso
+                })
+                .ToList();
+        }
     }
 }

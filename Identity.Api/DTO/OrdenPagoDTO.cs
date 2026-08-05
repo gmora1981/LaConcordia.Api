@@ -56,4 +56,15 @@
         public decimal SaldoAnterior { get; set; }
         public decimal SaldoFinal { get; set; }
     }
+
+    public class OrdenPagoResumenDTO
+    {
+        public string Numvoucher { get; set; } = null!;
+        public DateTime? Fechayhora { get; set; }
+        public string? Unidad { get; set; }
+        public string? Conductor { get; set; }
+        public decimal? Precio { get; set; }
+        public decimal? Preciodesc { get; set; }
+        public string? Estadoproceso { get; set; }
+    }
 }

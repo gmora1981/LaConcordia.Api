@@ -133,6 +133,7 @@ builder.Services.AddScoped<ISegurovidum, SegurovidumServices>();
 builder.Services.AddScoped<IPasajero, PasajeroServices>();
 builder.Services.AddScoped<IPedido, PedidoServices>();
 builder.Services.AddScoped<IFlujoCaja, FlujoCajaServices>();
+builder.Services.AddScoped<IGenerarCuota, GenerarCuotaServices>();
 
 
 

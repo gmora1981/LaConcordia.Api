@@ -142,6 +142,7 @@ builder.Services.AddScoped<IPagos, PagosServices>();
 builder.Services.AddScoped<IBalance, BalanceServices>();
 builder.Services.AddScoped<IGeocoding, GeocodingServices>();
 builder.Services.AddScoped<IControlUnidad, ControlUnidadServices>();
+builder.Services.AddScoped<IOrdenPago, OrdenPagoServices>();
 
 
 

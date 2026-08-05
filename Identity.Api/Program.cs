@@ -112,6 +112,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 
 
+builder.Services.AddHttpClient();
 builder.Services.AddScoped<INavigation, NavigationServices>();
 builder.Services.AddScoped<ICargo, CargoServices>();
 builder.Services.AddScoped<IUnidad, UnidadServices>();
@@ -139,6 +140,7 @@ builder.Services.AddScoped<IGenerarPlanAyuda, GenerarPlanAyudaServices>();
 builder.Services.AddScoped<IGenerarPlanChoque, GenerarPlanChoqueServices>();
 builder.Services.AddScoped<IPagos, PagosServices>();
 builder.Services.AddScoped<IBalance, BalanceServices>();
+builder.Services.AddScoped<IGeocoding, GeocodingServices>();
 
 
 

@@ -1,0 +1,80 @@
+﻿using Identity.Api.Interfaces;
+using Identity.Api.Paginado;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Modelo.laconcordia.Modelo.Database;
+
+namespace Identity.Api.Controllers
+{
+    [Route("api/[controller]")]
+    [ApiController]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    public class PedidoController : Controller
+    {
+        private readonly IPedido _pedido;
+
+        public PedidoController(IPedido pedido)
+        {
+            _pedido = pedido;
+        }
+
+        [HttpGet("GetPedidoInfoAll")]
+        public IActionResult GetAll()
+        {
+            var lista = _pedido.GetPedidoInfoAll();
+
+            return Ok(lista);
+        }
+
+        [HttpPost("InsertPedido")]
+        public IActionResult Create([FromBody] Pedido nuevo)
+        {
+            try
+            {
+                _pedido.InsertPedido(nuevo);
+                return Ok("Pedido creado correctamente.");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("Error al crear: " + ex.Message);
+            }
+        }
+
+        [HttpPut("UpdatePedido")]
+        public IActionResult Update([FromBody] Pedido actualizado)
+        {
+            try
+            {
+                _pedido.UpdatePedido(actualizado);
+                return Ok("Pedido actualizado correctamente.");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("Error al actualizar: " + ex.Message);
+            }
+        }
+
+        //paginado
+        [HttpGet("GetPedidoPaginados")]
+        public async Task<IActionResult> GetPedidoPaginados(
+            int pagina = 1,
+            int pageSize = PaginadorHelper.NumeroDeDatosPorPagina,
+            string? celular = null,
+            string? unidad = null,
+            string? estado = null,
+            DateTime? fechaDesde = null,
+            DateTime? fechaHasta = null)
+        {
+            try
+            {
+                var resultado = await _pedido.GetPedidoPaginados(pagina, pageSize, celular, unidad, estado, fechaDesde, fechaHasta);
+                return Ok(resultado);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
+    }
+}

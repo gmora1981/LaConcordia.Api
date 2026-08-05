@@ -130,6 +130,8 @@ builder.Services.AddScoped<IDuenopuesto, DuenopuestoServices>();
 builder.Services.AddScoped<IFichapersona, FichapersonaServices>();
 builder.Services.AddScoped<IFichaobservacione, FichaobservacioneService>();
 builder.Services.AddScoped<ISegurovidum, SegurovidumServices>();
+builder.Services.AddScoped<IPasajero, PasajeroServices>();
+builder.Services.AddScoped<IPedido, PedidoServices>();
 
 
 

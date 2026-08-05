@@ -136,6 +136,7 @@ builder.Services.AddScoped<IFlujoCaja, FlujoCajaServices>();
 builder.Services.AddScoped<IGenerarCuota, GenerarCuotaServices>();
 builder.Services.AddScoped<IGenerarMulta, GenerarMultaServices>();
 builder.Services.AddScoped<IGenerarPlanAyuda, GenerarPlanAyudaServices>();
+builder.Services.AddScoped<IGenerarPlanChoque, GenerarPlanChoqueServices>();
 
 
 

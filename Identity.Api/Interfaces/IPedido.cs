@@ -26,5 +26,9 @@ namespace Identity.Api.Interfaces
         // Reutiliza el precio/km de un pedido anterior con exactamente el mismo celular
         // y las mismas coordenadas de origen/destino (igual que hacia el sistema de escritorio).
         PrecioKmDTO? GetPrecioKmHistorico(string celular, decimal origenLat, decimal origenLog, decimal destinoLat, decimal destinoLog);
+
+        // Pedidos que quedaron con el destino "placeholder" (sin definir) y necesitan correccion
+        // (pantalla Modificacion de Pedido, equivalente a SE_PEDIDOXCOORDENADAS).
+        List<PedidoDTO> GetPedidosConDestinoPendiente();
     }
 }

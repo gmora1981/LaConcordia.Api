@@ -147,6 +147,47 @@ namespace Identity.Api.DataRepository
             };
         }
 
+        // Misma coordenada placeholder que usa el frontend para "sin destino definido todavia".
+        private const decimal LatSinDestino = -0.380284m;
+        private const decimal LngSinDestino = -91.5448445m;
+
+        public List<PedidoDTO> GetPedidosConDestinoPendiente()
+        {
+            using var context = new DbAa5796GmoraContext();
+
+            return context.Pedidos
+                .Where(p => p.Destinolat == LatSinDestino && p.Destinolog == LngSinDestino)
+                .OrderByDescending(p => p.Fecharegistro)
+                .Select(x => new PedidoDTO
+                {
+                    Celular = x.Celular,
+                    Origenlat = x.Origenlat,
+                    Origenlog = x.Origenlog,
+                    Destinolat = x.Destinolat,
+                    Destinolog = x.Destinolog,
+                    Tiempodemora = x.Tiempodemora,
+                    Ruc = x.Ruc,
+                    Fecharegistro = x.Fecharegistro,
+                    Usuario = x.Usuario,
+                    Base = x.Base,
+                    Unidad = x.Unidad,
+                    Ciconductor = x.Ciconductor,
+                    Conductor = x.Conductor,
+                    Unidadsiguiente = x.Unidadsiguiente,
+                    Ciconductorsiguiente = x.Ciconductorsiguiente,
+                    Conductorsiguiente = x.Conductorsiguiente,
+                    Precio = x.Precio,
+                    Km = x.Km,
+                    Numvoucher = x.Numvoucher,
+                    Valija = x.Valija,
+                    Empleado = x.Empleado,
+                    Recorrido = x.Recorrido,
+                    Estado = x.Estado,
+                    Autorizado = x.Autorizado
+                })
+                .ToList();
+        }
+
         public PrecioKmDTO? GetPrecioKmHistorico(string celular, decimal origenLat, decimal origenLog, decimal destinoLat, decimal destinoLog)
         {
             using var context = new DbAa5796GmoraContext();

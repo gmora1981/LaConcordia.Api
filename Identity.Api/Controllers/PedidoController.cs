@@ -92,5 +92,11 @@ namespace Identity.Api.Controllers
             var item = _pedido.GetPrecioKmHistorico(celular, origenLat, origenLog, destinoLat, destinoLog);
             return Ok(item);
         }
+
+        [HttpGet("GetPedidosConDestinoPendiente")]
+        public IActionResult GetPedidosConDestinoPendiente()
+        {
+            return Ok(_pedido.GetPedidosConDestinoPendiente());
+        }
     }
 }

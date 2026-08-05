@@ -47,5 +47,10 @@ namespace Identity.Api.Services
         {
             return _pedido.GetPrecioKmHistorico(celular, origenLat, origenLog, destinoLat, destinoLog);
         }
+
+        public List<PedidoDTO> GetPedidosConDestinoPendiente()
+        {
+            return _pedido.GetPedidosConDestinoPendiente();
+        }
     }
 }

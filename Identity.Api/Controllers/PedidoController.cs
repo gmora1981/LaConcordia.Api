@@ -76,5 +76,21 @@ namespace Identity.Api.Controllers
                 return BadRequest(new { error = ex.Message });
             }
         }
+
+        [HttpGet("GetConductorPorUnidad/{unidad}")]
+        public IActionResult GetConductorPorUnidad(string unidad)
+        {
+            var item = _pedido.GetConductorPorUnidad(unidad);
+            if (item == null)
+                return NotFound("No hay un conductor activo asignado a esa unidad.");
+            return Ok(item);
+        }
+
+        [HttpGet("GetPrecioKmHistorico")]
+        public IActionResult GetPrecioKmHistorico(string celular, decimal origenLat, decimal origenLog, decimal destinoLat, decimal destinoLog)
+        {
+            var item = _pedido.GetPrecioKmHistorico(celular, origenLat, origenLog, destinoLat, destinoLog);
+            return Ok(item);
+        }
     }
 }

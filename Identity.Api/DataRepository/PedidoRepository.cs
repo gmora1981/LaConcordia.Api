@@ -130,5 +130,42 @@ namespace Identity.Api.DataRepository
                 PageSize = pageSize
             };
         }
+
+        public ConductorInfoDTO? GetConductorPorUnidad(string unidad)
+        {
+            using var context = new DbAa5796GmoraContext();
+
+            var ficha = context.Fichapersonals
+                .FirstOrDefault(f => f.Fkunidad == unidad && f.Estado == "a");
+
+            if (ficha == null) return null;
+
+            return new ConductorInfoDTO
+            {
+                Cedula = ficha.Cedula,
+                NombreCompleto = $"{ficha.Apellidos} {ficha.Nombre}".Trim()
+            };
+        }
+
+        public PrecioKmDTO? GetPrecioKmHistorico(string celular, decimal origenLat, decimal origenLog, decimal destinoLat, decimal destinoLog)
+        {
+            using var context = new DbAa5796GmoraContext();
+
+            var anterior = context.Pedidos
+                .Where(p => p.Celular == celular
+                    && p.Origenlat == origenLat && p.Origenlog == origenLog
+                    && p.Destinolat == destinoLat && p.Destinolog == destinoLog
+                    && p.Precio != null && p.Precio > 0)
+                .OrderByDescending(p => p.Fecharegistro)
+                .FirstOrDefault();
+
+            if (anterior == null) return null;
+
+            return new PrecioKmDTO
+            {
+                Precio = anterior.Precio ?? 0,
+                Km = anterior.Km ?? 0
+            };
+        }
     }
 }

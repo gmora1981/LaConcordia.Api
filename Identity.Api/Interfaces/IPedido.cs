@@ -19,5 +19,12 @@ namespace Identity.Api.Interfaces
             string? estado = null,
             DateTime? fechaDesde = null,
             DateTime? fechaHasta = null);
+
+        // Chofer actualmente asignado (activo) a una unidad, para autocompletar Conductor/CIConductor.
+        ConductorInfoDTO? GetConductorPorUnidad(string unidad);
+
+        // Reutiliza el precio/km de un pedido anterior con exactamente el mismo celular
+        // y las mismas coordenadas de origen/destino (igual que hacia el sistema de escritorio).
+        PrecioKmDTO? GetPrecioKmHistorico(string celular, decimal origenLat, decimal origenLog, decimal destinoLat, decimal destinoLog);
     }
 }

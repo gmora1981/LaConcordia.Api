@@ -37,5 +37,15 @@ namespace Identity.Api.Services
         {
             return await _pedido.GetPedidoPaginados(pagina, pageSize, celular, unidad, estado, fechaDesde, fechaHasta);
         }
+
+        public ConductorInfoDTO? GetConductorPorUnidad(string unidad)
+        {
+            return _pedido.GetConductorPorUnidad(unidad);
+        }
+
+        public PrecioKmDTO? GetPrecioKmHistorico(string celular, decimal origenLat, decimal origenLog, decimal destinoLat, decimal destinoLog)
+        {
+            return _pedido.GetPrecioKmHistorico(celular, origenLat, origenLog, destinoLat, destinoLog);
+        }
     }
 }

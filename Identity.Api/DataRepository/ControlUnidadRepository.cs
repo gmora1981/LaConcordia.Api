@@ -1,0 +1,59 @@
+﻿using Identity.Api.DTO;
+using Modelo.laconcordia.Modelo.Database;
+
+namespace Identity.Api.DataRepository
+{
+    public class ControlUnidadRepository
+    {
+        private readonly DbAa5796GmoraContext _context;
+
+        public ControlUnidadRepository()
+        {
+            _context = new DbAa5796GmoraContext();
+        }
+
+        public List<UnidadServicioDTO> GetFichaPersonalPorServicio(string estadoServicio)
+        {
+            using var context = new DbAa5796GmoraContext();
+
+            return context.Fichapersonals
+                .Where(f => f.Estadoservicio == estadoServicio && f.Fkunidad != null)
+                .Select(f => new UnidadServicioDTO
+                {
+                    Fkunidad = f.Fkunidad!,
+                    Cedula = f.Cedula,
+                    Nombre = f.Nombre,
+                    Apellidos = f.Apellidos
+                })
+                .OrderBy(f => f.Fkunidad)
+                .ToList();
+        }
+
+        public void MoverUnidad(MoverUnidadRequestDTO request, string monitora)
+        {
+            var nombreCompleto = "";
+            var ficha = _context.Fichapersonals.FirstOrDefault(f => f.Cedula == request.Cedula);
+            if (ficha != null)
+                nombreCompleto = $"{ficha.Apellidos} {ficha.Nombre}".Trim();
+
+            _context.Controlunidades.Add(new Controlunidade
+            {
+                Fecharegistro = DateTime.Now,
+                Unidad = request.Unidad,
+                Estado = request.Direccion,
+                Turno = request.Turno,
+                Monitora = monitora,
+                Monitorasig = "",
+                Ciconductor = request.Cedula,
+                Conductor = nombreCompleto
+            });
+
+            if (ficha != null)
+            {
+                ficha.Estadoservicio = request.Direccion == "INGRESO" ? "a" : "p";
+            }
+
+            _context.SaveChanges();
+        }
+    }
+}

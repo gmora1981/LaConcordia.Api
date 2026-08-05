@@ -138,6 +138,7 @@ builder.Services.AddScoped<IGenerarMulta, GenerarMultaServices>();
 builder.Services.AddScoped<IGenerarPlanAyuda, GenerarPlanAyudaServices>();
 builder.Services.AddScoped<IGenerarPlanChoque, GenerarPlanChoqueServices>();
 builder.Services.AddScoped<IPagos, PagosServices>();
+builder.Services.AddScoped<IBalance, BalanceServices>();
 
 
 

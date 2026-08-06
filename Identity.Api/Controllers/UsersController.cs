@@ -179,6 +179,26 @@ namespace Identity.Api.Controllers
             return Ok(roles);
         }
 
+        // GET: api/users/roles-bulk
+        // Roles de TODOS los usuarios en una sola consulta (userId -> lista de nombres de rol).
+        // Evita tener que llamar a GET {id}/roles una vez por usuario (hasta 200 llamadas
+        // seguidas en pantallas como Asignacion Masiva de Permisos).
+        [HttpGet("roles-bulk")]
+        [Authorize(Roles = "Admin")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        public async Task<ActionResult<Dictionary<string, List<string>>>> GetAllUserRoles()
+        {
+            var data = await context.UserRoles
+                .Join(context.Roles, ur => ur.RoleId, r => r.Id, (ur, r) => new { ur.UserId, RoleName = r.Name })
+                .ToListAsync();
+
+            var result = data
+                .GroupBy(x => x.UserId)
+                .ToDictionary(g => g.Key, g => g.Select(x => x.RoleName ?? "").ToList());
+
+            return Ok(result);
+        }
+
         // PUT: api/users/{id}
         [HttpPut("{id}")]
         [Authorize(Roles = "Admin")]

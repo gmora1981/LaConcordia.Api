@@ -106,6 +106,42 @@ namespace Identity.Api.Controllers
             return Ok(users);
         }
 
+        // GET: api/users/search-paginated
+        // Igual que Get(), pero filtrando por termino de busqueda contra TODOS los usuarios
+        // (no solo la pagina cargada). Se usa en pantallas como Gestion Avanzada de Permisos,
+        // donde la busqueda debe alcanzar a cualquier usuario, no solo a los ya traidos al cliente.
+        [HttpGet("search-paginated")]
+        [Authorize(Roles = "Admin")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        public async Task<ActionResult<List<UserDTO>>> SearchPaginated(string? term, [FromQuery] PaginationDTO paginationDTO)
+        {
+            var queryable = context.Users.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(term))
+            {
+                queryable = queryable.Where(u =>
+                    u.Email.Contains(term) ||
+                    u.FirstName.Contains(term) ||
+                    u.LastName.Contains(term));
+            }
+
+            await HttpContext.InsertPaginationParametersInResponse(queryable, paginationDTO.RecordsPerPage);
+
+            var users = await queryable
+                .OrderBy(u => u.Email)
+                .Paginate(paginationDTO)
+                .Select(x => new UserDTO
+                {
+                    UserId = x.Id,
+                    Email = x.Email ?? "",
+                    FirstName = x.FirstName,
+                    LastName = x.LastName
+                })
+                .ToListAsync();
+
+            return Ok(users);
+        }
+
         // GET: api/users/check-email/{email}
         [HttpGet("check-email/{email}")]
         [AllowAnonymous]

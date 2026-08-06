@@ -319,12 +319,59 @@ namespace Identity.Api.Services
 
         public async Task<List<NavigationPermissionDto>> GetEffectivePermissionsAsync(string userId)
         {
+            // Antes esto hacia 3 consultas a la base de datos POR CADA item de navegacion
+            // (una de ellas, los permisos de rol, siempre devolvia el mismo resultado completo).
+            // Con ~50 items de menu eso son ~150 idas y vueltas a la base en la nube en cada
+            // carga de pagina. Aqui se traen los permisos de rol y de usuario UNA sola vez y
+            // el resto del calculo se hace en memoria.
             var allNavigationItems = await _dataRepository.GetAllNavigationItemsAsync();
+            var rolePermissions = await _dataRepository.GetRolePermissionsForUserAsync(userId);
+            var userPermissions = await _dataRepository.GetUserPermissionsAsync(userId);
+
+            var rolePermissionsByItem = rolePermissions
+                .GroupBy(rp => rp.NavigationItemId)
+                .ToDictionary(g => g.Key, g => g.ToList());
+            var userPermissionsByItem = userPermissions
+                .ToDictionary(p => p.NavigationItemId, p => p);
+
             var effectivePermissions = new List<NavigationPermissionDto>();
 
             foreach (var navItem in allNavigationItems)
             {
-                var permission = await GetEffectivePermissionAsync(userId, navItem.Id);
+                var permission = new NavigationPermissionDto
+                {
+                    NavigationItemId = navItem.Id,
+                    NavigationItemTitle = navItem.Title,
+                    NavigationItemUrl = navItem.Url,
+                    NavigationItemIcon = navItem.Icon,
+                    ParentId = navItem.ParentId,
+                    CanView = false,
+                    CanCreate = false,
+                    CanEdit = false,
+                    CanDelete = false
+                };
+
+                // Primero, permisos por rol (cualquier rol del usuario que otorgue el permiso, lo otorga).
+                if (rolePermissionsByItem.TryGetValue(navItem.Id, out var relevantRolePermissions))
+                {
+                    foreach (var rp in relevantRolePermissions)
+                    {
+                        permission.CanView = permission.CanView || rp.CanView;
+                        permission.CanCreate = permission.CanCreate || rp.CanCreate;
+                        permission.CanEdit = permission.CanEdit || rp.CanEdit;
+                        permission.CanDelete = permission.CanDelete || rp.CanDelete;
+                    }
+                }
+
+                // Luego, el permiso especifico del usuario (si existe) sobrescribe al del rol.
+                if (userPermissionsByItem.TryGetValue(navItem.Id, out var userPermission))
+                {
+                    permission.CanView = userPermission.CanView;
+                    permission.CanCreate = userPermission.CanCreate;
+                    permission.CanEdit = userPermission.CanEdit;
+                    permission.CanDelete = userPermission.CanDelete;
+                }
+
                 effectivePermissions.Add(permission);
             }
 

@@ -31,15 +31,16 @@ namespace Identity.Api.Services
                 Roles = user.AspNetUserRoles.Select(ur => ur.Role.Name ?? "").ToList()
             };
 
+            // Mismo arreglo que en GetEffectivePermissionsAsync: antes esto llamaba a
+            // GetEffectivePermissionAsync por cada item de navegacion (3 consultas a la
+            // base de datos por item). Aqui se reutiliza el mismo calculo en memoria.
             var allNavigationItems = await _dataRepository.GetAllNavigationItemsAsync();
+            var rolePermissions = await _dataRepository.GetRolePermissionsForUserAsync(userId);
+            var userNavigationPermissions = await _dataRepository.GetUserPermissionsAsync(userId);
 
-            foreach (var navItem in allNavigationItems)
-            {
-                var permission = await GetEffectivePermissionAsync(userId, navItem.Id);
-                userPermissions.Permissions.Add(permission);
-            }
+            var effectivePermissions = ComputeEffectivePermissions(allNavigationItems, rolePermissions, userNavigationPermissions);
 
-            userPermissions.Permissions = BuildPermissionTree(userPermissions.Permissions);
+            userPermissions.Permissions = BuildPermissionTree(effectivePermissions);
             return userPermissions;
         }
 
@@ -328,6 +329,19 @@ namespace Identity.Api.Services
             var rolePermissions = await _dataRepository.GetRolePermissionsForUserAsync(userId);
             var userPermissions = await _dataRepository.GetUserPermissionsAsync(userId);
 
+            var effectivePermissions = ComputeEffectivePermissions(allNavigationItems, rolePermissions, userPermissions);
+
+            return BuildPermissionTree(effectivePermissions);
+        }
+
+        // Calcula, en memoria, el permiso efectivo (rol + override de usuario) para cada item
+        // de navegacion. Recibe las 3 listas ya cargadas de la base de datos (una sola vez cada
+        // una) para evitar el patron N+1 que existia antes en ambos llamadores.
+        private List<NavigationPermissionDto> ComputeEffectivePermissions(
+            List<NavigationItem> allNavigationItems,
+            List<RoleNavigationPermission> rolePermissions,
+            List<UserNavigationPermission> userPermissions)
+        {
             var rolePermissionsByItem = rolePermissions
                 .GroupBy(rp => rp.NavigationItemId)
                 .ToDictionary(g => g.Key, g => g.ToList());
@@ -375,7 +389,7 @@ namespace Identity.Api.Services
                 effectivePermissions.Add(permission);
             }
 
-            return BuildPermissionTree(effectivePermissions);
+            return effectivePermissions;
         }
 
         public async Task<NavigationMenuDto> GetUserNavigationMenuAsync(string userId)

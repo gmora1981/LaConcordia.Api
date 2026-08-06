@@ -50,7 +50,7 @@ builder.Services.AddCors(options =>
                                      "https://localhost:44377"        // Otro puerto común
                                   )
                                   .AllowAnyHeader()
-                                  .WithExposedHeaders("totalAmountPages")
+                                  .WithExposedHeaders("totalAmountPages", "totalAmountRecords")
                                   .AllowAnyMethod()
                                   .AllowCredentials();
                         }
@@ -76,7 +76,7 @@ builder.Services.AddCors(options =>
 
                                   )
                                   .AllowAnyHeader()
-                                  .WithExposedHeaders("totalAmountPages")
+                                  .WithExposedHeaders("totalAmountPages", "totalAmountRecords")
                                   .AllowAnyMethod()
                                   .AllowCredentials();
                         }

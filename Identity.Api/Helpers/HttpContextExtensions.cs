@@ -12,6 +12,7 @@ namespace Identity.Api.Helpers
             double count = await queryable.CountAsync();
             double totalAmountPages = Math.Ceiling(count / recordsPerPage);
             httpContext.Response.Headers.Append("totalAmountPages", totalAmountPages.ToString());
+            httpContext.Response.Headers.Append("totalAmountRecords", count.ToString());
         }
     }
 }

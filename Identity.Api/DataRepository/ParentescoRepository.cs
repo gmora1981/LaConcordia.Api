@@ -17,7 +17,7 @@ namespace Identity.Api.DataRepository
 
         public IEnumerable<Parentesco> ParentescoInfoAll()
         {
-            return _context.Parentescos.Where(x => x.Estado == "a").ToList();
+            return _context.Parentescos.ToList();
         }
 
         public ParentescoDTO? GetParentescoById(int idParentesco)

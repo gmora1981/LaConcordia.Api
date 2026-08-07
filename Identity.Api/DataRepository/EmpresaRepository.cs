@@ -16,7 +16,7 @@ namespace Identity.Api.DataRepository
 
         public IEnumerable<Empresa> GetEmpresaInfoAll()
         {
-            return _context.Empresas.Where(x => x.Estado == "a").ToList();
+            return _context.Empresas.ToList();
         }
 
         public EmpresaDTO GetEmpresaByRuc(string ruc)

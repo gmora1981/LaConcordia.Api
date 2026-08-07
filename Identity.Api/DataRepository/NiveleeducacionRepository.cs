@@ -17,7 +17,7 @@ namespace Identity.Api.DataRepository
 
         public IEnumerable<Niveleducacion> GetNiveleducacionInfoAll()
         {
-            return _context.Niveleducacions.Where(x => x.Estado == "a").ToList();
+            return _context.Niveleducacions.ToList();
         }
 
         public NiveleducacionDTO? GetNiveleducacionById(int idNiveleducacion)

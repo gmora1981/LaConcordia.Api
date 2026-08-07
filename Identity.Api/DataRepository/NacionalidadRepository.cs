@@ -16,7 +16,7 @@ namespace Identity.Api.DataRepository
         }
         public IEnumerable<Nacionalidad> NacionalidadInfoAll()
         {
-            return _context.Nacionalidads.Where(x => x.Estado == "a").ToList();
+            return _context.Nacionalidads.ToList();
         }
 
         public NacionalidadDTO? GetNacionalidadById(int idNacionalidad)

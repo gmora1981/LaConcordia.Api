@@ -18,7 +18,6 @@ namespace Identity.Api.DataRepository
         public IEnumerable<DuenopuestoDTO> GetDuenopuestoInfoAll()
         {
             return _context.Duenopuestos
-        .Where(x => x.Estado == "a")
         .Select(s => new DuenopuestoDTO
         {
             Cedula = s.Cedula,

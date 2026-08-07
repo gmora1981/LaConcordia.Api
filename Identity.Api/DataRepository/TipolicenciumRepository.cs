@@ -17,7 +17,7 @@ namespace Identity.Api.DataRepository
 
         public IEnumerable<Tipolicencium> GetTipolicenciaInfoAll()
         {
-            return _context.Tipolicencia.Where(x => x.Estado == "a").ToList();
+            return _context.Tipolicencia.ToList();
         }
 
         public TipolicenciumDTO? GetTipolicenciaById(int idTipoLicencia)

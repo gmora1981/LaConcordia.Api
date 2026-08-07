@@ -15,7 +15,7 @@ namespace Identity.Api.DataRepository
         }
         public IEnumerable<Estadocivil> GetEstadocivilInfoAll()
         {
-            return _context.Estadocivils.Where(x => x.Estado == "a").ToList();
+            return _context.Estadocivils.ToList();
         }
         public EstadocivilDTO GetEstadocivilById(int idEstadoCivil)
         {

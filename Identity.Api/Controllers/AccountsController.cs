@@ -1,4 +1,5 @@
-﻿using Identity.Api.Model;
+﻿using Identity.Api.DTO;
+using Identity.Api.Model;
 //using Identity.Api.Modelo;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -115,6 +116,35 @@ namespace Identity.Api.Controllers
             {
                 return BadRequest("Failed to assign Admin role");
             }
+        }
+
+        // POST: api/Accounts/ChangeMyPassword
+        // Cambio de contraseña del propio usuario autenticado (distinto del reseteo que un
+        // Admin hace sobre otro usuario en UsersController).
+        [HttpPost("ChangeMyPassword")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        public async Task<ActionResult> ChangeMyPassword([FromBody] ChangeMyPasswordDTO dto)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized();
+            }
+
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                return NotFound("Usuario no encontrado");
+            }
+
+            var result = await _userManager.ChangePasswordAsync(user, dto.CurrentPassword, dto.NewPassword);
+            if (result.Succeeded)
+            {
+                return Ok(new { success = true, message = "Contraseña actualizada correctamente." });
+            }
+
+            var errores = string.Join("; ", result.Errors.Select(e => e.Description));
+            return BadRequest(new { success = false, message = errores });
         }
 
         private async Task<UserToken> BuildToken(UserInfo userinfo)

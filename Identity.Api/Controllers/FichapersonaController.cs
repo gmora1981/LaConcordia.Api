@@ -509,7 +509,7 @@ namespace Identity.Api.Controllers
 
         // 📌 Buscar imagen por cédula en FTP
         [HttpGet("BuscarImagenesChofer/{cedula}")]
-        public IActionResult BuscarImagenesChofer(string cedula)
+        public async Task<IActionResult> BuscarImagenesChofer(string cedula)
         {
             var carpetas = new Dictionary<string, string>
     {
@@ -519,68 +519,39 @@ namespace Identity.Api.Controllers
         { "Vehiculo", "/Vehiculo" }
     };
 
-            bool frontal = false;
-            bool trasera = false;
-            bool matriculaFrontal = false;
-            bool matriculaTrasera = false;
-            bool licencia = false;
-            //bool matricula = false;
-            bool vehiculo = false;
-
-            using var client = new FtpClient(host, new NetworkCredential(user, pass));
             try
             {
-                client.Connect();
-                if (!client.IsConnected)
-                    return StatusCode(403, new { mensaje = "Error de autenticación FTP" });
-
-                foreach (var item in carpetas)
+                // Antes se listaban las 4 carpetas una tras otra sobre la misma conexion
+                // FTP (4 viajes de red en serie). Ahora se abre una conexion independiente
+                // por carpeta y se listan todas en paralelo.
+                var tareas = carpetas.Select(item => Task.Run(() =>
                 {
-                    var carpetaNombre = item.Key;
-                    var carpetaRuta = item.Value;
+                    using var client = new FtpClient(host, new NetworkCredential(user, pass));
+                    client.Connect();
+                    var archivos = client.GetListing(item.Value)
+                        .Where(f => f.Type == FtpObjectType.File &&
+                                    f.Name.StartsWith(cedula, StringComparison.OrdinalIgnoreCase))
+                        .ToList();
+                    return (Carpeta: item.Key, Archivos: archivos);
+                })).ToArray();
 
-                    var archivos = client.GetListing(carpetaRuta)
-                                         .Where(f => f.Type == FtpObjectType.File &&
-                                                     f.Name.StartsWith(cedula, StringComparison.OrdinalIgnoreCase))
-                                         .ToList();
+                var resultados = (await Task.WhenAll(tareas))
+                    .ToDictionary(r => r.Carpeta, r => r.Archivos);
 
-                    if (carpetaNombre == "Documento")
-                    {
-                        frontal = archivos.Any(a => a.Name.Contains("FRONTAL", StringComparison.OrdinalIgnoreCase));
-                        trasera = archivos.Any(a => a.Name.Contains("TRASERA", StringComparison.OrdinalIgnoreCase));
-                    }
-                    else if (carpetaNombre == "Licencia")
-                    {
-                        licencia = archivos.Any();
-                    }
-                    //else if (carpetaNombre == "Matricula")
-                    //{
-                    //    matricula = archivos.Any();
-                    //}
-                    else if (carpetaNombre == "Matricula")
-                    {
-                        // 🔥 SOLO ESTA PARTE CAMBIA
-                        matriculaFrontal = archivos.Any(a =>
-                            a.Name.Contains("frontal", StringComparison.OrdinalIgnoreCase));
-
-                        matriculaTrasera = archivos.Any(a =>
-                            a.Name.Contains("trasera", StringComparison.OrdinalIgnoreCase));
-                    }
-                    else if (carpetaNombre == "Vehiculo")
-                    {
-                        vehiculo = archivos.Any();
-                    }
-                }
+                bool frontal = resultados["Documento"].Any(a => a.Name.Contains("FRONTAL", StringComparison.OrdinalIgnoreCase));
+                bool trasera = resultados["Documento"].Any(a => a.Name.Contains("TRASERA", StringComparison.OrdinalIgnoreCase));
+                bool licencia = resultados["Licencia"].Any();
+                bool matriculaFrontal = resultados["Matricula"].Any(a => a.Name.Contains("frontal", StringComparison.OrdinalIgnoreCase));
+                bool matriculaTrasera = resultados["Matricula"].Any(a => a.Name.Contains("trasera", StringComparison.OrdinalIgnoreCase));
+                bool vehiculo = resultados["Vehiculo"].Any();
 
                 return Ok(new
                 {
                     Frontal = frontal,
                     Trasera = trasera,
                     Licencia = licencia,
-                    //Matricula = matricula,
                     MatriculaFrontal = matriculaFrontal,
                     MatriculaTrasera = matriculaTrasera,
-
                     Vehiculo = vehiculo
                 });
             }

@@ -40,7 +40,6 @@ namespace Identity.Api.DataRepository
                 Anio = dto.Anio,
                 Estado = dto.Estado,
                 Color = dto.Color?.Trim().ToUpper(),
-                Fecha = dto.Fecha,
             };
 
             _context.Unidads.Add(nuevaUnidad);

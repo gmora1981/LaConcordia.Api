@@ -49,9 +49,9 @@ namespace Identity.Api.Services
         }
 
         //exportar
-        public List<Duenopuesto> ObtenerDuenoPuestoFiltradas(string? filtro)
+        public List<Duenopuesto> ObtenerDuenoPuestoFiltradas(string? cedula, string? nombre, string? apellidos, string? estado)
         {
-            return _duenopuesto.ObtenerDuenoPuestoFiltradas(filtro);
+            return _duenopuesto.ObtenerDuenoPuestoFiltradas(cedula, nombre, apellidos, estado);
         }
     }
 

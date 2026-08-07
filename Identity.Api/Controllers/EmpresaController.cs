@@ -100,11 +100,11 @@ namespace Identity.Api.Controllers
 
         //exportar
         [HttpGet("exportarPDF")]
-        public IActionResult ExportarEmpresasPdf(string? filtro = null)
+        public IActionResult ExportarEmpresasPdf(string? razonSocial = null, string? estado = null)
         {
             QuestPDF.Settings.License = LicenseType.Community;
 
-            var datos = _empresa.ObtenerEmpresasFiltradas(filtro);
+            var datos = _empresa.ObtenerEmpresasFiltradas(razonSocial, estado);
 
             if (datos == null || !datos.Any())
                 return NotFound("No hay datos para exportar.");

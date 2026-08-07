@@ -124,15 +124,22 @@ namespace Identity.Api.DataRepository
         }
 
         // Exportar
-        public List<Duenopuesto> ObtenerDuenoPuestoFiltradas(string? filtro)
+        public List<Duenopuesto> ObtenerDuenoPuestoFiltradas(string? cedula, string? nombre, string? apellidos, string? estado)
         {
             var query = _context.Duenopuestos.AsQueryable();
-            if (!string.IsNullOrEmpty(filtro))
-            {
-                query = query.Where(x => x.Cedula.Contains(filtro) ||
-                                         x.Nombres.Contains(filtro) ||
-                                         x.Apellidos.Contains(filtro));
-            }
+
+            if (!string.IsNullOrEmpty(cedula))
+                query = query.Where(x => x.Cedula.Contains(cedula));
+
+            if (!string.IsNullOrEmpty(nombre))
+                query = query.Where(x => x.Nombres.Contains(nombre));
+
+            if (!string.IsNullOrEmpty(apellidos))
+                query = query.Where(x => x.Apellidos.Contains(apellidos));
+
+            if (!string.IsNullOrEmpty(estado))
+                query = query.Where(x => x.Estado == estado);
+
             return query.ToList();
         }
     }

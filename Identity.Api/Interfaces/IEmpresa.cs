@@ -22,7 +22,7 @@ namespace Identity.Api.Interfaces
         string? estado = null);
 
         //exportar
-        List<Empresa> ObtenerEmpresasFiltradas(string? filtro);
+        List<Empresa> ObtenerEmpresasFiltradas(string? razonSocial, string? estado);
 
     }
 

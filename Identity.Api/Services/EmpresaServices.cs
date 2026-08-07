@@ -43,9 +43,9 @@ namespace Identity.Api.Services
         }
 
         //exportar
-        public List<Empresa> ObtenerEmpresasFiltradas(string? filtro)
+        public List<Empresa> ObtenerEmpresasFiltradas(string? razonSocial, string? estado)
         {
-            return _empresa.ObtenerEmpresasFiltradas(filtro);
+            return _empresa.ObtenerEmpresasFiltradas(razonSocial, estado);
         }
     }
 }

@@ -105,24 +105,24 @@ namespace Identity.Api.DataRepository
         }
 
         //exportar
-        public List<Empresa> ObtenerEmpresasFiltradas(string? filtro)
+        public List<Empresa> ObtenerEmpresasFiltradas(string? razonSocial, string? estado)
         {
             using var context = new DbAa5796GmoraContext();
 
             var query = context.Empresas.AsQueryable();
 
-            if (!string.IsNullOrWhiteSpace(filtro))
+            if (!string.IsNullOrWhiteSpace(razonSocial))
             {
-                var lowerFiltro = filtro.ToLower();
+                var lowerFiltro = razonSocial.ToLower();
                 query = query.Where(e =>
                     e.Razonsocial.ToLower().Contains(lowerFiltro) ||
                     e.Ruc.ToLower().Contains(lowerFiltro));
             }
 
-            //if (!string.IsNullOrWhiteSpace(estado))
-            //{
-            //    query = query.Where(e => e.Estado == estado);
-            //}
+            if (!string.IsNullOrWhiteSpace(estado))
+            {
+                query = query.Where(e => e.Estado == estado);
+            }
 
             return query
                 .Select(e => new Empresa

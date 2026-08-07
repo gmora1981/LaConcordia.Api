@@ -22,7 +22,7 @@ namespace Identity.Api.Interfaces
             string? estado = null);
 
         //exportar
-        List<Duenopuesto> ObtenerDuenoPuestoFiltradas(string? filtro);
+        List<Duenopuesto> ObtenerDuenoPuestoFiltradas(string? cedula, string? nombre, string? apellidos, string? estado);
 
     }
 

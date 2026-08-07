@@ -17,7 +17,7 @@ namespace Identity.Api.DataRepository
 
         public IEnumerable<Unidad> UnidadAll()
         {
-            return _context.Unidads.Where(x => x.Estado == "a").ToList();
+            return _context.Unidads.ToList();
         }
 
         public IEnumerable<Unidad> GetUnidadById(string idUnidad)
@@ -40,6 +40,7 @@ namespace Identity.Api.DataRepository
                 Anio = dto.Anio,
                 Estado = dto.Estado,
                 Color = dto.Color?.Trim().ToUpper(),
+                Fecha = dto.Fecha,
             };
 
             _context.Unidads.Add(nuevaUnidad);

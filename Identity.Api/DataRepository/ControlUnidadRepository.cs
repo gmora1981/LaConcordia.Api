@@ -17,7 +17,7 @@ namespace Identity.Api.DataRepository
             using var context = new DbAa5796GmoraContext();
 
             return context.Fichapersonals
-                .Where(f => f.Estadoservicio == estadoServicio && f.Fkunidad != null && f.Fkunidad != "")
+                .Where(f => f.Estado == "a" && f.Estadoservicio == estadoServicio && f.Fkunidad != null && f.Fkunidad != "")
                 .Select(f => new UnidadServicioDTO
                 {
                     Fkunidad = f.Fkunidad!,

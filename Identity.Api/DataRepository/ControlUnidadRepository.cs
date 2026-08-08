@@ -53,5 +53,29 @@ namespace Identity.Api.DataRepository
 
             _context.SaveChanges();
         }
+
+        // Historial de ingresos/salidas de un dia (opcionalmente filtrado por turno), para el reporte.
+        public List<ControlUnidadMovimientoDTO> GetMovimientos(DateTime fecha, string? turno)
+        {
+            using var context = new DbAa5796GmoraContext();
+
+            var query = context.Controlunidades.Where(c => c.Fecharegistro.Date == fecha.Date);
+
+            if (!string.IsNullOrEmpty(turno))
+                query = query.Where(c => c.Turno == turno);
+
+            return query
+                .OrderBy(c => c.Fecharegistro)
+                .Select(c => new ControlUnidadMovimientoDTO
+                {
+                    Fecharegistro = c.Fecharegistro,
+                    Turno = c.Turno,
+                    Unidad = c.Unidad,
+                    Ciconductor = c.Ciconductor,
+                    Conductor = c.Conductor,
+                    Estado = c.Estado
+                })
+                .ToList();
+        }
     }
 }

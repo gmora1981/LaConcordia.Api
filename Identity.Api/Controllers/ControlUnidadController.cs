@@ -43,15 +43,14 @@ namespace Identity.Api.Controllers
 
         //exportar
         [HttpGet("exportarPDF")]
-        public IActionResult ExportarPdf(string? turno = null)
+        public IActionResult ExportarPdf(string? turno = null, DateTime? fecha = null)
         {
             QuestPDF.Settings.License = LicenseType.Community;
 
-            var fueraDeServicio = _controlUnidad.GetFichaPersonalPorServicio("p");
-            var enServicio = _controlUnidad.GetFichaPersonalPorServicio("a");
-            var monitora = User.Identity?.Name ?? "desconocido";
+            var movimientos = _controlUnidad.GetMovimientos(fecha ?? DateTime.Today, turno);
+            var usuario = User.Identity?.Name ?? "desconocido";
 
-            var pdfBytes = ControlUnidadPdfGenerator.GenerarPdf(fueraDeServicio, enServicio, turno, monitora);
+            var pdfBytes = ControlUnidadPdfGenerator.GenerarPdf(movimientos, usuario);
 
             return File(pdfBytes, "application/pdf", "ControlUnidades.pdf");
         }

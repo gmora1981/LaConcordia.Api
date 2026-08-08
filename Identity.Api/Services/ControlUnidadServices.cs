@@ -17,5 +17,10 @@ namespace Identity.Api.Services
         {
             _controlUnidad.MoverUnidad(request, monitora);
         }
+
+        public List<ControlUnidadMovimientoDTO> GetMovimientos(DateTime fecha, string? turno)
+        {
+            return _controlUnidad.GetMovimientos(fecha, turno);
+        }
     }
 }

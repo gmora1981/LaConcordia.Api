@@ -8,5 +8,7 @@ namespace Identity.Api.Interfaces
         List<UnidadServicioDTO> GetFichaPersonalPorServicio(string estadoServicio);
 
         void MoverUnidad(MoverUnidadRequestDTO request, string monitora);
+
+        List<ControlUnidadMovimientoDTO> GetMovimientos(DateTime fecha, string? turno);
     }
 }

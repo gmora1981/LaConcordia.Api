@@ -6,7 +6,7 @@ namespace Identity.Api.Reporteria
 {
     public static class ControlUnidadPdfGenerator
     {
-        public static byte[] GenerarPdf(List<UnidadServicioDTO> fueraDeServicio, List<UnidadServicioDTO> enServicio, string? turno, string? monitora)
+        public static byte[] GenerarPdf(List<ControlUnidadMovimientoDTO> movimientos, string usuario)
         {
             var doc = Document.Create(container =>
             {
@@ -20,105 +20,78 @@ namespace Identity.Api.Reporteria
                 container.Page(page =>
                 {
                     page.Margin(20);
-                    page.Size(PageSizes.A4);
+                    page.Size(PageSizes.A4.Landscape());
                     page.PageColor(Colors.White);
                     page.DefaultTextStyle(x => x.FontSize(10));
 
-                    page.Header().Column(header =>
+                    page.Header().Row(row =>
                     {
-                        header.Item().Height(80).Row(row =>
+                        row.ConstantColumn(90).AlignMiddle().Column(col =>
                         {
-                            row.RelativeColumn(2).AlignMiddle().AlignLeft().Column(col =>
-                            {
-                                if (logoImage != null)
-                                    col.Item().Image(logoImage);
-                            });
-
-                            row.RelativeColumn(8).Column(col =>
-                            {
-                                col.Item().AlignCenter().Text("SERVICIO DE TRANSPORTE “LA CONCORDIA”")
-                                    .SemiBold().FontSize(14).FontColor(Colors.Black);
-
-                                col.Item().AlignCenter().Text("Servicio de Transporte Exclusivo Puerta a Puerta")
-                                    .SemiBold().FontSize(12).FontColor(Colors.Black);
-
-                                col.Item().AlignCenter().Text("Tlf: 2606425 Claro: 0994227299 Movistar: 0987117307")
-                                    .SemiBold().FontSize(10).FontColor(Colors.Black);
-                            });
-
-                            row.RelativeColumn(2).Column(col =>
-                            {
-                                col.Item().AlignRight().Text($"Fecha Emisión: {DateTime.Now:dd/MM/yyyy}")
-                                    .FontSize(7).FontColor(Colors.Grey.Darken1).Bold();
-
-                                col.Item().AlignRight().Text($"Hora Emisión: {DateTime.Now:HH:mm:ss}")
-                                    .FontSize(7).FontColor(Colors.Grey.Darken1).Bold();
-                            });
+                            if (logoImage != null)
+                                col.Item().Image(logoImage);
                         });
 
-                        header.Item().PaddingTop(5).Row(row =>
-                        {
-                            row.RelativeColumn().Text("CONTROL DE UNIDADES").Bold().FontSize(13);
-                        });
+                        row.RelativeColumn().AlignMiddle().PaddingLeft(10).Text("REPORTE PARA EL CONTROL DE INGRESO Y SALIDA DE VEHICULOS")
+                            .Bold().FontSize(18).FontColor(Colors.Black);
 
-                        header.Item().PaddingTop(2).Row(row =>
+                        row.ConstantColumn(180).Border(1).BorderColor(Colors.Black).Padding(8).Column(col =>
                         {
-                            row.RelativeColumn().Text($"Monitora: {monitora}").FontSize(9);
-                            row.RelativeColumn().AlignRight().Text($"Turno: {(string.IsNullOrEmpty(turno) ? "-- Todos --" : turno)}").FontSize(9);
+                            col.Item().Text(t =>
+                            {
+                                t.Span("Fecha Emisión: ").Bold();
+                                t.Span(DateTime.Now.ToString("d/M/yyyy"));
+                            });
+                            col.Item().Text(t =>
+                            {
+                                t.Span("Hora Emisión: ").Bold();
+                                t.Span(DateTime.Now.ToString("HH:mm:ss"));
+                            });
+                            col.Item().Text(t =>
+                            {
+                                t.Span("Usuario : ").Bold();
+                                t.Span(usuario);
+                            });
                         });
                     });
 
-                    page.Content().PaddingTop(10).Column(content =>
+                    page.Content().PaddingTop(15).Table(table =>
                     {
-                        content.Item().Text($"Fuera de Servicio ({fueraDeServicio.Count})").Bold().FontSize(11);
-                        content.Item().PaddingBottom(10).Table(table =>
+                        table.ColumnsDefinition(columns =>
                         {
-                            table.ColumnsDefinition(columns =>
-                            {
-                                columns.RelativeColumn(2); // Unidad
-                                columns.RelativeColumn(4); // Nombres
-                                columns.RelativeColumn(4); // Apellidos
-                            });
-
-                            table.Header(h =>
-                            {
-                                h.Cell().Text("Unidad").Bold();
-                                h.Cell().Text("Nombres").Bold();
-                                h.Cell().Text("Apellidos").Bold();
-                            });
-
-                            foreach (var f in fueraDeServicio)
-                            {
-                                table.Cell().Text(f.Fkunidad);
-                                table.Cell().Text(f.Nombre);
-                                table.Cell().Text(f.Apellidos);
-                            }
+                            columns.RelativeColumn(2); // fecharegistro
+                            columns.RelativeColumn(1); // turno
+                            columns.RelativeColumn(1); // unidad
+                            columns.RelativeColumn(2); // ciconducto
+                            columns.RelativeColumn(3); // conductor
+                            columns.RelativeColumn(1); // estado
                         });
 
-                        content.Item().Text($"En Servicio ({enServicio.Count})").Bold().FontSize(11);
-                        content.Item().Table(table =>
+                        table.Header(h =>
                         {
-                            table.ColumnsDefinition(columns =>
-                            {
-                                columns.RelativeColumn(2); // Unidad
-                                columns.RelativeColumn(4); // Nombres
-                                columns.RelativeColumn(4); // Apellidos
-                            });
-
-                            table.Header(h =>
-                            {
-                                h.Cell().Text("Unidad").Bold();
-                                h.Cell().Text("Nombres").Bold();
-                                h.Cell().Text("Apellidos").Bold();
-                            });
-
-                            foreach (var f in enServicio)
-                            {
-                                table.Cell().Text(f.Fkunidad);
-                                table.Cell().Text(f.Nombre);
-                                table.Cell().Text(f.Apellidos);
-                            }
+                            h.Cell().Text("fecharegistro").Bold();
+                            h.Cell().Text("turno").Bold();
+                            h.Cell().Text("unidad").Bold();
+                            h.Cell().Text("ciconducto").Bold();
+                            h.Cell().Text("conductor").Bold();
+                            h.Cell().Text("estado").Bold();
                         });
+
+                        foreach (var m in movimientos)
+                        {
+                            table.Cell().Text(m.Fecharegistro.ToString("yyyy-MM-dd HH:mm:ss"));
+                            table.Cell().Text(m.Turno);
+                            table.Cell().Text(m.Unidad);
+                            table.Cell().Text(m.Ciconductor);
+                            table.Cell().Text(m.Conductor);
+                            table.Cell().Text(m.Estado);
+                        }
+
+                        if (movimientos.Count == 0)
+                        {
+                            table.Cell().ColumnSpan(6).PaddingTop(10).Text("No hay movimientos registrados para la fecha y el turno seleccionados.")
+                                .Italic().FontColor(Colors.Grey.Darken1);
+                        }
                     });
 
                     page.Footer().AlignCenter().Text(x =>

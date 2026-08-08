@@ -196,8 +196,15 @@ namespace Identity.Api.DataRepository
         {
             using var context = new DbAa5796GmoraContext();
 
+            // Direccion.Celular es llave foranea hacia Pasajero. Se crea un pasajero minimo
+            // (solo con el celular) si todavia no existe, en vez de exigir que el despachador
+            // haya guardado antes manualmente los datos completos del pasajero.
             var existePasajero = context.Pasajeros.Any(p => p.Celular == celular);
-            if (!existePasajero) return;
+            if (!existePasajero)
+            {
+                context.Pasajeros.Add(new Pasajero { Celular = celular });
+                context.SaveChanges();
+            }
 
             var yaExiste = context.Direccions.Any(d =>
                 d.Celular == celular && d.Latitud == lat && d.Longitud == lng);

@@ -209,7 +209,8 @@ namespace Identity.Api.DataRepository
     int pagina,
     int pageSize,
     string? filtro = null,
-    string? estado = null)
+    string? estado = null,
+    string? documentacion = null)
         {
             var query = _context.Fichapersonals.AsQueryable();
 
@@ -227,6 +228,18 @@ namespace Identity.Api.DataRepository
             }
 
             query = query.Where(f => f.Estado == estado);
+
+            if (!string.IsNullOrWhiteSpace(documentacion))
+            {
+                if (documentacion == "COMPLETA")
+                {
+                    query = query.Where(f => f.Documentacion == "COMPLETA");
+                }
+                else if (documentacion == "INCOMPLETA")
+                {
+                    query = query.Where(f => f.Documentacion == null || f.Documentacion == "" || f.Documentacion == "INCOMPLETA");
+                }
+            }
 
             var totalItems = await query.CountAsync();
 

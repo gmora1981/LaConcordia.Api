@@ -37,9 +37,10 @@ namespace Identity.Api.Services
             int pagina,
             int pageSize,
             string? filtro = null,
-            string? estado = null)
+            string? estado = null,
+            string? documentacion = null)
         {
-            return await _fichapersonaRepository.GetFichaPersonalPaginados(pagina, pageSize, filtro, estado);
+            return await _fichapersonaRepository.GetFichaPersonalPaginados(pagina, pageSize, filtro, estado, documentacion);
         }
     }
 }

@@ -17,6 +17,7 @@ namespace Identity.Api.Interfaces
         int pagina,
         int pageSize,
         string? filtro = null,
-        string? estado = null);
+        string? estado = null,
+        string? documentacion = null);
     }
 }

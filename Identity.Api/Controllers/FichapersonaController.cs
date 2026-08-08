@@ -114,11 +114,12 @@ namespace Identity.Api.Controllers
             int pagina = 1,
             int pageSize = PaginadorHelper.NumeroDeDatosPorPagina,
             string? filtro = null,
-            string? estado = null)
+            string? estado = null,
+            string? documentacion = null)
         {
             try
             {
-                var resultado = await _fichapersona.GetFichaPersonalPaginados(pagina, pageSize, filtro, estado);
+                var resultado = await _fichapersona.GetFichaPersonalPaginados(pagina, pageSize, filtro, estado, documentacion);
                 return Ok(resultado);
             }
             catch (Exception ex)

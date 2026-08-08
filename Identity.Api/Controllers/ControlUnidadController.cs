@@ -1,8 +1,10 @@
 ﻿using Identity.Api.DTO;
 using Identity.Api.Interfaces;
+using Identity.Api.Reporteria;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using QuestPDF.Infrastructure;
 
 namespace Identity.Api.Controllers
 {
@@ -37,6 +39,21 @@ namespace Identity.Api.Controllers
             {
                 return BadRequest("Error al registrar el movimiento: " + ex.Message);
             }
+        }
+
+        //exportar
+        [HttpGet("exportarPDF")]
+        public IActionResult ExportarPdf(string? turno = null)
+        {
+            QuestPDF.Settings.License = LicenseType.Community;
+
+            var fueraDeServicio = _controlUnidad.GetFichaPersonalPorServicio("p");
+            var enServicio = _controlUnidad.GetFichaPersonalPorServicio("a");
+            var monitora = User.Identity?.Name ?? "desconocido";
+
+            var pdfBytes = ControlUnidadPdfGenerator.GenerarPdf(fueraDeServicio, enServicio, turno, monitora);
+
+            return File(pdfBytes, "application/pdf", "ControlUnidades.pdf");
         }
     }
 }

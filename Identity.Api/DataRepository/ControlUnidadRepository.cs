@@ -31,10 +31,11 @@ namespace Identity.Api.DataRepository
 
         public void MoverUnidad(MoverUnidadRequestDTO request, string monitora)
         {
-            var nombreCompleto = "";
             var ficha = _context.Fichapersonals.FirstOrDefault(f => f.Cedula == request.Cedula);
-            if (ficha != null)
-                nombreCompleto = $"{ficha.Apellidos} {ficha.Nombre}".Trim();
+            if (ficha == null)
+                throw new Exception($"No se encontró la ficha personal con cédula '{request.Cedula}'. No se pudo actualizar el estado de la unidad.");
+
+            var nombreCompleto = $"{ficha.Apellidos} {ficha.Nombre}".Trim();
 
             _context.Controlunidades.Add(new Controlunidade
             {
@@ -48,10 +49,7 @@ namespace Identity.Api.DataRepository
                 Conductor = nombreCompleto
             });
 
-            if (ficha != null)
-            {
-                ficha.Estadoservicio = request.Direccion == "INGRESO" ? "a" : "p";
-            }
+            ficha.Estadoservicio = request.Direccion == "INGRESO" ? "a" : "p";
 
             _context.SaveChanges();
         }

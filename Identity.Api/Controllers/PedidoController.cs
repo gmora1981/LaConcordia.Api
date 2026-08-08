@@ -1,4 +1,5 @@
-﻿using Identity.Api.Interfaces;
+﻿using Identity.Api.DTO;
+using Identity.Api.Interfaces;
 using Identity.Api.Paginado;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -97,6 +98,22 @@ namespace Identity.Api.Controllers
         public IActionResult GetPedidosConDestinoPendiente()
         {
             return Ok(_pedido.GetPedidosConDestinoPendiente());
+        }
+
+        // Guarda la direccion resuelta de unas coordenadas para que Orden de Pago pueda
+        // mostrar el Punto de Partida/Final. No falla si el pasajero aun no existe.
+        [HttpPost("GuardarDireccion")]
+        public IActionResult GuardarDireccion([FromBody] GuardarDireccionRequestDTO request)
+        {
+            try
+            {
+                _pedido.GuardarDireccion(request.Celular, request.Lat, request.Lng, request.Calle);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("Error al guardar la dirección: " + ex.Message);
+            }
         }
     }
 }

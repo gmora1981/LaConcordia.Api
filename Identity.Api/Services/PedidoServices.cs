@@ -52,5 +52,10 @@ namespace Identity.Api.Services
         {
             return _pedido.GetPedidosConDestinoPendiente();
         }
+
+        public void GuardarDireccion(string celular, decimal lat, decimal lng, string? calle)
+        {
+            _pedido.GuardarDireccion(celular, lat, lng, calle);
+        }
     }
 }

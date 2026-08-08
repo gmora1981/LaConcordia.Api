@@ -30,5 +30,8 @@ namespace Identity.Api.Interfaces
         // Pedidos que quedaron con el destino "placeholder" (sin definir) y necesitan correccion
         // (pantalla Modificacion de Pedido, equivalente a SE_PEDIDOXCOORDENADAS).
         List<PedidoDTO> GetPedidosConDestinoPendiente();
+
+        // Guarda la direccion resuelta de unas coordenadas (requiere que el pasajero ya exista).
+        void GuardarDireccion(string celular, decimal lat, decimal lng, string? calle);
     }
 }

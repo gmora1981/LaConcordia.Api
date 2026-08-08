@@ -188,6 +188,32 @@ namespace Identity.Api.DataRepository
                 .ToList();
         }
 
+        // Guarda (si no existe ya) la direccion resuelta para unas coordenadas, para que
+        // luego Orden de Pago pueda mostrar el Punto de Partida/Final en texto. Requiere que
+        // el pasajero ya exista (Direccion.Celular es llave foranea hacia Pasajero); si aun
+        // no existe, no hace nada en vez de fallar.
+        public void GuardarDireccion(string celular, decimal lat, decimal lng, string? calle)
+        {
+            using var context = new DbAa5796GmoraContext();
+
+            var existePasajero = context.Pasajeros.Any(p => p.Celular == celular);
+            if (!existePasajero) return;
+
+            var yaExiste = context.Direccions.Any(d =>
+                d.Celular == celular && d.Latitud == lat && d.Longitud == lng);
+            if (yaExiste) return;
+
+            context.Direccions.Add(new Direccion
+            {
+                Celular = celular,
+                Latitud = lat,
+                Longitud = lng,
+                Calle = calle
+            });
+
+            context.SaveChanges();
+        }
+
         public PrecioKmDTO? GetPrecioKmHistorico(string celular, decimal origenLat, decimal origenLog, decimal destinoLat, decimal destinoLog)
         {
             using var context = new DbAa5796GmoraContext();

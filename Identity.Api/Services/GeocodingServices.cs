@@ -51,5 +51,27 @@ namespace Identity.Api.Services
 
             return resultados;
         }
+
+        public async Task<string?> BuscarDireccionPorCoordenadas(decimal lat, decimal lon)
+        {
+            var client = _httpClientFactory.CreateClient();
+            client.DefaultRequestHeaders.UserAgent.ParseAdd("LaConcordiaDespacho/1.0 (soporte@lconcordia.com)");
+
+            var latStr = lat.ToString(CultureInfo.InvariantCulture);
+            var lonStr = lon.ToString(CultureInfo.InvariantCulture);
+            var url = $"https://nominatim.openstreetmap.org/reverse?lat={latStr}&lon={lonStr}&format=json";
+
+            var response = await client.GetAsync(url);
+            if (!response.IsSuccessStatusCode)
+                return null;
+
+            var json = await response.Content.ReadAsStringAsync();
+            using var doc = JsonDocument.Parse(json);
+
+            if (doc.RootElement.TryGetProperty("display_name", out var displayNameEl))
+                return displayNameEl.GetString();
+
+            return null;
+        }
     }
 }

@@ -23,5 +23,12 @@ namespace Identity.Api.Controllers
             var resultados = await _geocoding.Buscar(query);
             return Ok(resultados);
         }
+
+        [HttpGet("Reverse")]
+        public async Task<IActionResult> Reverse(decimal lat, decimal lon)
+        {
+            var direccion = await _geocoding.BuscarDireccionPorCoordenadas(lat, lon);
+            return Ok(direccion);
+        }
     }
 }

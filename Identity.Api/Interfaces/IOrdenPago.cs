@@ -18,5 +18,8 @@ namespace Identity.Api.Interfaces
 
         // Facturacion: listado de vouchers ya generados para una empresa.
         List<OrdenPagoResumenDTO> GetOrdenPagoPorEmpresa(string ruc);
+
+        // "Modificar Datos": corrige Precio/Recorrido/Empleado sin generar voucher.
+        void ActualizarDatosPedido(ActualizarDatosPedidoRequestDTO request, string usuario);
     }
 }

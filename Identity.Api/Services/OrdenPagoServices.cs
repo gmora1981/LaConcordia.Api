@@ -32,5 +32,10 @@ namespace Identity.Api.Services
         {
             return _ordenPago.GetOrdenPagoPorEmpresa(ruc);
         }
+
+        public void ActualizarDatosPedido(ActualizarDatosPedidoRequestDTO request, string usuario)
+        {
+            _ordenPago.ActualizarDatosPedido(request, usuario);
+        }
     }
 }

@@ -60,5 +60,21 @@ namespace Identity.Api.Controllers
         {
             return Ok(_ordenPago.GetOrdenPagoPorEmpresa(ruc));
         }
+
+        // "Modificar Datos": corrige Precio/Recorrido/Empleado del pedido sin generar voucher.
+        [HttpPut("ActualizarDatosPedido")]
+        public IActionResult ActualizarDatosPedido([FromBody] ActualizarDatosPedidoRequestDTO request)
+        {
+            try
+            {
+                var usuario = User.Identity?.Name ?? "desconocido";
+                _ordenPago.ActualizarDatosPedido(request, usuario);
+                return Ok("Datos del pedido actualizados correctamente.");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("Error al actualizar los datos: " + ex.Message);
+            }
+        }
     }
 }

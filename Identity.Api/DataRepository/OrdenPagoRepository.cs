@@ -148,6 +148,27 @@ namespace Identity.Api.DataRepository
             };
         }
 
+        // "Modificar Datos": solo corrige Precio/Recorrido/Empleado del pedido, sin generar
+        // voucher ni tocar FlujoCaja/auditoria.
+        public void ActualizarDatosPedido(ActualizarDatosPedidoRequestDTO request, string usuario)
+        {
+            var pedido = _context.Pedidos.FirstOrDefault(p =>
+                p.Celular == request.Celular &&
+                p.Origenlat == request.Origenlat && p.Origenlog == request.Origenlog &&
+                p.Destinolat == request.Destinolat && p.Destinolog == request.Destinolog &&
+                p.Fecharegistro == request.FechaRegistroPedido);
+
+            if (pedido == null)
+                throw new Exception("No se encontró el pedido a modificar.");
+
+            pedido.Precio = request.Precio;
+            pedido.Recorrido = request.Recorrido;
+            pedido.Empleado = request.Empleado;
+            pedido.Usuario = usuario;
+
+            _context.SaveChanges();
+        }
+
         public List<OrdenPagoResumenDTO> GetOrdenPagoPorEmpresa(string ruc)
         {
             using var context = new DbAa5796GmoraContext();

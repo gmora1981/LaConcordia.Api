@@ -51,6 +51,22 @@
         public decimal MontoAPagar { get; set; }
     }
 
+    // "Modificar Datos": corrige Precio/Recorrido/Empleado del pedido SIN generar voucher,
+    // sin tocar FlujoCaja ni la auditoria (igual que la opcion "Si" del dialogo del sistema de escritorio).
+    public class ActualizarDatosPedidoRequestDTO
+    {
+        public string Celular { get; set; } = null!;
+        public decimal Origenlat { get; set; }
+        public decimal Origenlog { get; set; }
+        public decimal Destinolat { get; set; }
+        public decimal Destinolog { get; set; }
+        public DateTime FechaRegistroPedido { get; set; }
+
+        public decimal Precio { get; set; }
+        public string? Recorrido { get; set; }
+        public string? Empleado { get; set; }
+    }
+
     public class OrdenPagoResultadoDTO
     {
         public decimal SaldoAnterior { get; set; }

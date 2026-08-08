@@ -49,14 +49,23 @@ namespace Identity.Api.DataRepository
 
         public string? GetDireccionTexto(string celular, decimal lat, decimal lng)
         {
-            using var context = new DbAa5796GmoraContext();
+            try
+            {
+                using var context = new DbAa5796GmoraContext();
 
-            var direccion = context.Direccions.FirstOrDefault(d =>
-                d.Celular == celular && d.Latitud == lat && d.Longitud == lng);
+                var direccion = context.Direccions.FirstOrDefault(d =>
+                    d.Celular == celular && d.Latitud == lat && d.Longitud == lng);
 
-            if (direccion == null) return null;
+                if (direccion == null) return null;
 
-            return $"{direccion.Calle} {direccion.Numero} {direccion.Referencia}".Trim();
+                return $"{direccion.Calle} {direccion.Numero} {direccion.Referencia}".Trim();
+            }
+            catch
+            {
+                // Coordenadas corruptas o fuera del rango de la columna (dato historico invalido):
+                // se omite la direccion en vez de tumbar todo el modal de Orden de Pago.
+                return null;
+            }
         }
 
         public decimal GetSaldoCajaActual()

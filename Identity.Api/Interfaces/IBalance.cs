@@ -8,5 +8,7 @@ namespace Identity.Api.Interfaces
         // [fechaDesde, fechaHasta] (equivalente a la consulta SE_BALANCE del sistema
         // de escritorio; aqui se calcula, no vive en una tabla de la base de datos).
         BalanceResultadoDTO GetBalance(DateTime fechaDesde, DateTime fechaHasta);
+
+        byte[] ExportarBalancePdf(DateTime fechaDesde, DateTime fechaHasta, string usuario);
     }
 }

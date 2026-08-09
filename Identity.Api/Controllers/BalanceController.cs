@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using QuestPDF.Infrastructure;
 
 namespace Identity.Api.Controllers
 {
@@ -36,6 +37,8 @@ namespace Identity.Api.Controllers
         {
             try
             {
+                QuestPDF.Settings.License = LicenseType.Community;
+
                 var usuario = User.Identity?.Name ?? "";
                 var pdfBytes = _balance.ExportarBalancePdf(fechaDesde, fechaHasta, usuario);
                 return File(pdfBytes, "application/pdf", "BalanceInicial.pdf");

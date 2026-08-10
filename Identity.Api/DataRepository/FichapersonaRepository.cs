@@ -210,7 +210,9 @@ namespace Identity.Api.DataRepository
     int pageSize,
     string? filtro = null,
     string? estado = null,
-    string? documentacion = null)
+    string? documentacion = null,
+    string? unidadFiltro = null,
+    string? apellidoFiltro = null)
         {
             var query = _context.Fichapersonals.AsQueryable();
 
@@ -239,6 +241,16 @@ namespace Identity.Api.DataRepository
                 {
                     query = query.Where(f => f.Documentacion == null || f.Documentacion == "" || f.Documentacion == "INCOMPLETA");
                 }
+            }
+
+            if (!string.IsNullOrWhiteSpace(unidadFiltro))
+            {
+                query = query.Where(f => f.Fkunidad != null && f.Fkunidad.Contains(unidadFiltro));
+            }
+
+            if (!string.IsNullOrWhiteSpace(apellidoFiltro))
+            {
+                query = query.Where(f => f.Apellidos.Contains(apellidoFiltro));
             }
 
             var totalItems = await query.CountAsync();

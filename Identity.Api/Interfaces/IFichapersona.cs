@@ -18,6 +18,8 @@ namespace Identity.Api.Interfaces
         int pageSize,
         string? filtro = null,
         string? estado = null,
-        string? documentacion = null);
+        string? documentacion = null,
+        string? unidadFiltro = null,
+        string? apellidoFiltro = null);
     }
 }

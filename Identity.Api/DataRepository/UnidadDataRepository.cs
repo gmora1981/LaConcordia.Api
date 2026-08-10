@@ -70,7 +70,8 @@ namespace Identity.Api.DataRepository
             string? Idpropietario = null,
             string? Unidad1 = null,
             string? Propietario = null,
-            string? Estado = null)
+            string? Estado = null,
+            string? filtro = null)
         {
             var query = _context.Unidads.AsQueryable();
             if (!string.IsNullOrEmpty(Placa))
@@ -83,6 +84,11 @@ namespace Identity.Api.DataRepository
                 query = query.Where(x => x.Propietario.Contains(Propietario));
             if (!string.IsNullOrEmpty(Estado))
                 query = query.Where(x => x.Estado == Estado);
+            if (!string.IsNullOrEmpty(filtro))
+                query = query.Where(x =>
+                    x.Unidad1.Contains(filtro) ||
+                    x.Placa.Contains(filtro) ||
+                    x.Propietario.Contains(filtro));
             var totalItems = await query.CountAsync();
             var items = await query
                 .Skip((pagina - 1) * pageSize)

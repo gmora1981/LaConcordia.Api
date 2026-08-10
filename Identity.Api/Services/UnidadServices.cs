@@ -52,9 +52,10 @@ namespace Identity.Api.Services
         string? Idpropietario = null,
         string? Unidad1 = null,
         string? Propietario = null,
-        string? Estado = null)
+        string? Estado = null,
+        string? filtro = null)
         {
-            return await data.GetUnidadPaginados(pagina, pageSize, Placa, Idpropietario, Unidad1, Propietario, Estado);
+            return await data.GetUnidadPaginados(pagina, pageSize, Placa, Idpropietario, Unidad1, Propietario, Estado, filtro);
         }
     }
 }

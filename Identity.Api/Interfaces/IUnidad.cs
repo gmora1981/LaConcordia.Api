@@ -20,7 +20,8 @@ namespace Identity.Api.Interfaces
         string? Idpropietario = null,
         string? Unidad1 = null,
         string? Propietario = null,
-        string? Estado = null);
+        string? Estado = null,
+        string? filtro = null);
 
     }
 }

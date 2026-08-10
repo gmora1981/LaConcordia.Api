@@ -94,11 +94,12 @@ namespace Identity.Api.Controllers
             string? Idpropietario = null,
             string? Unidad1 = null,
             string? Propietario = null,
-            string? Estado = null)
+            string? Estado = null,
+            string? filtro = null)
         {
             try
             {
-                var result = await _unidadRepository.GetUnidadPaginados(pagina, pageSize, Placa, Idpropietario, Unidad1, Propietario, Estado);
+                var result = await _unidadRepository.GetUnidadPaginados(pagina, pageSize, Placa, Idpropietario, Unidad1, Propietario, Estado, filtro);
                 return Ok(result);
             }
             catch (Exception ex)

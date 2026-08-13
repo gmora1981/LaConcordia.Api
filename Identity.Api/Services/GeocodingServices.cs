@@ -22,10 +22,30 @@ namespace Identity.Api.Services
             if (string.IsNullOrWhiteSpace(query))
                 return new List<GeocodingResultDTO>();
 
+            // Nominatim, a diferencia de Google Maps, no infiere la ciudad del usuario: una
+            // busqueda local como "Colombia 1017" (calle + numero, sin ciudad) no devuelve nada
+            // porque es ambigua a nivel mundial. Como los pedidos son siempre dentro de Guayaquil,
+            // se agrega esa pista a la consulta; si aun asi no hay resultados, se reintenta con el
+            // texto tal cual lo escribio el usuario (por si ya incluia ciudad/pais o era otro lugar).
+            var queryConContexto = query.Contains("Ecuador", StringComparison.OrdinalIgnoreCase)
+                ? query
+                : $"{query}, Guayaquil, Ecuador";
+
+            var resultados = await BuscarEnNominatim(queryConContexto);
+            if (resultados.Count == 0 && queryConContexto != query)
+            {
+                resultados = await BuscarEnNominatim(query);
+            }
+
+            return resultados;
+        }
+
+        private async Task<List<GeocodingResultDTO>> BuscarEnNominatim(string query)
+        {
             var client = _httpClientFactory.CreateClient();
             client.DefaultRequestHeaders.UserAgent.ParseAdd("LaConcordiaDespacho/1.0 (soporte@lconcordia.com)");
 
-            var url = $"https://nominatim.openstreetmap.org/search?q={Uri.EscapeDataString(query)}&format=json&limit=5&addressdetails=0";
+            var url = $"https://nominatim.openstreetmap.org/search?q={Uri.EscapeDataString(query)}&format=json&limit=5&addressdetails=0&countrycodes=ec";
 
             var response = await client.GetAsync(url);
             if (!response.IsSuccessStatusCode)

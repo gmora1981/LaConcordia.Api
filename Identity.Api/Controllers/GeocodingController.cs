@@ -20,25 +20,46 @@ namespace Identity.Api.Controllers
         [HttpGet("BuscarPredicciones")]
         public async Task<IActionResult> BuscarPredicciones(string query)
         {
-            var resultados = await _geocoding.BuscarPredicciones(query);
-            return Ok(resultados);
+            try
+            {
+                var resultados = await _geocoding.BuscarPredicciones(query);
+                return Ok(resultados);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
         }
 
         [HttpGet("ObtenerCoordenadasPorPlaceId")]
         public async Task<IActionResult> ObtenerCoordenadasPorPlaceId(string placeId)
         {
-            var resultado = await _geocoding.ObtenerCoordenadasPorPlaceId(placeId);
-            if (resultado == null)
-                return NotFound();
+            try
+            {
+                var resultado = await _geocoding.ObtenerCoordenadasPorPlaceId(placeId);
+                if (resultado == null)
+                    return NotFound();
 
-            return Ok(resultado);
+                return Ok(resultado);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
         }
 
         [HttpGet("Reverse")]
         public async Task<IActionResult> Reverse(decimal lat, decimal lon)
         {
-            var direccion = await _geocoding.BuscarDireccionPorCoordenadas(lat, lon);
-            return Ok(direccion);
+            try
+            {
+                var direccion = await _geocoding.BuscarDireccionPorCoordenadas(lat, lon);
+                return Ok(direccion);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
         }
     }
 }

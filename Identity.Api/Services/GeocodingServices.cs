@@ -44,6 +44,11 @@ namespace Identity.Api.Services
             var resultados = new List<PlacePredictionDTO>();
 
             using var doc = JsonDocument.Parse(json);
+
+            // Google devuelve HTTP 200 incluso cuando falla (API no habilitada, key
+            // restringida, etc.); el error real viene en "status"/"error_message".
+            ValidarStatusGoogle(doc.RootElement, "Places Autocomplete");
+
             if (!doc.RootElement.TryGetProperty("predictions", out var predicciones))
                 return resultados;
 
@@ -82,6 +87,8 @@ namespace Identity.Api.Services
 
             var json = await response.Content.ReadAsStringAsync();
             using var doc = JsonDocument.Parse(json);
+
+            ValidarStatusGoogle(doc.RootElement, "Place Details");
 
             if (!doc.RootElement.TryGetProperty("result", out var resultado))
                 return null;
@@ -122,6 +129,8 @@ namespace Identity.Api.Services
             var json = await response.Content.ReadAsStringAsync();
             using var doc = JsonDocument.Parse(json);
 
+            ValidarStatusGoogle(doc.RootElement, "Geocoding (reverse)");
+
             if (doc.RootElement.TryGetProperty("results", out var resultados) &&
                 resultados.GetArrayLength() > 0 &&
                 resultados[0].TryGetProperty("formatted_address", out var direccionEl))
@@ -130,6 +139,27 @@ namespace Identity.Api.Services
             }
 
             return null;
+        }
+
+        // Google Maps Platform responde HTTP 200 incluso cuando la solicitud falla (API no
+        // habilitada, key con restricciones incorrectas, facturacion no activada, etc.); el
+        // motivo real viene en el campo "status". Sin esto, esos errores quedaban en silencio
+        // y el mapa simplemente no reaccionaba a la seleccion del usuario.
+        private static void ValidarStatusGoogle(JsonElement root, string operacion)
+        {
+            if (!root.TryGetProperty("status", out var statusEl))
+                return;
+
+            var status = statusEl.GetString();
+            if (status == "OK" || status == "ZERO_RESULTS")
+                return;
+
+            var mensaje = root.TryGetProperty("error_message", out var errEl)
+                ? errEl.GetString()
+                : null;
+
+            throw new Exception($"Google Maps ({operacion}) devolvio '{status}'"
+                + (string.IsNullOrEmpty(mensaje) ? "." : $": {mensaje}"));
         }
     }
 }

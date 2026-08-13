@@ -99,6 +99,17 @@ namespace Identity.Api.Services
 
             var lat = location.GetProperty("lat").GetDecimal();
             var lng = location.GetProperty("lng").GetDecimal();
+
+            // (0,0) ("Null Island", en el Atlantico frente a Africa) nunca es una direccion
+            // real en Ecuador: si Google devuelve eso es señal de una respuesta invalida/vacia,
+            // no un lugar de verdad. Se rechaza explicitamente en vez de mover el marcador ahi.
+            if (lat == 0 && lng == 0)
+            {
+                var jsonResumido = json.Length > 400 ? json.Substring(0, 400) + "…" : json;
+                throw new Exception("Google Place Details devolvió coordenadas (0,0) para este lugar "
+                    + $"(place_id={placeId}). Respuesta: {jsonResumido}");
+            }
+
             var direccion = resultado.TryGetProperty("formatted_address", out var faEl)
                 ? faEl.GetString() ?? string.Empty
                 : string.Empty;

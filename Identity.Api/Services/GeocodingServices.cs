@@ -100,13 +100,14 @@ namespace Identity.Api.Services
             var lat = location.GetProperty("lat").GetDecimal();
             var lng = location.GetProperty("lng").GetDecimal();
 
-            // (0,0) ("Null Island", en el Atlantico frente a Africa) nunca es una direccion
-            // real en Ecuador: si Google devuelve eso es señal de una respuesta invalida/vacia,
-            // no un lugar de verdad. Se rechaza explicitamente en vez de mover el marcador ahi.
-            if (lat == 0 && lng == 0)
+            // Ninguna direccion real en Ecuador tiene lat o lng exactamente en 0 (0,0 es
+            // "Null Island", en el Atlantico frente a Africa). Si aparece, es señal de una
+            // respuesta invalida/incompleta: se rechaza explicitamente (con el JSON crudo de
+            // Google en el mensaje, para poder diagnosticar) en vez de mover el marcador ahi.
+            if (lat == 0 || lng == 0)
             {
-                var jsonResumido = json.Length > 400 ? json.Substring(0, 400) + "…" : json;
-                throw new Exception("Google Place Details devolvió coordenadas (0,0) para este lugar "
+                var jsonResumido = json.Length > 600 ? json.Substring(0, 600) + "…" : json;
+                throw new Exception($"Google Place Details devolvió lat={lat}, lng={lng} para este lugar "
                     + $"(place_id={placeId}). Respuesta: {jsonResumido}");
             }
 

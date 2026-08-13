@@ -17,11 +17,21 @@ namespace Identity.Api.Controllers
             _geocoding = geocoding;
         }
 
-        [HttpGet("Buscar")]
-        public async Task<IActionResult> Buscar(string query)
+        [HttpGet("BuscarPredicciones")]
+        public async Task<IActionResult> BuscarPredicciones(string query)
         {
-            var resultados = await _geocoding.Buscar(query);
+            var resultados = await _geocoding.BuscarPredicciones(query);
             return Ok(resultados);
+        }
+
+        [HttpGet("ObtenerCoordenadasPorPlaceId")]
+        public async Task<IActionResult> ObtenerCoordenadasPorPlaceId(string placeId)
+        {
+            var resultado = await _geocoding.ObtenerCoordenadasPorPlaceId(placeId);
+            if (resultado == null)
+                return NotFound();
+
+            return Ok(resultado);
         }
 
         [HttpGet("Reverse")]

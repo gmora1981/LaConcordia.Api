@@ -202,7 +202,12 @@ namespace Identity.Api.DataRepository
                     Conductor = o.Conductor,
                     Precio = o.Precio,
                     Preciodesc = o.Preciodesc,
-                    Estadoproceso = o.Estadoproceso
+                    Estadoproceso = o.Estadoproceso,
+                    Puntopartida = o.Puntopartida,
+                    Recorrido = o.Recorrido,
+                    Puntofinal = o.Puntofinal,
+                    Empleado = o.Empleado,
+                    Observacion = o.Observacion
                 })
                 .ToList();
         }
@@ -210,7 +215,7 @@ namespace Identity.Api.DataRepository
         public byte[] ExportarFacturacionPdf(string ruc, string razonSocial, DateTime? hasta, string usuario)
         {
             var lista = GetOrdenPagoPorEmpresa(ruc, hasta);
-            return FacturacionPdfGenerator.GenerarPdf(lista, razonSocial, hasta, usuario);
+            return FacturacionPdfGenerator.GenerarPdf(lista, ruc, razonSocial, hasta, usuario);
         }
     }
 }

@@ -82,5 +82,12 @@
         public decimal? Precio { get; set; }
         public decimal? Preciodesc { get; set; }
         public string? Estadoproceso { get; set; }
+
+        // Usados en el PDF "Detalle de Factura" (RptEmpresaVoucher del escritorio).
+        public string? Puntopartida { get; set; }
+        public string? Recorrido { get; set; }
+        public string? Puntofinal { get; set; }
+        public string? Empleado { get; set; }
+        public string? Observacion { get; set; }
     }
 }

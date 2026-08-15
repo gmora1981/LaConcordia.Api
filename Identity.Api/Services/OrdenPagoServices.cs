@@ -28,14 +28,19 @@ namespace Identity.Api.Services
             return _ordenPago.GenerarOrdenPago(request, usuario);
         }
 
-        public List<OrdenPagoResumenDTO> GetOrdenPagoPorEmpresa(string ruc)
+        public List<OrdenPagoResumenDTO> GetOrdenPagoPorEmpresa(string ruc, DateTime? hasta = null)
         {
-            return _ordenPago.GetOrdenPagoPorEmpresa(ruc);
+            return _ordenPago.GetOrdenPagoPorEmpresa(ruc, hasta);
         }
 
         public void ActualizarDatosPedido(ActualizarDatosPedidoRequestDTO request, string usuario)
         {
             _ordenPago.ActualizarDatosPedido(request, usuario);
+        }
+
+        public byte[] ExportarFacturacionPdf(string ruc, string razonSocial, DateTime? hasta, string usuario)
+        {
+            return _ordenPago.ExportarFacturacionPdf(ruc, razonSocial, hasta, usuario);
         }
     }
 }

@@ -56,9 +56,26 @@ namespace Identity.Api.Controllers
         }
 
         [HttpGet("GetOrdenPagoPorEmpresa/{ruc}")]
-        public IActionResult GetOrdenPagoPorEmpresa(string ruc)
+        public IActionResult GetOrdenPagoPorEmpresa(string ruc, DateTime? hasta = null)
         {
-            return Ok(_ordenPago.GetOrdenPagoPorEmpresa(ruc));
+            return Ok(_ordenPago.GetOrdenPagoPorEmpresa(ruc, hasta));
+        }
+
+        [HttpGet("ExportarFacturacionPdf")]
+        public IActionResult ExportarFacturacionPdf(string ruc, string razonSocial, DateTime? hasta = null)
+        {
+            try
+            {
+                QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
+
+                var usuario = User.Identity?.Name ?? "desconocido";
+                var pdfBytes = _ordenPago.ExportarFacturacionPdf(ruc, razonSocial, hasta, usuario);
+                return File(pdfBytes, "application/pdf", "Facturacion.pdf");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("Error al exportar la facturación: " + ex.Message);
+            }
         }
 
         // "Modificar Datos": corrige Precio/Recorrido/Empleado del pedido sin generar voucher.

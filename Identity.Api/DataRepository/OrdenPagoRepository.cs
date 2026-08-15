@@ -1,4 +1,5 @@
 ﻿using Identity.Api.DTO;
+using Identity.Api.Reporteria;
 using Modelo.laconcordia.Modelo.Database;
 
 namespace Identity.Api.DataRepository
@@ -178,12 +179,20 @@ namespace Identity.Api.DataRepository
             _context.SaveChanges();
         }
 
-        public List<OrdenPagoResumenDTO> GetOrdenPagoPorEmpresa(string ruc)
+        public List<OrdenPagoResumenDTO> GetOrdenPagoPorEmpresa(string ruc, DateTime? hasta = null)
         {
             using var context = new DbAa5796GmoraContext();
 
-            return context.Ordendepagos
-                .Where(o => o.Ruc == ruc)
+            var query = context.Ordendepagos.Where(o => o.Ruc == ruc);
+
+            if (hasta.HasValue)
+            {
+                // "Hasta" incluye todo el dia seleccionado, igual que el resto de reportes.
+                var hastaExclusivo = hasta.Value.Date.AddDays(1);
+                query = query.Where(o => o.Fechayhora < hastaExclusivo);
+            }
+
+            return query
                 .OrderByDescending(o => o.Fechayhora)
                 .Select(o => new OrdenPagoResumenDTO
                 {
@@ -196,6 +205,12 @@ namespace Identity.Api.DataRepository
                     Estadoproceso = o.Estadoproceso
                 })
                 .ToList();
+        }
+
+        public byte[] ExportarFacturacionPdf(string ruc, string razonSocial, DateTime? hasta, string usuario)
+        {
+            var lista = GetOrdenPagoPorEmpresa(ruc, hasta);
+            return FacturacionPdfGenerator.GenerarPdf(lista, razonSocial, hasta, usuario);
         }
     }
 }

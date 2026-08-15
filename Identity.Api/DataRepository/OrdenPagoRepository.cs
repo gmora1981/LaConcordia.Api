@@ -179,11 +179,19 @@ namespace Identity.Api.DataRepository
             _context.SaveChanges();
         }
 
-        public List<OrdenPagoResumenDTO> GetOrdenPagoPorEmpresa(string ruc, DateTime? hasta = null)
+        public List<OrdenPagoResumenDTO> GetOrdenPagoPorEmpresa(string ruc, DateTime? hasta = null, string? estadoProceso = "a")
         {
             using var context = new DbAa5796GmoraContext();
 
             var query = context.Ordendepagos.Where(o => o.Ruc == ruc);
+
+            // Por defecto solo se muestran los vouchers pendientes de facturar (estadoproceso
+            // "a"); los ya procesados ("i") no deberian seguir apareciendo aqui. Los registros
+            // sin estado (nulos, de datos historicos) se tratan como pendientes.
+            if (!string.IsNullOrEmpty(estadoProceso))
+            {
+                query = query.Where(o => o.Estadoproceso == estadoProceso || o.Estadoproceso == null);
+            }
 
             if (hasta.HasValue)
             {

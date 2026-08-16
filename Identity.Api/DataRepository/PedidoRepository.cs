@@ -1,5 +1,6 @@
 ﻿using Identity.Api.DTO;
 using Identity.Api.Paginado;
+using Identity.Api.Reporteria;
 using Microsoft.EntityFrameworkCore;
 using Modelo.laconcordia.Modelo.Database;
 
@@ -261,6 +262,64 @@ namespace Identity.Api.DataRepository
                 })
                 .OrderByDescending(x => x.Cantidad)
                 .ToList();
+        }
+
+        // Usuarios (despachadores) que ya tienen pedidos registrados, para el combo del filtro
+        // (no hay un rol/tabla dedicada; se listan los valores distintos que realmente existen).
+        public List<string> GetUsuariosDisponibles()
+        {
+            using var context = new DbAa5796GmoraContext();
+
+            return context.Pedidos
+                .Where(p => p.Usuario != null && p.Usuario != "")
+                .Select(p => p.Usuario!)
+                .Distinct()
+                .OrderBy(u => u)
+                .ToList();
+        }
+
+        // "Reporte de Solicitud de Carrera": detalle de pedidos de un usuario/operadora dentro
+        // de [desde, hasta], con las direcciones ya resueltas (tabla Direccion) en vez de
+        // volver a geocodificar cada fila.
+        public List<PedidoOperadoraDTO> GetPedidosPorOperadora(string? usuario, DateTime desde, DateTime hasta)
+        {
+            using var context = new DbAa5796GmoraContext();
+
+            var hastaExclusivo = hasta.Date.AddDays(1);
+            var query = context.Pedidos
+                .Where(p => p.Fecharegistro >= desde.Date && p.Fecharegistro < hastaExclusivo);
+
+            if (!string.IsNullOrEmpty(usuario))
+                query = query.Where(p => p.Usuario == usuario);
+
+            var pedidos = query.OrderBy(p => p.Fecharegistro).ToList();
+
+            var celulares = pedidos.Select(p => p.Celular).Distinct().ToList();
+            var direcciones = context.Direccions
+                .Where(d => celulares.Contains(d.Celular))
+                .ToList();
+
+            string? BuscarCalle(string celular, decimal lat, decimal lng)
+            {
+                var d = direcciones.FirstOrDefault(x => x.Celular == celular && x.Latitud == lat && x.Longitud == lng);
+                if (d == null) return null;
+                return $"{d.Calle} {d.Numero} {d.Referencia}".Trim();
+            }
+
+            return pedidos.Select(p => new PedidoOperadoraDTO
+            {
+                Fecharegistro = p.Fecharegistro,
+                CalleOrigen = BuscarCalle(p.Celular, p.Origenlat, p.Origenlog),
+                CalleDestino = BuscarCalle(p.Celular, p.Destinolat, p.Destinolog),
+                Unidad = p.Unidad,
+                Precio = p.Precio
+            }).ToList();
+        }
+
+        public byte[] ExportarReporteSolicitudCarreraPdf(string? usuario, DateTime desde, DateTime hasta, string usuarioLogueado)
+        {
+            var lista = GetPedidosPorOperadora(usuario, desde, hasta);
+            return ReporteSolicitudCarreraPdfGenerator.GenerarPdf(lista, usuario, desde, hasta, usuarioLogueado);
         }
     }
 }

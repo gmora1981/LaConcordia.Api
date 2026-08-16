@@ -62,5 +62,20 @@ namespace Identity.Api.Services
         {
             return _pedido.GetCantidadPedidosPorUsuario(desde, hasta);
         }
+
+        public List<string> GetUsuariosDisponibles()
+        {
+            return _pedido.GetUsuariosDisponibles();
+        }
+
+        public List<PedidoOperadoraDTO> GetPedidosPorOperadora(string? usuario, DateTime desde, DateTime hasta)
+        {
+            return _pedido.GetPedidosPorOperadora(usuario, desde, hasta);
+        }
+
+        public byte[] ExportarReporteSolicitudCarreraPdf(string? usuario, DateTime desde, DateTime hasta, string usuarioLogueado)
+        {
+            return _pedido.ExportarReporteSolicitudCarreraPdf(usuario, desde, hasta, usuarioLogueado);
+        }
     }
 }

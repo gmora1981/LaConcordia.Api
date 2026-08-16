@@ -129,5 +129,42 @@ namespace Identity.Api.Controllers
                 return BadRequest(new { error = ex.Message });
             }
         }
+
+        // "Reporte de Solicitud de Carrera" por usuario/operadora y rango de fechas.
+        [HttpGet("GetUsuariosDisponibles")]
+        public IActionResult GetUsuariosDisponibles()
+        {
+            return Ok(_pedido.GetUsuariosDisponibles());
+        }
+
+        [HttpGet("GetPedidosPorOperadora")]
+        public IActionResult GetPedidosPorOperadora(string? usuario, DateTime desde, DateTime hasta)
+        {
+            try
+            {
+                return Ok(_pedido.GetPedidosPorOperadora(usuario, desde, hasta));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
+
+        [HttpGet("ExportarReporteSolicitudCarreraPdf")]
+        public IActionResult ExportarReporteSolicitudCarreraPdf(string? usuario, DateTime desde, DateTime hasta)
+        {
+            try
+            {
+                QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
+
+                var usuarioLogueado = User.Identity?.Name ?? "desconocido";
+                var pdfBytes = _pedido.ExportarReporteSolicitudCarreraPdf(usuario, desde, hasta, usuarioLogueado);
+                return File(pdfBytes, "application/pdf", "ReporteSolicitudCarrera.pdf");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("Error al exportar el reporte: " + ex.Message);
+            }
+        }
     }
 }

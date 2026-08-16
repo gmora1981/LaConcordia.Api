@@ -55,4 +55,15 @@
         public string Usuario { get; set; } = null!;
         public int Cantidad { get; set; }
     }
+
+    // "Reporte de Solicitud de Carrera" (FrmReporteOperadora, modo Detalle de Pedido /
+    // RptOperadoraDetallePedidoUni): detalle de pedidos por usuario/operadora y rango de fechas.
+    public class PedidoOperadoraDTO
+    {
+        public DateTime Fecharegistro { get; set; }
+        public string? CalleOrigen { get; set; }
+        public string? CalleDestino { get; set; }
+        public string? Unidad { get; set; }
+        public decimal? Precio { get; set; }
+    }
 }

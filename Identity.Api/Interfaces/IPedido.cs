@@ -36,5 +36,10 @@ namespace Identity.Api.Interfaces
 
         // Dashboard "Total de Ingresos de Carreras Asignadas": cantidad de pedidos por usuario.
         List<PedidosPorUsuarioDTO> GetCantidadPedidosPorUsuario(DateTime desde, DateTime hasta);
+
+        // "Reporte de Solicitud de Carrera" por usuario/operadora y rango de fechas.
+        List<string> GetUsuariosDisponibles();
+        List<PedidoOperadoraDTO> GetPedidosPorOperadora(string? usuario, DateTime desde, DateTime hasta);
+        byte[] ExportarReporteSolicitudCarreraPdf(string? usuario, DateTime desde, DateTime hasta, string usuarioLogueado);
     }
 }

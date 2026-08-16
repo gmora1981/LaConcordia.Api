@@ -54,5 +54,42 @@ namespace Identity.Api.Controllers
 
             return File(pdfBytes, "application/pdf", "ControlUnidades.pdf");
         }
+
+        // "Reporte de Ingreso y Salida" por operadora y rango de fechas.
+        [HttpGet("GetMonitorasDisponibles")]
+        public IActionResult GetMonitorasDisponibles()
+        {
+            return Ok(_controlUnidad.GetMonitorasDisponibles());
+        }
+
+        [HttpGet("GetMovimientosPorRango")]
+        public IActionResult GetMovimientosPorRango(DateTime desde, DateTime hasta, string? monitora = null)
+        {
+            try
+            {
+                return Ok(_controlUnidad.GetMovimientosPorRango(desde, hasta, monitora));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
+
+        [HttpGet("ExportarReporteIngresoSalidaPdf")]
+        public IActionResult ExportarReporteIngresoSalidaPdf(DateTime desde, DateTime hasta, string? monitora = null)
+        {
+            try
+            {
+                QuestPDF.Settings.License = LicenseType.Community;
+
+                var usuario = User.Identity?.Name ?? "desconocido";
+                var pdfBytes = _controlUnidad.ExportarReporteIngresoSalidaPdf(desde, hasta, monitora, usuario);
+                return File(pdfBytes, "application/pdf", "ReporteIngresoYSalida.pdf");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("Error al exportar el reporte: " + ex.Message);
+            }
+        }
     }
 }

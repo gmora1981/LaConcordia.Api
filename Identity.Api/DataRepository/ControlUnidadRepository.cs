@@ -1,4 +1,5 @@
 ﻿using Identity.Api.DTO;
+using Identity.Api.Reporteria;
 using Modelo.laconcordia.Modelo.Database;
 
 namespace Identity.Api.DataRepository
@@ -76,6 +77,54 @@ namespace Identity.Api.DataRepository
                     Estado = c.Estado
                 })
                 .ToList();
+        }
+
+        // Operadoras/monitoras que ya tienen movimientos registrados, para el combo del filtro
+        // (no hay un rol/tabla dedicada; se listan los valores distintos que realmente existen).
+        public List<string> GetMonitorasDisponibles()
+        {
+            using var context = new DbAa5796GmoraContext();
+
+            return context.Controlunidades
+                .Where(c => c.Monitora != null && c.Monitora != "")
+                .Select(c => c.Monitora!)
+                .Distinct()
+                .OrderBy(m => m)
+                .ToList();
+        }
+
+        // "Reporte de Ingreso y Salida" (FrmReporteOperadora / RptOperadorasIngresoSalidaUni del
+        // escritorio): movimientos dentro de un rango de fechas, opcionalmente filtrados por
+        // operadora/monitora.
+        public List<ControlUnidadMovimientoDTO> GetMovimientosPorRango(DateTime desde, DateTime hasta, string? monitora)
+        {
+            using var context = new DbAa5796GmoraContext();
+
+            var hastaExclusivo = hasta.Date.AddDays(1);
+            var query = context.Controlunidades
+                .Where(c => c.Fecharegistro >= desde.Date && c.Fecharegistro < hastaExclusivo);
+
+            if (!string.IsNullOrEmpty(monitora))
+                query = query.Where(c => c.Monitora == monitora);
+
+            return query
+                .OrderBy(c => c.Fecharegistro)
+                .Select(c => new ControlUnidadMovimientoDTO
+                {
+                    Fecharegistro = c.Fecharegistro,
+                    Turno = c.Turno,
+                    Unidad = c.Unidad,
+                    Ciconductor = c.Ciconductor,
+                    Conductor = c.Conductor,
+                    Estado = c.Estado
+                })
+                .ToList();
+        }
+
+        public byte[] ExportarReporteIngresoSalidaPdf(DateTime desde, DateTime hasta, string? monitora, string usuario)
+        {
+            var movimientos = GetMovimientosPorRango(desde, hasta, monitora);
+            return ReporteIngresoSalidaPdfGenerator.GenerarPdf(movimientos, desde, hasta, monitora, usuario);
         }
     }
 }

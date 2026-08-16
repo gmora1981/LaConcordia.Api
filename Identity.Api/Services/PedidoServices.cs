@@ -57,5 +57,10 @@ namespace Identity.Api.Services
         {
             _pedido.GuardarDireccion(celular, lat, lng, calle);
         }
+
+        public List<PedidosPorUsuarioDTO> GetCantidadPedidosPorUsuario(DateTime desde, DateTime hasta)
+        {
+            return _pedido.GetCantidadPedidosPorUsuario(desde, hasta);
+        }
     }
 }

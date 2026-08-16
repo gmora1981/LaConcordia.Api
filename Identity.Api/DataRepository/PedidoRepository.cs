@@ -241,5 +241,26 @@ namespace Identity.Api.DataRepository
                 Km = anterior.Km ?? 0
             };
         }
+
+        // Dashboard "Total de Ingresos de Carreras Asignadas": cantidad de pedidos registrados
+        // por cada usuario (despachador) dentro de [desde, hasta] (hasta incluye el dia completo).
+        public List<PedidosPorUsuarioDTO> GetCantidadPedidosPorUsuario(DateTime desde, DateTime hasta)
+        {
+            using var context = new DbAa5796GmoraContext();
+
+            var hastaExclusivo = hasta.Date.AddDays(1);
+
+            return context.Pedidos
+                .Where(p => p.Fecharegistro >= desde.Date && p.Fecharegistro < hastaExclusivo
+                    && p.Usuario != null && p.Usuario != "")
+                .GroupBy(p => p.Usuario!)
+                .Select(g => new PedidosPorUsuarioDTO
+                {
+                    Usuario = g.Key,
+                    Cantidad = g.Count()
+                })
+                .OrderByDescending(x => x.Cantidad)
+                .ToList();
+        }
     }
 }

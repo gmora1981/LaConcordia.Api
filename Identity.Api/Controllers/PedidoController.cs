@@ -115,5 +115,19 @@ namespace Identity.Api.Controllers
                 return BadRequest("Error al guardar la dirección: " + ex.Message);
             }
         }
+
+        // Dashboard "Total de Ingresos de Carreras Asignadas": cantidad de pedidos por usuario.
+        [HttpGet("GetCantidadPedidosPorUsuario")]
+        public IActionResult GetCantidadPedidosPorUsuario(DateTime desde, DateTime hasta)
+        {
+            try
+            {
+                return Ok(_pedido.GetCantidadPedidosPorUsuario(desde, hasta));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
     }
 }

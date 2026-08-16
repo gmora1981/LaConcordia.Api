@@ -33,5 +33,8 @@ namespace Identity.Api.Interfaces
 
         // Guarda la direccion resuelta de unas coordenadas (requiere que el pasajero ya exista).
         void GuardarDireccion(string celular, decimal lat, decimal lng, string? calle);
+
+        // Dashboard "Total de Ingresos de Carreras Asignadas": cantidad de pedidos por usuario.
+        List<PedidosPorUsuarioDTO> GetCantidadPedidosPorUsuario(DateTime desde, DateTime hasta);
     }
 }

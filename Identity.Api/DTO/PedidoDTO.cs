@@ -47,4 +47,12 @@
         public decimal Precio { get; set; }
         public decimal Km { get; set; }
     }
+
+    // Dashboard "Total de Ingresos de Carreras Asignadas": cantidad de pedidos registrados
+    // por cada usuario (despachador) dentro de un rango de fechas.
+    public class PedidosPorUsuarioDTO
+    {
+        public string Usuario { get; set; } = null!;
+        public int Cantidad { get; set; }
+    }
 }

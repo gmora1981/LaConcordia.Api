@@ -4,12 +4,13 @@ using QuestPDF.Helpers;
 
 namespace Identity.Api.Reporteria
 {
-    // Replica "REPORTE DE INGRESO Y SALIDA" (FrmReporteOperadora -> RptOperadorasIngresoSalidaUni
-    // del escritorio): movimientos de Control de Unidades filtrados por rango de fechas y,
-    // opcionalmente, por operadora/monitora.
+    // Replica "REPORTE DE INGRESO Y SALIDA" del escritorio: el mismo reporte se genera tanto
+    // desde FrmReporteOperadora (RptOperadorasIngresoSalidaUni, filtrado por operadora/monitora)
+    // como desde FrmReporteUnidad (RptUnidadesIngresoSalida, filtrado por unidad). Aqui se
+    // unifican ambos filtros (independientes entre si) en un solo reporte.
     public static class ReporteIngresoSalidaPdfGenerator
     {
-        public static byte[] GenerarPdf(List<ControlUnidadMovimientoDTO> movimientos, DateTime desde, DateTime hasta, string? monitora, string usuario)
+        public static byte[] GenerarPdf(List<ControlUnidadMovimientoDTO> movimientos, DateTime desde, DateTime hasta, string? monitora, string? unidad, string usuario)
         {
             var doc = Document.Create(container =>
             {
@@ -86,8 +87,19 @@ namespace Identity.Api.Reporteria
                             });
                         });
 
-                        headerCol.Item().PaddingTop(6).Text("MONITORA").Italic().Bold().Underline();
-                        headerCol.Item().Text(string.IsNullOrEmpty(monitora) ? "Todas" : monitora);
+                        headerCol.Item().PaddingTop(6).Row(row =>
+                        {
+                            row.RelativeItem().Column(c =>
+                            {
+                                c.Item().Text("MONITORA").Italic().Bold().Underline();
+                                c.Item().Text(string.IsNullOrEmpty(monitora) ? "Todas" : monitora);
+                            });
+                            row.RelativeItem().Column(c =>
+                            {
+                                c.Item().Text("UNIDAD").Italic().Bold().Underline();
+                                c.Item().Text(string.IsNullOrEmpty(unidad) ? "Todas" : unidad);
+                            });
+                        });
 
                         headerCol.Item().PaddingTop(4).LineHorizontal(1).LineColor(Colors.Black);
                     });
@@ -100,6 +112,7 @@ namespace Identity.Api.Reporteria
                             columns.RelativeColumn(1); // turno
                             columns.RelativeColumn(1); // estado
                             columns.RelativeColumn(1); // unidad
+                            columns.RelativeColumn(2); // monitora
                             columns.RelativeColumn(3); // conductor
                         });
 
@@ -109,6 +122,7 @@ namespace Identity.Api.Reporteria
                             h.Cell().Text("TURNO").Bold();
                             h.Cell().Text("ESTADO").Bold();
                             h.Cell().Text("unidad");
+                            h.Cell().Text("monitora");
                             h.Cell().Text("conductor");
                         });
 
@@ -118,12 +132,13 @@ namespace Identity.Api.Reporteria
                             table.Cell().Text(m.Turno);
                             table.Cell().Text(m.Estado);
                             table.Cell().Text(m.Unidad);
+                            table.Cell().Text(m.Monitora);
                             table.Cell().Text(m.Conductor);
                         }
 
                         if (movimientos.Count == 0)
                         {
-                            table.Cell().ColumnSpan(5).PaddingTop(10).Text("No hay movimientos registrados para el rango y la operadora seleccionados.")
+                            table.Cell().ColumnSpan(6).PaddingTop(10).Text("No hay movimientos registrados para el rango, la operadora y la unidad seleccionados.")
                                 .Italic().FontColor(Colors.Grey.Darken1);
                         }
                     });

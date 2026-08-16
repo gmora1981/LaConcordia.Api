@@ -26,5 +26,6 @@
         public string? Ciconductor { get; set; }
         public string? Conductor { get; set; }
         public string Estado { get; set; } = null!;
+        public string? Monitora { get; set; }
     }
 }

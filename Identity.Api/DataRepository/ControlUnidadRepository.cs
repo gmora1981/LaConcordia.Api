@@ -93,10 +93,22 @@ namespace Identity.Api.DataRepository
                 .ToList();
         }
 
-        // "Reporte de Ingreso y Salida" (FrmReporteOperadora / RptOperadorasIngresoSalidaUni del
-        // escritorio): movimientos dentro de un rango de fechas, opcionalmente filtrados por
-        // operadora/monitora.
-        public List<ControlUnidadMovimientoDTO> GetMovimientosPorRango(DateTime desde, DateTime hasta, string? monitora)
+        // Unidades que ya tienen movimientos registrados, para el combo del filtro por unidad.
+        public List<string> GetUnidadesConMovimientos()
+        {
+            using var context = new DbAa5796GmoraContext();
+
+            return context.Controlunidades
+                .Select(c => c.Unidad)
+                .Distinct()
+                .OrderBy(u => u)
+                .ToList();
+        }
+
+        // "Reporte de Ingreso y Salida" (FrmReporteOperadora / RptOperadorasIngresoSalidaUni, y
+        // FrmReporteUnidad / RptUnidadesIngresoSalida, del escritorio): movimientos dentro de un
+        // rango de fechas, opcionalmente filtrados por operadora/monitora y/o por unidad.
+        public List<ControlUnidadMovimientoDTO> GetMovimientosPorRango(DateTime desde, DateTime hasta, string? monitora, string? unidad = null)
         {
             using var context = new DbAa5796GmoraContext();
 
@@ -107,6 +119,9 @@ namespace Identity.Api.DataRepository
             if (!string.IsNullOrEmpty(monitora))
                 query = query.Where(c => c.Monitora == monitora);
 
+            if (!string.IsNullOrEmpty(unidad))
+                query = query.Where(c => c.Unidad == unidad);
+
             return query
                 .OrderBy(c => c.Fecharegistro)
                 .Select(c => new ControlUnidadMovimientoDTO
@@ -116,15 +131,16 @@ namespace Identity.Api.DataRepository
                     Unidad = c.Unidad,
                     Ciconductor = c.Ciconductor,
                     Conductor = c.Conductor,
-                    Estado = c.Estado
+                    Estado = c.Estado,
+                    Monitora = c.Monitora
                 })
                 .ToList();
         }
 
-        public byte[] ExportarReporteIngresoSalidaPdf(DateTime desde, DateTime hasta, string? monitora, string usuario)
+        public byte[] ExportarReporteIngresoSalidaPdf(DateTime desde, DateTime hasta, string? monitora, string? unidad, string usuario)
         {
-            var movimientos = GetMovimientosPorRango(desde, hasta, monitora);
-            return ReporteIngresoSalidaPdfGenerator.GenerarPdf(movimientos, desde, hasta, monitora, usuario);
+            var movimientos = GetMovimientosPorRango(desde, hasta, monitora, unidad);
+            return ReporteIngresoSalidaPdfGenerator.GenerarPdf(movimientos, desde, hasta, monitora, unidad, usuario);
         }
     }
 }

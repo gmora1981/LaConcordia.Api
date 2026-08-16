@@ -28,14 +28,19 @@ namespace Identity.Api.Services
             return _controlUnidad.GetMonitorasDisponibles();
         }
 
-        public List<ControlUnidadMovimientoDTO> GetMovimientosPorRango(DateTime desde, DateTime hasta, string? monitora)
+        public List<string> GetUnidadesConMovimientos()
         {
-            return _controlUnidad.GetMovimientosPorRango(desde, hasta, monitora);
+            return _controlUnidad.GetUnidadesConMovimientos();
         }
 
-        public byte[] ExportarReporteIngresoSalidaPdf(DateTime desde, DateTime hasta, string? monitora, string usuario)
+        public List<ControlUnidadMovimientoDTO> GetMovimientosPorRango(DateTime desde, DateTime hasta, string? monitora, string? unidad = null)
         {
-            return _controlUnidad.ExportarReporteIngresoSalidaPdf(desde, hasta, monitora, usuario);
+            return _controlUnidad.GetMovimientosPorRango(desde, hasta, monitora, unidad);
+        }
+
+        public byte[] ExportarReporteIngresoSalidaPdf(DateTime desde, DateTime hasta, string? monitora, string? unidad, string usuario)
+        {
+            return _controlUnidad.ExportarReporteIngresoSalidaPdf(desde, hasta, monitora, unidad, usuario);
         }
     }
 }

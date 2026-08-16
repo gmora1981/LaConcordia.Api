@@ -11,9 +11,10 @@ namespace Identity.Api.Interfaces
 
         List<ControlUnidadMovimientoDTO> GetMovimientos(DateTime fecha, string? turno);
 
-        // "Reporte de Ingreso y Salida" por operadora/monitora y rango de fechas.
+        // "Reporte de Ingreso y Salida" por operadora/monitora y/o unidad, y rango de fechas.
         List<string> GetMonitorasDisponibles();
-        List<ControlUnidadMovimientoDTO> GetMovimientosPorRango(DateTime desde, DateTime hasta, string? monitora);
-        byte[] ExportarReporteIngresoSalidaPdf(DateTime desde, DateTime hasta, string? monitora, string usuario);
+        List<string> GetUnidadesConMovimientos();
+        List<ControlUnidadMovimientoDTO> GetMovimientosPorRango(DateTime desde, DateTime hasta, string? monitora, string? unidad = null);
+        byte[] ExportarReporteIngresoSalidaPdf(DateTime desde, DateTime hasta, string? monitora, string? unidad, string usuario);
     }
 }

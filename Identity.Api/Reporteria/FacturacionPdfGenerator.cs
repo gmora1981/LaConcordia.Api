@@ -87,7 +87,7 @@ namespace Identity.Api.Reporteria
                         headerCol.Item().PaddingTop(6).Text(t =>
                         {
                             t.Span("HASTA   ").Italic().Bold();
-                            t.Span(hasta.HasValue ? hasta.Value.ToString("d/M/yyyy") : "Todas las fechas").Italic();
+                            t.Span(hasta.HasValue ? hasta.Value.ToString("d/M/yyyy") : "").Italic();
                         });
 
                         headerCol.Item().PaddingTop(2).Text(t =>

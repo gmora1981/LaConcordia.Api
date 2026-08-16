@@ -87,7 +87,7 @@ namespace Identity.Api.Reporteria
                         });
 
                         headerCol.Item().PaddingTop(6).Text("USUARIO").Italic().Bold().Underline();
-                        headerCol.Item().Text(string.IsNullOrEmpty(usuario) ? "Todos" : usuario);
+                        headerCol.Item().Text(usuario ?? "");
 
                         headerCol.Item().PaddingTop(4).LineHorizontal(1).LineColor(Colors.Black);
                     });

@@ -92,12 +92,12 @@ namespace Identity.Api.Reporteria
                             row.RelativeItem().Column(c =>
                             {
                                 c.Item().Text("MONITORA").Italic().Bold().Underline();
-                                c.Item().Text(string.IsNullOrEmpty(monitora) ? "Todas" : monitora);
+                                c.Item().Text(monitora ?? "");
                             });
                             row.RelativeItem().Column(c =>
                             {
                                 c.Item().Text("UNIDAD").Italic().Bold().Underline();
-                                c.Item().Text(string.IsNullOrEmpty(unidad) ? "Todas" : unidad);
+                                c.Item().Text(unidad ?? "");
                             });
                         });
 

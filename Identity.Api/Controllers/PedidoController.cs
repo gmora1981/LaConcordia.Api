@@ -130,6 +130,20 @@ namespace Identity.Api.Controllers
             }
         }
 
+        // Dashboard "Top 10 de las Unidades con Mas Carreras".
+        [HttpGet("GetTopUnidadesConMasCarreras")]
+        public IActionResult GetTopUnidadesConMasCarreras(DateTime desde, DateTime hasta)
+        {
+            try
+            {
+                return Ok(_pedido.GetTopUnidadesConMasCarreras(desde, hasta));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
+
         // "Reporte de Solicitud de Carrera" por usuario/operadora y rango de fechas.
         [HttpGet("GetUsuariosDisponibles")]
         public IActionResult GetUsuariosDisponibles()

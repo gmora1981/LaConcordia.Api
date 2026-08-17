@@ -56,6 +56,14 @@
         public int Cantidad { get; set; }
     }
 
+    // Dashboard "Top 10 de las Unidades con Mas Carreras" (FrmReporteUnidad -> "General" ->
+    // RptUnidadEstadisticaPedido): cantidad de pedidos por unidad dentro de un rango de fechas.
+    public class PedidosPorUnidadDTO
+    {
+        public string Unidad { get; set; } = null!;
+        public int Cantidad { get; set; }
+    }
+
     // "Reporte de Solicitud de Carrera" (FrmReporteOperadora, modo Detalle de Pedido /
     // RptOperadoraDetallePedidoUni): detalle de pedidos por usuario/operadora y rango de fechas.
     public class PedidoOperadoraDTO

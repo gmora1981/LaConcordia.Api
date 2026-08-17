@@ -264,6 +264,28 @@ namespace Identity.Api.DataRepository
                 .ToList();
         }
 
+        // Dashboard "Top 10 de las Unidades con Mas Carreras": cantidad de pedidos por unidad
+        // dentro de [desde, hasta] (hasta incluye el dia completo), las 10 con mas carreras.
+        public List<PedidosPorUnidadDTO> GetTopUnidadesConMasCarreras(DateTime desde, DateTime hasta)
+        {
+            using var context = new DbAa5796GmoraContext();
+
+            var hastaExclusivo = hasta.Date.AddDays(1);
+
+            return context.Pedidos
+                .Where(p => p.Fecharegistro >= desde.Date && p.Fecharegistro < hastaExclusivo
+                    && p.Unidad != null && p.Unidad != "")
+                .GroupBy(p => p.Unidad!)
+                .Select(g => new PedidosPorUnidadDTO
+                {
+                    Unidad = g.Key,
+                    Cantidad = g.Count()
+                })
+                .OrderByDescending(x => x.Cantidad)
+                .Take(10)
+                .ToList();
+        }
+
         // Usuarios (despachadores) que ya tienen pedidos registrados, para el combo del filtro
         // (no hay un rol/tabla dedicada; se listan los valores distintos que realmente existen).
         public List<string> GetUsuariosDisponibles()

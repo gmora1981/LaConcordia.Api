@@ -63,6 +63,11 @@ namespace Identity.Api.Services
             return _pedido.GetCantidadPedidosPorUsuario(desde, hasta);
         }
 
+        public List<PedidosPorUnidadDTO> GetTopUnidadesConMasCarreras(DateTime desde, DateTime hasta)
+        {
+            return _pedido.GetTopUnidadesConMasCarreras(desde, hasta);
+        }
+
         public List<string> GetUsuariosDisponibles()
         {
             return _pedido.GetUsuariosDisponibles();

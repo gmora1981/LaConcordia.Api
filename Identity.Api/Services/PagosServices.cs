@@ -27,5 +27,15 @@ namespace Identity.Api.Services
         {
             _pagos.PagarUbm(request, usuario);
         }
+
+        public List<DetallePagoMonitoriaDTO> GetDetallePagosPorUnidad(string unidad, DateTime desde, DateTime hasta)
+        {
+            return _pagos.GetDetallePagosPorUnidad(unidad, desde, hasta);
+        }
+
+        public byte[] ExportarReporteDetallePagosPdf(string unidad, DateTime desde, DateTime hasta, string usuario)
+        {
+            return _pagos.ExportarReporteDetallePagosPdf(unidad, desde, hasta, usuario);
+        }
     }
 }

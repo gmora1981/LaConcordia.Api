@@ -1,4 +1,5 @@
 ﻿using Identity.Api.DTO;
+using Identity.Api.Reporteria;
 using Modelo.laconcordia.Modelo.Database;
 
 namespace Identity.Api.DataRepository
@@ -188,6 +189,39 @@ namespace Identity.Api.DataRepository
             }
 
             _context.SaveChanges();
+        }
+
+        // "Reporte Detalle de Pagos x Monitoria": pagos de cuota semanal del socio actualmente
+        // asignado a la unidad (Fichapersonal.Fkunidad), dentro de [desde, hasta].
+        public List<DetallePagoMonitoriaDTO> GetDetallePagosPorUnidad(string unidad, DateTime desde, DateTime hasta)
+        {
+            using var context = new DbAa5796GmoraContext();
+
+            var ficha = context.Fichapersonals.FirstOrDefault(f => f.Fkunidad == unidad && f.Estado == "a");
+            if (ficha == null) return new List<DetallePagoMonitoriaDTO>();
+
+            var hastaExclusivo = hasta.Date.AddDays(1);
+
+            return context.Movimientocuota
+                .Where(m => m.Cidentidad == ficha.Cedula && m.Fechapago >= desde.Date && m.Fechapago < hastaExclusivo)
+                .OrderBy(m => m.Semana).ThenBy(m => m.Fechapago)
+                .Select(m => new DetallePagoMonitoriaDTO
+                {
+                    Periodo = m.Periodo,
+                    Semana = m.Semana,
+                    Fechapago = m.Fechapago,
+                    Valorpagado = m.Valorpagado,
+                    Formadepago = m.Formadepago,
+                    Detalle = m.Detalle
+                })
+                .ToList();
+        }
+
+        public byte[] ExportarReporteDetallePagosPdf(string unidad, DateTime desde, DateTime hasta, string usuarioLogueado)
+        {
+            var lista = GetDetallePagosPorUnidad(unidad, desde, hasta);
+            var conductor = new PedidoRepository().GetConductorPorUnidad(unidad)?.NombreCompleto;
+            return ReporteDetallePagosPdfGenerator.GenerarPdf(lista, unidad, conductor, desde, hasta, usuarioLogueado);
         }
 
         private static void ValidarSaldo(decimal valorAPagar, decimal valor, decimal abono)

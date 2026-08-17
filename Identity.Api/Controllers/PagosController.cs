@@ -70,5 +70,34 @@ namespace Identity.Api.Controllers
                 return BadRequest("Error al registrar el pago: " + ex.Message);
             }
         }
+        [HttpGet("GetDetallePagosPorUnidad")]
+        public IActionResult GetDetallePagosPorUnidad(string unidad, DateTime desde, DateTime hasta)
+        {
+            try
+            {
+                return Ok(_pagos.GetDetallePagosPorUnidad(unidad, desde, hasta));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
+
+        [HttpGet("ExportarReporteDetallePagosPdf")]
+        public IActionResult ExportarReporteDetallePagosPdf(string unidad, DateTime desde, DateTime hasta)
+        {
+            try
+            {
+                QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
+
+                var usuario = User.Identity?.Name ?? "desconocido";
+                var pdfBytes = _pagos.ExportarReporteDetallePagosPdf(unidad, desde, hasta, usuario);
+                return File(pdfBytes, "application/pdf", "ReporteDetallePagosMonitoria.pdf");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("Error al exportar el reporte: " + ex.Message);
+            }
+        }
     }
 }

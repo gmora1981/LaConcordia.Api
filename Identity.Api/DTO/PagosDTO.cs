@@ -42,4 +42,17 @@
         public string? NumComprobante { get; set; }
         public string? Detalle { get; set; }
     }
+
+    // "Reporte Detalle de Pagos x Monitoria" (FrmReporteUnidad -> "Detalle de Pagos x
+    // Monitoria" / RptUnidadesDetallePagos): pagos de cuota semanal del socio asignado a una
+    // unidad, dentro de un rango de fechas.
+    public class DetallePagoMonitoriaDTO
+    {
+        public string Periodo { get; set; } = null!;
+        public string Semana { get; set; } = null!;
+        public DateTime Fechapago { get; set; }
+        public decimal? Valorpagado { get; set; }
+        public string? Formadepago { get; set; }
+        public string? Detalle { get; set; }
+    }
 }

@@ -30,5 +30,8 @@ namespace Identity.Api.Interfaces
         // generado, filtrados por unidad (opcional) y rango de fechas.
         List<ReporteVoucherPagarDTO> GetVouchersPendientesPorUnidad(string? unidad, DateTime desde, DateTime hasta);
         byte[] ExportarReporteVoucherPagarPdf(string? unidad, DateTime desde, DateTime hasta, string usuario);
+
+        // Dashboard "Vouchers Emitidos".
+        ResumenVoucherDTO GetResumenVouchers(DateTime desde, DateTime hasta);
     }
 }

@@ -108,6 +108,12 @@ namespace Identity.Api.Controllers
             }
         }
 
+        [HttpGet("GetResumenVouchers")]
+        public IActionResult GetResumenVouchers(DateTime desde, DateTime hasta)
+        {
+            return Ok(_ordenPago.GetResumenVouchers(desde, hasta));
+        }
+
         // "Modificar Datos": corrige Precio/Recorrido/Empleado del pedido sin generar voucher.
         [HttpPut("ActualizarDatosPedido")]
         public IActionResult ActualizarDatosPedido([FromBody] ActualizarDatosPedidoRequestDTO request)

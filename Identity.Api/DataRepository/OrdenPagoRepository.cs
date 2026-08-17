@@ -267,6 +267,32 @@ namespace Identity.Api.DataRepository
             }).ToList();
         }
 
+        // Dashboard "Vouchers Emitidos": total de vouchers generados en el rango (por
+        // Fechayhora), separados en procesados/pagados (Estadoproceso = "i") y pendientes
+        // ("a" o nulo, igual criterio que Facturacion).
+        public ResumenVoucherDTO GetResumenVouchers(DateTime desde, DateTime hasta)
+        {
+            using var context = new DbAa5796GmoraContext();
+
+            var hastaExclusivo = hasta.Date.AddDays(1);
+            var vouchers = context.Ordendepagos
+                .Where(o => o.Fechayhora >= desde.Date && o.Fechayhora < hastaExclusivo)
+                .ToList();
+
+            var procesados = vouchers.Where(o => o.Estadoproceso == "i").ToList();
+            var pendientes = vouchers.Where(o => o.Estadoproceso != "i").ToList();
+
+            return new ResumenVoucherDTO
+            {
+                Total = vouchers.Count,
+                Procesados = procesados.Count,
+                Pendientes = pendientes.Count,
+                MontoTotal = vouchers.Sum(x => x.Precio ?? 0),
+                MontoProcesado = procesados.Sum(x => x.Precio ?? 0),
+                MontoPendiente = pendientes.Sum(x => x.Precio ?? 0)
+            };
+        }
+
         public byte[] ExportarReporteVoucherPagarPdf(string? unidad, DateTime desde, DateTime hasta, string usuarioLogueado)
         {
             var lista = GetVouchersPendientesPorUnidad(unidad, desde, hasta);

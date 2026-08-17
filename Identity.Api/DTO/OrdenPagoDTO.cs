@@ -85,6 +85,18 @@
         public decimal? Precio { get; set; }
     }
 
+    // Dashboard "Vouchers Emitidos": cuantos vouchers se generaron en el rango, cuantos ya
+    // fueron procesados/pagados (Estadoproceso = "i") y cuantos siguen pendientes ("a" o nulo).
+    public class ResumenVoucherDTO
+    {
+        public int Total { get; set; }
+        public int Procesados { get; set; }
+        public int Pendientes { get; set; }
+        public decimal MontoTotal { get; set; }
+        public decimal MontoProcesado { get; set; }
+        public decimal MontoPendiente { get; set; }
+    }
+
     public class OrdenPagoResumenDTO
     {
         public string Numvoucher { get; set; } = null!;

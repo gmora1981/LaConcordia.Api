@@ -217,6 +217,37 @@ namespace Identity.Api.DataRepository
                 .ToList();
         }
 
+        // Dashboard "Cobros de Monitoria".
+        public ResumenMonitoriaDTO GetResumenMonitoria(DateTime desde, DateTime hasta)
+        {
+            using var context = new DbAa5796GmoraContext();
+
+            var desdeFecha = DateOnly.FromDateTime(desde.Date);
+            var hastaFecha = DateOnly.FromDateTime(hasta.Date);
+
+            var cuotas = context.Generarcuota
+                .Where(c => c.Fecha != null && c.Fecha >= desdeFecha && c.Fecha <= hastaFecha)
+                .ToList();
+
+            var pagadas = cuotas.Where(c => (c.Abono ?? 0) >= (c.Valor ?? 0) && (c.Valor ?? 0) > 0).ToList();
+            var pendientes = cuotas.Where(c => (c.Abono ?? 0) < (c.Valor ?? 0)).ToList();
+
+            var hastaExclusivo = hasta.Date.AddDays(1);
+            var montoCobrado = context.Movimientocuota
+                .Where(m => m.Fechapago >= desde.Date && m.Fechapago < hastaExclusivo)
+                .Sum(m => m.Valorpagado ?? 0);
+
+            return new ResumenMonitoriaDTO
+            {
+                CuotasGeneradas = cuotas.Count,
+                CuotasPagadas = pagadas.Count,
+                CuotasPendientes = pendientes.Count,
+                MontoGenerado = cuotas.Sum(x => x.Valor ?? 0),
+                MontoCobrado = montoCobrado,
+                MontoPendiente = pendientes.Sum(x => (x.Valor ?? 0) - (x.Abono ?? 0))
+            };
+        }
+
         public byte[] ExportarReporteDetallePagosPdf(string unidad, DateTime desde, DateTime hasta, string usuarioLogueado)
         {
             var lista = GetDetallePagosPorUnidad(unidad, desde, hasta);

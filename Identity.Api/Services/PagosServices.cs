@@ -37,5 +37,10 @@ namespace Identity.Api.Services
         {
             return _pagos.ExportarReporteDetallePagosPdf(unidad, desde, hasta, usuario);
         }
+
+        public ResumenMonitoriaDTO GetResumenMonitoria(DateTime desde, DateTime hasta)
+        {
+            return _pagos.GetResumenMonitoria(desde, hasta);
+        }
     }
 }

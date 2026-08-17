@@ -15,5 +15,8 @@ namespace Identity.Api.Interfaces
         // "Reporte Detalle de Pagos x Monitoria": pagos de cuota semanal por unidad y rango de fechas.
         List<DetallePagoMonitoriaDTO> GetDetallePagosPorUnidad(string unidad, DateTime desde, DateTime hasta);
         byte[] ExportarReporteDetallePagosPdf(string unidad, DateTime desde, DateTime hasta, string usuario);
+
+        // Dashboard "Cobros de Monitoria".
+        ResumenMonitoriaDTO GetResumenMonitoria(DateTime desde, DateTime hasta);
     }
 }

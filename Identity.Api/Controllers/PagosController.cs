@@ -99,5 +99,10 @@ namespace Identity.Api.Controllers
                 return BadRequest("Error al exportar el reporte: " + ex.Message);
             }
         }
+        [HttpGet("GetResumenMonitoria")]
+        public IActionResult GetResumenMonitoria(DateTime desde, DateTime hasta)
+        {
+            return Ok(_pagos.GetResumenMonitoria(desde, hasta));
+        }
     }
 }

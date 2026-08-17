@@ -46,6 +46,19 @@
     // "Reporte Detalle de Pagos x Monitoria" (FrmReporteUnidad -> "Detalle de Pagos x
     // Monitoria" / RptUnidadesDetallePagos): pagos de cuota semanal del socio asignado a una
     // unidad, dentro de un rango de fechas.
+    // Dashboard "Cobros de Monitoria": cuotas semanales generadas en el rango (por Fecha),
+    // separadas en pagadas por completo y pendientes, mas el monto realmente cobrado en el
+    // rango (por Fechapago de Movimientocuota, independiente de cuando se genero la cuota).
+    public class ResumenMonitoriaDTO
+    {
+        public int CuotasGeneradas { get; set; }
+        public int CuotasPagadas { get; set; }
+        public int CuotasPendientes { get; set; }
+        public decimal MontoGenerado { get; set; }
+        public decimal MontoCobrado { get; set; }
+        public decimal MontoPendiente { get; set; }
+    }
+
     public class DetallePagoMonitoriaDTO
     {
         public string Periodo { get; set; } = null!;

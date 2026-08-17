@@ -39,7 +39,8 @@ namespace Identity.Api.Interfaces
 
         // "Reporte de Solicitud de Carrera" por usuario/operadora y rango de fechas.
         List<string> GetUsuariosDisponibles();
-        List<PedidoOperadoraDTO> GetPedidosPorOperadora(string? usuario, DateTime desde, DateTime hasta);
-        byte[] ExportarReporteSolicitudCarreraPdf(string? usuario, DateTime desde, DateTime hasta, string usuarioLogueado);
+        List<string> GetUnidadesConPedidos();
+        List<PedidoOperadoraDTO> GetPedidosPorOperadora(string? usuario, DateTime desde, DateTime hasta, string? unidad = null);
+        byte[] ExportarReporteSolicitudCarreraPdf(string? usuario, DateTime desde, DateTime hasta, string? unidad, string usuarioLogueado);
     }
 }

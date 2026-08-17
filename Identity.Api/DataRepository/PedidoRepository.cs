@@ -278,10 +278,26 @@ namespace Identity.Api.DataRepository
                 .ToList();
         }
 
-        // "Reporte de Solicitud de Carrera": detalle de pedidos de un usuario/operadora dentro
-        // de [desde, hasta], con las direcciones ya resueltas (tabla Direccion) en vez de
-        // volver a geocodificar cada fila.
-        public List<PedidoOperadoraDTO> GetPedidosPorOperadora(string? usuario, DateTime desde, DateTime hasta)
+        // Unidades que ya tienen pedidos registrados, para el combo del filtro por unidad
+        // (equivalente a FrmReporteUnidad -> "Detalle de Pedido").
+        public List<string> GetUnidadesConPedidos()
+        {
+            using var context = new DbAa5796GmoraContext();
+
+            return context.Pedidos
+                .Where(p => p.Unidad != null && p.Unidad != "")
+                .Select(p => p.Unidad!)
+                .Distinct()
+                .OrderBy(u => u)
+                .ToList();
+        }
+
+        // "Reporte de Solicitud de Carrera": detalle de pedidos dentro de [desde, hasta],
+        // filtrado opcionalmente por usuario/operadora (FrmReporteOperadora) y/o por unidad
+        // (FrmReporteUnidad -> "Detalle de Pedido"), ambos filtros independientes y combinables.
+        // Las direcciones se resuelven desde la tabla Direccion ya guardada, en vez de volver a
+        // geocodificar cada fila.
+        public List<PedidoOperadoraDTO> GetPedidosPorOperadora(string? usuario, DateTime desde, DateTime hasta, string? unidad = null)
         {
             using var context = new DbAa5796GmoraContext();
 
@@ -291,6 +307,9 @@ namespace Identity.Api.DataRepository
 
             if (!string.IsNullOrEmpty(usuario))
                 query = query.Where(p => p.Usuario == usuario);
+
+            if (!string.IsNullOrEmpty(unidad))
+                query = query.Where(p => p.Unidad == unidad);
 
             var pedidos = query.OrderBy(p => p.Fecharegistro).ToList();
 
@@ -311,15 +330,17 @@ namespace Identity.Api.DataRepository
                 Fecharegistro = p.Fecharegistro,
                 CalleOrigen = BuscarCalle(p.Celular, p.Origenlat, p.Origenlog),
                 CalleDestino = BuscarCalle(p.Celular, p.Destinolat, p.Destinolog),
+                Usuario = p.Usuario,
                 Unidad = p.Unidad,
                 Precio = p.Precio
             }).ToList();
         }
 
-        public byte[] ExportarReporteSolicitudCarreraPdf(string? usuario, DateTime desde, DateTime hasta, string usuarioLogueado)
+        public byte[] ExportarReporteSolicitudCarreraPdf(string? usuario, DateTime desde, DateTime hasta, string? unidad, string usuarioLogueado)
         {
-            var lista = GetPedidosPorOperadora(usuario, desde, hasta);
-            return ReporteSolicitudCarreraPdfGenerator.GenerarPdf(lista, usuario, desde, hasta, usuarioLogueado);
+            var lista = GetPedidosPorOperadora(usuario, desde, hasta, unidad);
+            var conductor = !string.IsNullOrEmpty(unidad) ? GetConductorPorUnidad(unidad)?.NombreCompleto : null;
+            return ReporteSolicitudCarreraPdfGenerator.GenerarPdf(lista, usuario, unidad, conductor, desde, hasta, usuarioLogueado);
         }
     }
 }

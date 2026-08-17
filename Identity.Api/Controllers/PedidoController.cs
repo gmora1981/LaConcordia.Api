@@ -137,12 +137,18 @@ namespace Identity.Api.Controllers
             return Ok(_pedido.GetUsuariosDisponibles());
         }
 
+        [HttpGet("GetUnidadesConPedidos")]
+        public IActionResult GetUnidadesConPedidos()
+        {
+            return Ok(_pedido.GetUnidadesConPedidos());
+        }
+
         [HttpGet("GetPedidosPorOperadora")]
-        public IActionResult GetPedidosPorOperadora(string? usuario, DateTime desde, DateTime hasta)
+        public IActionResult GetPedidosPorOperadora(string? usuario, DateTime desde, DateTime hasta, string? unidad = null)
         {
             try
             {
-                return Ok(_pedido.GetPedidosPorOperadora(usuario, desde, hasta));
+                return Ok(_pedido.GetPedidosPorOperadora(usuario, desde, hasta, unidad));
             }
             catch (Exception ex)
             {
@@ -151,14 +157,14 @@ namespace Identity.Api.Controllers
         }
 
         [HttpGet("ExportarReporteSolicitudCarreraPdf")]
-        public IActionResult ExportarReporteSolicitudCarreraPdf(string? usuario, DateTime desde, DateTime hasta)
+        public IActionResult ExportarReporteSolicitudCarreraPdf(string? usuario, DateTime desde, DateTime hasta, string? unidad = null)
         {
             try
             {
                 QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
 
                 var usuarioLogueado = User.Identity?.Name ?? "desconocido";
-                var pdfBytes = _pedido.ExportarReporteSolicitudCarreraPdf(usuario, desde, hasta, usuarioLogueado);
+                var pdfBytes = _pedido.ExportarReporteSolicitudCarreraPdf(usuario, desde, hasta, unidad, usuarioLogueado);
                 return File(pdfBytes, "application/pdf", "ReporteSolicitudCarrera.pdf");
             }
             catch (Exception ex)

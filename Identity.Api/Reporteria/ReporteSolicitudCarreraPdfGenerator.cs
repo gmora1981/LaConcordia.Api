@@ -9,7 +9,7 @@ namespace Identity.Api.Reporteria
     // dentro de un rango de fechas, con las calles de origen/destino ya resueltas.
     public static class ReporteSolicitudCarreraPdfGenerator
     {
-        public static byte[] GenerarPdf(List<PedidoOperadoraDTO> pedidos, string? usuario, DateTime desde, DateTime hasta, string usuarioLogueado)
+        public static byte[] GenerarPdf(List<PedidoOperadoraDTO> pedidos, string? usuario, string? unidad, string? conductor, DateTime desde, DateTime hasta, string usuarioLogueado)
         {
             var doc = Document.Create(container =>
             {
@@ -86,8 +86,24 @@ namespace Identity.Api.Reporteria
                             });
                         });
 
-                        headerCol.Item().PaddingTop(6).Text("USUARIO").Italic().Bold().Underline();
-                        headerCol.Item().Text(usuario ?? "");
+                        headerCol.Item().PaddingTop(6).Row(row =>
+                        {
+                            row.RelativeItem().Column(c =>
+                            {
+                                c.Item().Text("USUARIO").Italic().Bold().Underline();
+                                c.Item().Text(usuario ?? "");
+                            });
+                            row.RelativeItem().Column(c =>
+                            {
+                                c.Item().Text("UNIDAD").Italic().Bold().Underline();
+                                c.Item().Text(unidad ?? "");
+                            });
+                            row.RelativeItem().Column(c =>
+                            {
+                                c.Item().Text("CONDUCTOR").Italic().Bold().Underline();
+                                c.Item().Text(conductor ?? "");
+                            });
+                        });
 
                         headerCol.Item().PaddingTop(4).LineHorizontal(1).LineColor(Colors.Black);
                     });
@@ -102,6 +118,7 @@ namespace Identity.Api.Reporteria
                                 columns.RelativeColumn(3); // calle de origen
                                 columns.RelativeColumn(3); // calle destino
                                 columns.RelativeColumn(1); // unidad
+                                columns.RelativeColumn(2); // usuario
                                 columns.RelativeColumn(1); // precio
                             });
 
@@ -111,6 +128,7 @@ namespace Identity.Api.Reporteria
                                 h.Cell().AlignCenter().Text("CALLE DE ORIGEN").Bold().Italic().Underline();
                                 h.Cell().AlignCenter().Text("CALLE DESTINO").Bold().Italic().Underline();
                                 h.Cell().Text("UNIDAD").Bold().Italic().Underline();
+                                h.Cell().Text("USUARIO").Bold().Italic().Underline();
                                 h.Cell().AlignRight().Text("PRECIO").Bold().Italic().Underline();
                             });
 
@@ -120,12 +138,13 @@ namespace Identity.Api.Reporteria
                                 table.Cell().Text(p.CalleOrigen);
                                 table.Cell().Text(p.CalleDestino);
                                 table.Cell().Text(p.Unidad);
+                                table.Cell().Text(p.Usuario);
                                 table.Cell().AlignRight().Text(p.Precio?.ToString("0.00"));
                             }
 
                             if (pedidos.Count == 0)
                             {
-                                table.Cell().ColumnSpan(5).PaddingTop(10).Text("No hay pedidos registrados para el rango y la operadora seleccionados.")
+                                table.Cell().ColumnSpan(6).PaddingTop(10).Text("No hay pedidos registrados para el rango, la operadora y la unidad seleccionados.")
                                     .Italic().FontColor(Colors.Grey.Darken1);
                             }
                         });

@@ -42,5 +42,15 @@ namespace Identity.Api.Services
         {
             return _ordenPago.ExportarFacturacionPdf(ruc, razonSocial, hasta, usuario);
         }
+
+        public List<ReporteVoucherPagarDTO> GetVouchersPendientesPorUnidad(string? unidad, DateTime desde, DateTime hasta)
+        {
+            return _ordenPago.GetVouchersPendientesPorUnidad(unidad, desde, hasta);
+        }
+
+        public byte[] ExportarReporteVoucherPagarPdf(string? unidad, DateTime desde, DateTime hasta, string usuario)
+        {
+            return _ordenPago.ExportarReporteVoucherPagarPdf(unidad, desde, hasta, usuario);
+        }
     }
 }

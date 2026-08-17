@@ -25,5 +25,10 @@ namespace Identity.Api.Interfaces
 
         // PDF del listado de vouchers de una empresa, igual al reporte RptEmpresaVoucher del escritorio.
         byte[] ExportarFacturacionPdf(string ruc, string razonSocial, DateTime? hasta, string usuario);
+
+        // "Reporte de Voucher por Pagar": pedidos con empresa asignada aun sin voucher
+        // generado, filtrados por unidad (opcional) y rango de fechas.
+        List<ReporteVoucherPagarDTO> GetVouchersPendientesPorUnidad(string? unidad, DateTime desde, DateTime hasta);
+        byte[] ExportarReporteVoucherPagarPdf(string? unidad, DateTime desde, DateTime hasta, string usuario);
     }
 }

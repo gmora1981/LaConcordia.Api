@@ -73,6 +73,18 @@
         public decimal SaldoFinal { get; set; }
     }
 
+    // "Reporte de Voucher por Pagar" (FrmReporteUnidad -> "Voucher X Pagar"): pedidos con
+    // empresa asignada que aun no tienen voucher generado, filtrados por unidad y rango de
+    // fechas, con las direcciones ya resueltas (tabla Direccion).
+    public class ReporteVoucherPagarDTO
+    {
+        public DateTime Fecharegistro { get; set; }
+        public string? CalleOrigen { get; set; }
+        public string? CalleDestino { get; set; }
+        public string? Empresa { get; set; }
+        public decimal? Precio { get; set; }
+    }
+
     public class OrdenPagoResumenDTO
     {
         public string Numvoucher { get; set; } = null!;

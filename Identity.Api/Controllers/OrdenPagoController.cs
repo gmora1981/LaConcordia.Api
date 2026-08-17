@@ -78,6 +78,36 @@ namespace Identity.Api.Controllers
             }
         }
 
+        [HttpGet("GetVouchersPendientesPorUnidad")]
+        public IActionResult GetVouchersPendientesPorUnidad(string? unidad, DateTime desde, DateTime hasta)
+        {
+            try
+            {
+                return Ok(_ordenPago.GetVouchersPendientesPorUnidad(unidad, desde, hasta));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
+
+        [HttpGet("ExportarReporteVoucherPagarPdf")]
+        public IActionResult ExportarReporteVoucherPagarPdf(string? unidad, DateTime desde, DateTime hasta)
+        {
+            try
+            {
+                QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
+
+                var usuario = User.Identity?.Name ?? "desconocido";
+                var pdfBytes = _ordenPago.ExportarReporteVoucherPagarPdf(unidad, desde, hasta, usuario);
+                return File(pdfBytes, "application/pdf", "ReporteVoucherPorPagar.pdf");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("Error al exportar el reporte: " + ex.Message);
+            }
+        }
+
         // "Modificar Datos": corrige Precio/Recorrido/Empleado del pedido sin generar voucher.
         [HttpPut("ActualizarDatosPedido")]
         public IActionResult ActualizarDatosPedido([FromBody] ActualizarDatosPedidoRequestDTO request)

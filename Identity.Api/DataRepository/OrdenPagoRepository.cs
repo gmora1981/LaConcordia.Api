@@ -225,5 +225,55 @@ namespace Identity.Api.DataRepository
             var lista = GetOrdenPagoPorEmpresa(ruc, hasta);
             return FacturacionPdfGenerator.GenerarPdf(lista, ruc, razonSocial, hasta, usuario);
         }
+
+        // "Reporte de Voucher por Pagar": misma regla de "pendiente de voucher" que usa Orden
+        // de Pago (Ruc asignado, Numvoucher aun vacio), acotada a [desde, hasta] y filtrada
+        // opcionalmente por unidad.
+        public List<ReporteVoucherPagarDTO> GetVouchersPendientesPorUnidad(string? unidad, DateTime desde, DateTime hasta)
+        {
+            using var context = new DbAa5796GmoraContext();
+
+            var hastaExclusivo = hasta.Date.AddDays(1);
+            var query = context.Pedidos
+                .Where(p => p.Ruc != null && p.Ruc != "" && (p.Numvoucher == null || p.Numvoucher == "")
+                    && p.Fecharegistro >= desde.Date && p.Fecharegistro < hastaExclusivo);
+
+            if (!string.IsNullOrEmpty(unidad))
+                query = query.Where(p => p.Unidad == unidad);
+
+            var pedidos = query.OrderBy(p => p.Fecharegistro).ToList();
+
+            var empresas = context.Empresas.ToDictionary(e => e.Ruc, e => e.Razonsocial);
+
+            var celulares = pedidos.Select(p => p.Celular).Distinct().ToList();
+            var direcciones = context.Direccions
+                .Where(d => celulares.Contains(d.Celular))
+                .ToList();
+
+            string? BuscarCalle(string celular, decimal lat, decimal lng)
+            {
+                var d = direcciones.FirstOrDefault(x => x.Celular == celular && x.Latitud == lat && x.Longitud == lng);
+                if (d == null) return null;
+                return $"{d.Calle} {d.Numero} {d.Referencia}".Trim();
+            }
+
+            return pedidos.Select(p => new ReporteVoucherPagarDTO
+            {
+                Fecharegistro = p.Fecharegistro,
+                CalleOrigen = BuscarCalle(p.Celular, p.Origenlat, p.Origenlog),
+                CalleDestino = BuscarCalle(p.Celular, p.Destinolat, p.Destinolog),
+                Empresa = p.Ruc != null && empresas.ContainsKey(p.Ruc) ? empresas[p.Ruc] : null,
+                Precio = p.Precio
+            }).ToList();
+        }
+
+        public byte[] ExportarReporteVoucherPagarPdf(string? unidad, DateTime desde, DateTime hasta, string usuarioLogueado)
+        {
+            var lista = GetVouchersPendientesPorUnidad(unidad, desde, hasta);
+            var conductor = !string.IsNullOrEmpty(unidad)
+                ? new PedidoRepository().GetConductorPorUnidad(unidad)?.NombreCompleto
+                : null;
+            return ReporteVoucherPagarPdfGenerator.GenerarPdf(lista, unidad, conductor, desde, hasta, usuarioLogueado);
+        }
     }
 }

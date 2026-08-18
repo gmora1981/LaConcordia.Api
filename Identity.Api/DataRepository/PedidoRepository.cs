@@ -364,5 +364,214 @@ namespace Identity.Api.DataRepository
             var conductor = !string.IsNullOrEmpty(unidad) ? GetConductorPorUnidad(unidad)?.NombreCompleto : null;
             return ReporteSolicitudCarreraPdfGenerator.GenerarPdf(lista, usuario, unidad, conductor, desde, hasta, usuarioLogueado);
         }
+
+        // ===== App del conductor (Taxista) =====
+
+        public InfoConductorDTO? GetInfoConductorPorCedula(string cedula)
+        {
+            using var context = new DbAa5796GmoraContext();
+
+            var ficha = context.Fichapersonals.FirstOrDefault(f => f.Cedula == cedula && f.Estado == "a");
+            if (ficha == null) return null;
+
+            return new InfoConductorDTO
+            {
+                Cedula = ficha.Cedula,
+                NombreCompleto = $"{ficha.Apellidos} {ficha.Nombre}".Trim(),
+                Unidad = ficha.Fkunidad
+            };
+        }
+
+        // "Mis Carreras" del conductor: pedidos asignados a su unidad, sin paginar (la lista
+        // diaria de un conductor es corta). Mismo filtro Unidad/Estado que GetPedidoPaginados.
+        public List<PedidoDTO> GetCarrerasAsignadas(string unidad, string? estado = null)
+        {
+            using var context = new DbAa5796GmoraContext();
+
+            var query = context.Pedidos.Where(p => p.Unidad == unidad);
+
+            if (!string.IsNullOrEmpty(estado))
+                query = query.Where(p => p.Estado == estado);
+
+            return query
+                .OrderByDescending(p => p.Fecharegistro)
+                .Select(x => new PedidoDTO
+                {
+                    Celular = x.Celular,
+                    Origenlat = x.Origenlat,
+                    Origenlog = x.Origenlog,
+                    Destinolat = x.Destinolat,
+                    Destinolog = x.Destinolog,
+                    Tiempodemora = x.Tiempodemora,
+                    Ruc = x.Ruc,
+                    Fecharegistro = x.Fecharegistro,
+                    Usuario = x.Usuario,
+                    Base = x.Base,
+                    Unidad = x.Unidad,
+                    Ciconductor = x.Ciconductor,
+                    Conductor = x.Conductor,
+                    Unidadsiguiente = x.Unidadsiguiente,
+                    Ciconductorsiguiente = x.Ciconductorsiguiente,
+                    Conductorsiguiente = x.Conductorsiguiente,
+                    Precio = x.Precio,
+                    Km = x.Km,
+                    Numvoucher = x.Numvoucher,
+                    Valija = x.Valija,
+                    Empleado = x.Empleado,
+                    Recorrido = x.Recorrido,
+                    Estado = x.Estado,
+                    Autorizado = x.Autorizado
+                })
+                .ToList();
+        }
+
+        private static Pedido? BuscarPedido(DbAa5796GmoraContext context, PedidoIdentificadorDTO id)
+        {
+            return context.Pedidos.FirstOrDefault(p =>
+                p.Celular == id.Celular &&
+                p.Origenlat == id.Origenlat && p.Origenlog == id.Origenlog &&
+                p.Destinolat == id.Destinolat && p.Destinolog == id.Destinolog &&
+                p.Fecharegistro == id.FechaRegistroPedido);
+        }
+
+        // El conductor toma una carrera ya asignada a su unidad: pasa a PROCESO y arranca el
+        // seguimiento GPS (taximetro en vivo se calcula en el cliente; aqui solo se guarda el
+        // punto/hora de inicio).
+        public void TomarCarrera(TomarCarreraRequestDTO request, string cedulaConductor)
+        {
+            using var context = new DbAa5796GmoraContext();
+
+            var pedido = BuscarPedido(context, request);
+            if (pedido == null)
+                throw new InvalidOperationException("No se encontró la carrera.");
+
+            pedido.Estado = "PROCESO";
+
+            context.Carreraseguimientos.Add(new Carreraseguimiento
+            {
+                Celular = request.Celular,
+                Origenlat = request.Origenlat,
+                Origenlog = request.Origenlog,
+                Destinolat = request.Destinolat,
+                Destinolog = request.Destinolog,
+                Fecharegistro = request.FechaRegistroPedido,
+                Cedulaconductor = cedulaConductor,
+                Fechainicio = DateTime.Now,
+                Latinicio = request.LatInicio,
+                Loginicio = request.LogInicio
+            });
+
+            context.SaveChanges();
+        }
+
+        // El conductor finaliza la carrera: pasa a FINALIZADO y escribe el precio/km finales
+        // tambien en el propio Pedido (Facturacion/Voucher/reportes ya leen esos campos).
+        public void FinalizarCarrera(FinalizarCarreraRequestDTO request)
+        {
+            using var context = new DbAa5796GmoraContext();
+
+            var pedido = BuscarPedido(context, request);
+            if (pedido == null)
+                throw new InvalidOperationException("No se encontró la carrera.");
+
+            pedido.Estado = "FINALIZADO";
+            pedido.Precio = request.PrecioFinal;
+            pedido.Km = request.DistanciaKm;
+
+            var seguimiento = context.Carreraseguimientos
+                .Where(s => s.Celular == request.Celular
+                    && s.Origenlat == request.Origenlat && s.Origenlog == request.Origenlog
+                    && s.Destinolat == request.Destinolat && s.Destinolog == request.Destinolog
+                    && s.Fecharegistro == request.FechaRegistroPedido)
+                .OrderByDescending(s => s.Idseguimiento)
+                .FirstOrDefault();
+
+            if (seguimiento != null)
+            {
+                seguimiento.Fechafin = DateTime.Now;
+                seguimiento.Latfin = request.LatFin;
+                seguimiento.Logfin = request.LogFin;
+                seguimiento.Distanciakm = request.DistanciaKm;
+                seguimiento.Preciofinal = request.PrecioFinal;
+            }
+
+            context.SaveChanges();
+        }
+
+        // "Mis Ganancias": carreras finalizadas por el conductor dentro de [desde, hasta]
+        // (por fecha de finalizacion), con el total ganado y un historial corto.
+        public GananciasConductorDTO GetGananciasConductor(string cedula, DateTime desde, DateTime hasta)
+        {
+            using var context = new DbAa5796GmoraContext();
+
+            var hastaExclusivo = hasta.Date.AddDays(1);
+            var carreras = context.Carreraseguimientos
+                .Where(s => s.Cedulaconductor == cedula && s.Fechafin != null
+                    && s.Fechafin >= desde.Date && s.Fechafin < hastaExclusivo)
+                .OrderByDescending(s => s.Fechafin)
+                .ToList();
+
+            return new GananciasConductorDTO
+            {
+                CantidadCarreras = carreras.Count,
+                TotalGanado = carreras.Sum(x => x.Preciofinal ?? 0),
+                Historial = carreras.Select(x => new CarreraHistorialDTO
+                {
+                    Fecha = x.Fechafin!.Value,
+                    Precio = x.Preciofinal,
+                    DistanciaKm = x.Distanciakm
+                }).ToList()
+            };
+        }
+
+        // El despachador/admin califica el viaje desde la pantalla de Pedido existente; el
+        // conductor solo la ve de solo lectura en su Resumen Final.
+        public void CalificarCarrera(CalificarCarreraRequestDTO request)
+        {
+            using var context = new DbAa5796GmoraContext();
+
+            var seguimiento = context.Carreraseguimientos
+                .Where(s => s.Celular == request.Celular
+                    && s.Origenlat == request.Origenlat && s.Origenlog == request.Origenlog
+                    && s.Destinolat == request.Destinolat && s.Destinolog == request.Destinolog
+                    && s.Fecharegistro == request.FechaRegistroPedido)
+                .OrderByDescending(s => s.Idseguimiento)
+                .FirstOrDefault();
+
+            if (seguimiento == null)
+                throw new InvalidOperationException("Esta carrera todavía no ha sido tomada por un conductor.");
+
+            seguimiento.Calificacion = request.Calificacion;
+            seguimiento.Comentariocalificacion = request.Comentario;
+
+            context.SaveChanges();
+        }
+
+        public CalificarCarreraRequestDTO? GetCalificacionCarrera(PedidoIdentificadorDTO id)
+        {
+            using var context = new DbAa5796GmoraContext();
+
+            var seguimiento = context.Carreraseguimientos
+                .Where(s => s.Celular == id.Celular
+                    && s.Origenlat == id.Origenlat && s.Origenlog == id.Origenlog
+                    && s.Destinolat == id.Destinolat && s.Destinolog == id.Destinolog
+                    && s.Fecharegistro == id.FechaRegistroPedido)
+                .OrderByDescending(s => s.Idseguimiento)
+                .FirstOrDefault();
+
+            if (seguimiento == null || seguimiento.Calificacion == null) return null;
+
+            return new CalificarCarreraRequestDTO
+            {
+                Celular = id.Celular,
+                Origenlat = id.Origenlat,
+                Origenlog = id.Origenlog,
+                Destinolat = id.Destinolat,
+                Destinolog = id.Destinolog,
+                FechaRegistroPedido = id.FechaRegistroPedido,
+                Calificacion = seguimiento.Calificacion.Value,
+                Comentario = seguimiento.Comentariocalificacion
+            };
+        }
     }
 }

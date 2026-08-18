@@ -1,8 +1,10 @@
 ﻿using Identity.Api.DTO;
 using Identity.Api.Interfaces;
+using Identity.Api.Model;
 using Identity.Api.Paginado;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Modelo.laconcordia.Modelo.Database;
 
@@ -14,10 +16,23 @@ namespace Identity.Api.Controllers
     public class PedidoController : Controller
     {
         private readonly IPedido _pedido;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public PedidoController(IPedido pedido)
+        public PedidoController(IPedido pedido, UserManager<ApplicationUser> userManager)
         {
             _pedido = pedido;
+            _userManager = userManager;
+        }
+
+        // Resuelve el usuario logueado (JWT) a su Cedula (ApplicationUser.Cedula), para las
+        // rutas de la app del conductor. Devuelve null si el usuario no tiene Cedula asignada.
+        private async Task<string?> ObtenerCedulaLogueado()
+        {
+            var username = User.Identity?.Name;
+            if (string.IsNullOrEmpty(username)) return null;
+
+            var user = await _userManager.FindByNameAsync(username);
+            return user?.Cedula;
         }
 
         [HttpGet("GetPedidoInfoAll")]
@@ -184,6 +199,116 @@ namespace Identity.Api.Controllers
             catch (Exception ex)
             {
                 return BadRequest("Error al exportar el reporte: " + ex.Message);
+            }
+        }
+
+        // ===== App del conductor (Taxista) =====
+
+        [HttpGet("GetMiInfoConductor")]
+        [Authorize(Roles = "Taxista")]
+        public async Task<IActionResult> GetMiInfoConductor()
+        {
+            var cedula = await ObtenerCedulaLogueado();
+            if (string.IsNullOrEmpty(cedula))
+                return BadRequest("Esta cuenta no tiene una cédula de conductor vinculada.");
+
+            var info = _pedido.GetInfoConductorPorCedula(cedula);
+            if (info == null)
+                return NotFound("No se encontró una ficha personal activa para esta cédula.");
+
+            return Ok(info);
+        }
+
+        [HttpGet("GetCarrerasAsignadas")]
+        [Authorize(Roles = "Taxista")]
+        public async Task<IActionResult> GetCarrerasAsignadas(string? estado = null)
+        {
+            var cedula = await ObtenerCedulaLogueado();
+            if (string.IsNullOrEmpty(cedula))
+                return BadRequest("Esta cuenta no tiene una cédula de conductor vinculada.");
+
+            var info = _pedido.GetInfoConductorPorCedula(cedula);
+            if (info?.Unidad == null)
+                return NotFound("No se encontró una unidad asignada para esta cédula.");
+
+            return Ok(_pedido.GetCarrerasAsignadas(info.Unidad, estado));
+        }
+
+        [HttpPost("TomarCarrera")]
+        [Authorize(Roles = "Taxista")]
+        public async Task<IActionResult> TomarCarrera([FromBody] TomarCarreraRequestDTO request)
+        {
+            try
+            {
+                var cedula = await ObtenerCedulaLogueado();
+                if (string.IsNullOrEmpty(cedula))
+                    return BadRequest("Esta cuenta no tiene una cédula de conductor vinculada.");
+
+                _pedido.TomarCarrera(request, cedula);
+                return Ok("Carrera tomada correctamente.");
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("Error al tomar la carrera: " + ex.Message);
+            }
+        }
+
+        [HttpPost("FinalizarCarrera")]
+        [Authorize(Roles = "Taxista")]
+        public IActionResult FinalizarCarrera([FromBody] FinalizarCarreraRequestDTO request)
+        {
+            try
+            {
+                _pedido.FinalizarCarrera(request);
+                return Ok("Carrera finalizada correctamente.");
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("Error al finalizar la carrera: " + ex.Message);
+            }
+        }
+
+        [HttpGet("GetGananciasConductor")]
+        [Authorize(Roles = "Taxista")]
+        public async Task<IActionResult> GetGananciasConductor(DateTime desde, DateTime hasta)
+        {
+            var cedula = await ObtenerCedulaLogueado();
+            if (string.IsNullOrEmpty(cedula))
+                return BadRequest("Esta cuenta no tiene una cédula de conductor vinculada.");
+
+            return Ok(_pedido.GetGananciasConductor(cedula, desde, hasta));
+        }
+
+        [HttpGet("GetCalificacionCarrera")]
+        public IActionResult GetCalificacionCarrera([FromQuery] PedidoIdentificadorDTO id)
+        {
+            return Ok(_pedido.GetCalificacionCarrera(id));
+        }
+
+        // El despachador/admin califica el viaje desde la pantalla de Pedido.
+        [HttpPost("CalificarCarrera")]
+        public IActionResult CalificarCarrera([FromBody] CalificarCarreraRequestDTO request)
+        {
+            try
+            {
+                _pedido.CalificarCarrera(request);
+                return Ok("Calificación guardada correctamente.");
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("Error al guardar la calificación: " + ex.Message);
             }
         }
     }

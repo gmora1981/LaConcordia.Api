@@ -151,6 +151,18 @@ builder.Services.AddControllers();
 // Construir la aplicación
 var app = builder.Build();
 
+// Seed idempotente del rol "Taxista" (app movil del conductor). "Admin" se crea de forma
+// perezosa en AccountsController; este rol se necesita desde el arranque para poder
+// asignarlo a usuarios nuevos sin un paso manual adicional.
+using (var scope = app.Services.CreateScope())
+{
+    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<ApplicationRole>>();
+    if (!await roleManager.RoleExistsAsync("Taxista"))
+    {
+        await roleManager.CreateAsync(new ApplicationRole { Name = "Taxista" });
+    }
+}
+
 // Logging para debug
 var logger = app.Services.GetRequiredService<ILogger<Program>>();
 logger.LogInformation($"🔧 Entorno: {app.Environment.EnvironmentName}");

@@ -6,5 +6,8 @@
         public string? FirstName { get; set; }
         public string? LastName { get; set; }
         public string? Password { get; set; }
+
+        // Cedula del socio (Fichapersonal), solo aplica para usuarios con rol Taxista.
+        public string? Cedula { get; set; }
     }
 }

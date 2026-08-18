@@ -39,7 +39,7 @@ namespace Identity.Api.Controllers
 
         public async Task<ActionResult<UserToken>> CreateUser([FromBody] UserInfo model)
         {
-            var user = new ApplicationUser { UserName = model.Email, Email = model.Email, FirstName = model.FirstName, LastName = model.LastName };
+            var user = new ApplicationUser { UserName = model.Email, Email = model.Email, FirstName = model.FirstName, LastName = model.LastName, Cedula = model.Cedula };
 
             var result = await _userManager.CreateAsync(user, model.Password);
             if (result.Succeeded)

@@ -87,5 +87,40 @@ namespace Identity.Api.Services
         {
             return _pedido.ExportarReporteSolicitudCarreraPdf(usuario, desde, hasta, unidad, usuarioLogueado);
         }
+
+        public InfoConductorDTO? GetInfoConductorPorCedula(string cedula)
+        {
+            return _pedido.GetInfoConductorPorCedula(cedula);
+        }
+
+        public List<PedidoDTO> GetCarrerasAsignadas(string unidad, string? estado = null)
+        {
+            return _pedido.GetCarrerasAsignadas(unidad, estado);
+        }
+
+        public void TomarCarrera(TomarCarreraRequestDTO request, string cedulaConductor)
+        {
+            _pedido.TomarCarrera(request, cedulaConductor);
+        }
+
+        public void FinalizarCarrera(FinalizarCarreraRequestDTO request)
+        {
+            _pedido.FinalizarCarrera(request);
+        }
+
+        public GananciasConductorDTO GetGananciasConductor(string cedula, DateTime desde, DateTime hasta)
+        {
+            return _pedido.GetGananciasConductor(cedula, desde, hasta);
+        }
+
+        public void CalificarCarrera(CalificarCarreraRequestDTO request)
+        {
+            _pedido.CalificarCarrera(request);
+        }
+
+        public CalificarCarreraRequestDTO? GetCalificacionCarrera(PedidoIdentificadorDTO id)
+        {
+            return _pedido.GetCalificacionCarrera(id);
+        }
     }
 }

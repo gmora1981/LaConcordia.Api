@@ -43,5 +43,14 @@ namespace Identity.Api.Interfaces
         List<string> GetUnidadesConPedidos();
         List<PedidoOperadoraDTO> GetPedidosPorOperadora(string? usuario, DateTime desde, DateTime hasta, string? unidad = null);
         byte[] ExportarReporteSolicitudCarreraPdf(string? usuario, DateTime desde, DateTime hasta, string? unidad, string usuarioLogueado);
+
+        // ===== App del conductor (Taxista) =====
+        InfoConductorDTO? GetInfoConductorPorCedula(string cedula);
+        List<PedidoDTO> GetCarrerasAsignadas(string unidad, string? estado = null);
+        void TomarCarrera(TomarCarreraRequestDTO request, string cedulaConductor);
+        void FinalizarCarrera(FinalizarCarreraRequestDTO request);
+        GananciasConductorDTO GetGananciasConductor(string cedula, DateTime desde, DateTime hasta);
+        void CalificarCarrera(CalificarCarreraRequestDTO request);
+        CalificarCarreraRequestDTO? GetCalificacionCarrera(PedidoIdentificadorDTO id);
     }
 }

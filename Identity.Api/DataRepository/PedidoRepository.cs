@@ -393,8 +393,23 @@ namespace Identity.Api.DataRepository
             if (!string.IsNullOrEmpty(estado))
                 query = query.Where(p => p.Estado == estado);
 
-            return query
-                .OrderByDescending(p => p.Fecharegistro)
+            var pedidos = query.OrderByDescending(p => p.Fecharegistro).ToList();
+
+            // Igual que GetPedidosPorOperadora: se resuelve la calle desde la tabla Direccion
+            // ya guardada, en vez de mostrarle al conductor coordenadas crudas.
+            var celulares = pedidos.Select(p => p.Celular).Distinct().ToList();
+            var direcciones = context.Direccions
+                .Where(d => celulares.Contains(d.Celular))
+                .ToList();
+
+            string? BuscarCalle(string celular, decimal lat, decimal lng)
+            {
+                var d = direcciones.FirstOrDefault(x => x.Celular == celular && x.Latitud == lat && x.Longitud == lng);
+                if (d == null) return null;
+                return $"{d.Calle} {d.Numero} {d.Referencia}".Trim();
+            }
+
+            return pedidos
                 .Select(x => new PedidoDTO
                 {
                     Celular = x.Celular,
@@ -420,7 +435,9 @@ namespace Identity.Api.DataRepository
                     Empleado = x.Empleado,
                     Recorrido = x.Recorrido,
                     Estado = x.Estado,
-                    Autorizado = x.Autorizado
+                    Autorizado = x.Autorizado,
+                    CalleOrigen = BuscarCalle(x.Celular, x.Origenlat, x.Origenlog),
+                    CalleDestino = BuscarCalle(x.Celular, x.Destinolat, x.Destinolog)
                 })
                 .ToList();
         }

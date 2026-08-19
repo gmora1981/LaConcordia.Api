@@ -34,6 +34,11 @@
         public string? Recorrido { get; set; }
         public string? Estado { get; set; }
         public string? Autorizado { get; set; }
+
+        // Solo poblados por GetCarrerasAsignadas (app del conductor), resueltos desde la tabla
+        // Direccion en vez de mostrar coordenadas crudas.
+        public string? CalleOrigen { get; set; }
+        public string? CalleDestino { get; set; }
     }
 
     public class ConductorInfoDTO

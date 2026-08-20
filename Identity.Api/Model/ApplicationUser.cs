@@ -11,6 +11,10 @@ namespace Identity.Api.Model
         // base de datos de negocio. Nulo para usuarios administrativos/despachadores.
         public string? Cedula { get; set; }
 
+        // Vincula la cuenta de una empresa (rol "Empresa") a su Empresa.Ruc, en la base de
+        // datos de negocio. Nulo para usuarios administrativos/despachadores/conductores.
+        public string? Ruc { get; set; }
+
         public ICollection<ApplicationUserRole>? UserRoles { get; set; }
     }
 }

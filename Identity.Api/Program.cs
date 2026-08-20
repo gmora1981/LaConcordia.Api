@@ -143,6 +143,7 @@ builder.Services.AddScoped<IBalance, BalanceServices>();
 builder.Services.AddScoped<IGeocoding, GeocodingServices>();
 builder.Services.AddScoped<IControlUnidad, ControlUnidadServices>();
 builder.Services.AddScoped<IOrdenPago, OrdenPagoServices>();
+builder.Services.AddScoped<ISolicitudCarrera, SolicitudCarreraServices>();
 
 
 
@@ -151,15 +152,19 @@ builder.Services.AddControllers();
 // Construir la aplicación
 var app = builder.Build();
 
-// Seed idempotente del rol "Taxista" (app movil del conductor). "Admin" se crea de forma
-// perezosa en AccountsController; este rol se necesita desde el arranque para poder
-// asignarlo a usuarios nuevos sin un paso manual adicional.
+// Seed idempotente de los roles "Taxista" (app movil del conductor) y "Empresa" (portal de
+// empresas). "Admin" se crea de forma perezosa en AccountsController; estos roles se
+// necesitan desde el arranque para poder asignarlos a usuarios nuevos sin un paso manual.
 using (var scope = app.Services.CreateScope())
 {
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<ApplicationRole>>();
     if (!await roleManager.RoleExistsAsync("Taxista"))
     {
         await roleManager.CreateAsync(new ApplicationRole { Name = "Taxista" });
+    }
+    if (!await roleManager.RoleExistsAsync("Empresa"))
+    {
+        await roleManager.CreateAsync(new ApplicationRole { Name = "Empresa" });
     }
 }
 

@@ -53,9 +53,9 @@ namespace Identity.Api.Services
             return _ordenPago.ExportarReporteVoucherPagarPdf(unidad, desde, hasta, usuario);
         }
 
-        public ResumenVoucherDTO GetResumenVouchers(DateTime desde, DateTime hasta)
+        public ResumenVoucherDTO GetResumenVouchers(DateTime desde, DateTime hasta, string? ruc = null)
         {
-            return _ordenPago.GetResumenVouchers(desde, hasta);
+            return _ordenPago.GetResumenVouchers(desde, hasta, ruc);
         }
     }
 }

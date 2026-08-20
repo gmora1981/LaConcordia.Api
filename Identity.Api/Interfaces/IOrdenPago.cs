@@ -32,6 +32,6 @@ namespace Identity.Api.Interfaces
         byte[] ExportarReporteVoucherPagarPdf(string? unidad, DateTime desde, DateTime hasta, string usuario);
 
         // Dashboard "Vouchers Emitidos".
-        ResumenVoucherDTO GetResumenVouchers(DateTime desde, DateTime hasta);
+        ResumenVoucherDTO GetResumenVouchers(DateTime desde, DateTime hasta, string? ruc = null);
     }
 }

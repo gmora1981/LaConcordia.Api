@@ -270,14 +270,18 @@ namespace Identity.Api.DataRepository
         // Dashboard "Vouchers Emitidos": total de vouchers generados en el rango (por
         // Fechayhora), separados en procesados/pagados (Estadoproceso = "i") y pendientes
         // ("a" o nulo, igual criterio que Facturacion).
-        public ResumenVoucherDTO GetResumenVouchers(DateTime desde, DateTime hasta)
+        public ResumenVoucherDTO GetResumenVouchers(DateTime desde, DateTime hasta, string? ruc = null)
         {
             using var context = new DbAa5796GmoraContext();
 
             var hastaExclusivo = hasta.Date.AddDays(1);
-            var vouchers = context.Ordendepagos
-                .Where(o => o.Fechayhora >= desde.Date && o.Fechayhora < hastaExclusivo)
-                .ToList();
+            var query = context.Ordendepagos
+                .Where(o => o.Fechayhora >= desde.Date && o.Fechayhora < hastaExclusivo);
+
+            if (!string.IsNullOrEmpty(ruc))
+                query = query.Where(o => o.Ruc == ruc);
+
+            var vouchers = query.ToList();
 
             var procesados = vouchers.Where(o => o.Estadoproceso == "i").ToList();
             var pendientes = vouchers.Where(o => o.Estadoproceso != "i").ToList();

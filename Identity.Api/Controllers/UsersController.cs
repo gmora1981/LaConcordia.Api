@@ -51,7 +51,8 @@ namespace Identity.Api.Controllers
                     UserId = x.Id,
                     FirstName = x.FirstName,
                     LastName = x.LastName,
-                    Cedula = x.Cedula
+                    Cedula = x.Cedula,
+                    Ruc = x.Ruc
                 })
                 .ToListAsync();
 
@@ -76,7 +77,8 @@ namespace Identity.Api.Controllers
                 Email = user.Email ?? "",
                 FirstName = user.FirstName,
                 LastName = user.LastName,
-                Cedula = user.Cedula
+                Cedula = user.Cedula,
+                Ruc = user.Ruc
             });
         }
 
@@ -101,7 +103,8 @@ namespace Identity.Api.Controllers
                     Email = x.Email ?? "",
                     FirstName = x.FirstName,
                     LastName = x.LastName,
-                    Cedula = x.Cedula
+                    Cedula = x.Cedula,
+                    Ruc = x.Ruc
                 })
                 .Take(20)
                 .ToListAsync();
@@ -139,7 +142,8 @@ namespace Identity.Api.Controllers
                     Email = x.Email ?? "",
                     FirstName = x.FirstName,
                     LastName = x.LastName,
-                    Cedula = x.Cedula
+                    Cedula = x.Cedula,
+                    Ruc = x.Ruc
                 })
                 .ToListAsync();
 
@@ -261,6 +265,7 @@ namespace Identity.Api.Controllers
             user.FirstName = userEditDTO.FirstName;
             user.LastName = userEditDTO.LastName;
             user.Cedula = userEditDTO.Cedula;
+            user.Ruc = userEditDTO.Ruc;
 
             var result = await userManager.UpdateAsync(user);
             if (!result.Succeeded)

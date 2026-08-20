@@ -1,7 +1,9 @@
 ﻿using Identity.Api.DTO;
 using Identity.Api.Interfaces;
+using Identity.Api.Model;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Identity.Api.Controllers
@@ -12,10 +14,34 @@ namespace Identity.Api.Controllers
     public class OrdenPagoController : Controller
     {
         private readonly IOrdenPago _ordenPago;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public OrdenPagoController(IOrdenPago ordenPago)
+        public OrdenPagoController(IOrdenPago ordenPago, UserManager<ApplicationUser> userManager)
         {
             _ordenPago = ordenPago;
+            _userManager = userManager;
+        }
+
+        // Resuelve el usuario logueado (JWT) a su Ruc (ApplicationUser.Ruc), para las rutas
+        // del portal de empresas. Mismo patron que PedidoController.ObtenerCedulaLogueado.
+        private async Task<string?> ObtenerRucLogueado()
+        {
+            var username = User.Identity?.Name;
+            if (string.IsNullOrEmpty(username)) return null;
+
+            var user = await _userManager.FindByNameAsync(username);
+            return user?.Ruc;
+        }
+
+        [HttpGet("GetMiRuc")]
+        [Authorize(Roles = "Empresa")]
+        public async Task<IActionResult> GetMiRuc()
+        {
+            var ruc = await ObtenerRucLogueado();
+            if (string.IsNullOrEmpty(ruc))
+                return BadRequest("Esta cuenta no tiene una empresa vinculada.");
+
+            return Ok(ruc);
         }
 
         [HttpGet("GetPedidosPendientesVoucher")]
@@ -55,15 +81,32 @@ namespace Identity.Api.Controllers
             }
         }
 
-        [HttpGet("GetOrdenPagoPorEmpresa/{ruc}")]
-        public IActionResult GetOrdenPagoPorEmpresa(string ruc, DateTime? hasta = null)
+        // Si el usuario tiene rol Empresa, solo puede pedir su propio Ruc (evita que edite la
+        // URL/parametro y vea la facturacion de otra empresa). Los demas roles (Admin) no
+        // tienen esta restriccion.
+        private async Task<bool> RucPermitidoParaUsuarioActual(string ruc)
         {
+            if (!User.IsInRole("Empresa")) return true;
+
+            var miRuc = await ObtenerRucLogueado();
+            return !string.IsNullOrEmpty(miRuc) && miRuc == ruc;
+        }
+
+        [HttpGet("GetOrdenPagoPorEmpresa/{ruc}")]
+        public async Task<IActionResult> GetOrdenPagoPorEmpresa(string ruc, DateTime? hasta = null)
+        {
+            if (!await RucPermitidoParaUsuarioActual(ruc))
+                return Forbid();
+
             return Ok(_ordenPago.GetOrdenPagoPorEmpresa(ruc, hasta));
         }
 
         [HttpGet("ExportarFacturacionPdf")]
-        public IActionResult ExportarFacturacionPdf(string ruc, string razonSocial, DateTime? hasta = null)
+        public async Task<IActionResult> ExportarFacturacionPdf(string ruc, string razonSocial, DateTime? hasta = null)
         {
+            if (!await RucPermitidoParaUsuarioActual(ruc))
+                return Forbid();
+
             try
             {
                 QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
@@ -112,6 +155,19 @@ namespace Identity.Api.Controllers
         public IActionResult GetResumenVouchers(DateTime desde, DateTime hasta)
         {
             return Ok(_ordenPago.GetResumenVouchers(desde, hasta));
+        }
+
+        // Igual que GetResumenVouchers pero acotado al Ruc del usuario Empresa logueado (no se
+        // acepta el Ruc por parametro para que una empresa no pueda ver datos de otra).
+        [HttpGet("GetResumenVouchersEmpresa")]
+        [Authorize(Roles = "Empresa")]
+        public async Task<IActionResult> GetResumenVouchersEmpresa(DateTime desde, DateTime hasta)
+        {
+            var ruc = await ObtenerRucLogueado();
+            if (string.IsNullOrEmpty(ruc))
+                return BadRequest("Esta cuenta no tiene una empresa vinculada.");
+
+            return Ok(_ordenPago.GetResumenVouchers(desde, hasta, ruc));
         }
 
         // "Modificar Datos": corrige Precio/Recorrido/Empleado del pedido sin generar voucher.

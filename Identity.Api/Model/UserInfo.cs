@@ -9,5 +9,8 @@
 
         // Cedula del socio (Fichapersonal), solo aplica para usuarios con rol Taxista.
         public string? Cedula { get; set; }
+
+        // Ruc de la empresa (Empresa), solo aplica para usuarios con rol Empresa.
+        public string? Ruc { get; set; }
     }
 }
